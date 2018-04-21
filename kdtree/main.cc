@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
+#include <thread>
 
 
 /* Timer
@@ -169,24 +170,44 @@ private:
 
         int axis = getAxis(depth);
         int medianIndex = fixateMedian(left, right, axis);
-        sort(left, medianIndex - 1, depth + 1);
-        sort(medianIndex + 1, right, depth + 1);
+
+        if (depth < 3) {
+            std::thread thread(&KDTree::sort, this, left, medianIndex - 1, depth + 1);
+            sort(medianIndex + 1, right, depth + 1);
+            thread.join();
+        } else {
+            sort(left, medianIndex - 1, depth + 1);
+            sort(medianIndex + 1, right, depth + 1);
+        }
     }
 
     int fixateMedian(int left, int right, int axis) {
         int medianIndex = getMedianIndex(left, right);
-        quickselect(left, right, medianIndex, axis);
+        quickselect_Iterative(left, right, medianIndex, axis);
         return medianIndex;
     }
 
-    void quickselect(int left, int right, int k, int axis) {
+    void quickselect_Recursive(int left, int right, int k, int axis) {
         if (left >= right) return;
 
         int split = partition(left, right, axis);
         if (k < split) {
-            quickselect(left, split - 1, k, axis);
+            quickselect_Recursive(left, split - 1, k, axis);
         } else if (k > split) {
-            quickselect(split + 1, right, k, axis);
+            quickselect_Recursive(split + 1, right, k, axis);
+        }
+    }
+
+    void quickselect_Iterative(int left, int right, int k, int axis) {
+        while (left < right) {
+            int split = partition(left, right, axis);
+            if (k < split) {
+                right = split - 1;
+            } else if (k > split) {
+                left = split + 1;
+            } else {
+                return;
+            }
         }
     }
 
@@ -195,19 +216,19 @@ private:
         float pivotValue = GetKey(points[pivotIndex], axis);
 
         // move pivot to the end
-        std::swap(points[pivotIndex], points[right]);
+        swap(pivotIndex, right);
 
         // swap values that are smaller than the pivot to the front
         int index = left;
         for (int i = left; i < right; i++) {
             if (GetKey(points[i], axis) < pivotValue) {
-                std::swap(points[index], points[i]);
+                swap(index, i);
                 index++;
             }
         }
 
         // move pivot to correct position
-        std::swap(points[right], points[index]);
+        swap(right, index);
 
         // try to move the split index closer to the median if possible
         // this is important when there are many points on an axis aligned line
@@ -220,7 +241,7 @@ private:
     }
 
     int selectPivotIndex(int left, int right) {
-        return left + rand() % (right - left);
+        return left;
     }
 
 
@@ -383,6 +404,12 @@ private:
         return depth % ndim;
     }
 
+    void swap(int a, int b) {
+        Point tmp = points[a];
+        points[a] = points[b];
+        points[b] = tmp;
+    }
+
 };
 
 int getMedianIndex(int left, int right) {
@@ -417,13 +444,15 @@ void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &poi
 
 
 int main(int arc, char const *argv[]) {
-    auto points = generateRandomVectors<NDIM>(100000000);
+    auto points = generateRandomVectors<NDIM>(10000000);
 
-    VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 1);
+    VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 10);
     tree.balance();
     // printVectors(points);
     //findPointsInRadius(tree, *points);
     //findKNearestPoints(tree, *points);
+    auto result = tree.collectInRadius((*points)[435345], 0.15);
+    //printVectors(&result);
     std::cout << "Done." << std::endl;
     return 0;
 }
