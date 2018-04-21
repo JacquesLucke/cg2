@@ -40,8 +40,9 @@ struct Vector {
     std::array<float, N> data;
 
 public:
+
     friend std::ostream& operator<<(std::ostream& stream, const Vector& p) {
-        stream << "P(";
+        stream << "(";
         for (size_t i = 0; i < N; i++) {
             stream << p.data[i];
             if (i < N - 1) stream << ", ";
@@ -71,7 +72,7 @@ public:
 template<int N>
 std::vector<Vector<N>> *generateRandomVectors(int amount) {
     TIMEIT
-    std::default_random_engine generator;
+    std::default_random_engine generator(42);
     std::uniform_real_distribution<float> distribution(0, 10);
 
     auto points = new std::vector<Vector<N>>();
@@ -98,7 +99,8 @@ void printVectors(std::vector<Vector<N>> *vectors) {
     printVectors(vectors->data(), vectors->size());
 }
 
-float getIndex(Vector<3> &point, int axis) {
+template<int N>
+float getIndex(Vector<N> &point, int axis) {
     return point[axis];
 }
 
@@ -120,8 +122,9 @@ class KDTree {
 public:
 
     KDTree(Point *points, int length, int ndim, int bucketSize) {
-        assert(ndim > 0);
+        assert(ndim >= 1);
         assert(length >= 0);
+        assert(bucketSize >= 1);
 
         this->points = points;
         this->length = length;
@@ -132,14 +135,15 @@ public:
     void balance() {
         TIMEIT
         sort(0, length - 1, 0);
+        //quicksort(0, length - 1, 0);
     }
 
 private:
 
     void sort(int left, int right, int depth) {
-        if (left + bucketSize >= right) return;
+        if (isLeaf(left, right)) return;
 
-        int axis = depth % ndim;
+        int axis = getAxis(depth);
         int medianIndex = fixateMedian(left, right, axis);
         sort(left, medianIndex - 1, depth + 1);
         sort(medianIndex + 1, right, depth + 1);
@@ -151,11 +155,18 @@ private:
         return medianIndex;
     }
 
+    // void quicksort(int left, int right, int axis) {
+    //     std::cout << left << " - " << right << std::endl;
+    //     if (left >= right) return;
+    //     int split = partition(left, right, axis);
+    //     quicksort(left, split - 1, axis);
+    //     quicksort(split + 1, right, axis);
+    // }
+
     void quickselect(int left, int right, int k, int axis) {
-        if (left == right) return;
+        if (left >= right) return;
 
         int split = partition(left, right, axis);
-        return;
         if (k < split) {
             quickselect(left, split - 1, k, axis);
         } else if (k > split) {
@@ -195,18 +206,113 @@ private:
     int selectPivotIndex(int left, int right) {
         return left + rand() % (right - left);
     }
+
+
+    struct InRadiusCollector {
+        Point origin;
+        float radius;
+        std::vector<Point> points;
+
+        InRadiusCollector(Point origin, float radius) {
+            this->origin = origin;
+            this->radius = radius;
+        }
+
+        void consider(Point &point) {
+            if (CalcDistance(origin, point) <= radius) {
+                points.push_back(point);
+            }
+        }
+    };
+
+public:
+
+    std::vector<Point> collectInRadius(Point &origin, float radius) {
+        InRadiusCollector collector(origin, radius);
+        collectInRadius(0, length - 1, 0, collector);
+        return collector.points;
+    }
+
+    std::vector<Point> collectInRadius_Naive(Point &origin, float radius) {
+        InRadiusCollector collector(origin, radius);
+        for (int i = 0; i < length; i++) {
+            collector.consider(points[i]);
+        }
+        return collector.points;
+    }
+
+private:
+
+    void collectInRadius(int left, int right, int depth, InRadiusCollector &collector) {
+        if (isLeaf(left, right)) {
+            considerPointsInBucket(left, right, collector);
+            return;
+        }
+
+        int axis = getAxis(depth);
+        int medianIndex = getMedianIndex(left, right);
+
+        Point &splitPoint = points[medianIndex];
+        collector.consider(splitPoint);
+
+        float splitPos = GetKey(splitPoint, axis);
+        float originPos = GetKey(collector.origin, axis);
+
+        if (originPos - collector.radius <= splitPos) {
+            collectInRadius(left, medianIndex - 1, depth + 1, collector);
+        }
+        if (originPos + collector.radius >= splitPos) {
+            collectInRadius(medianIndex + 1, right, depth + 1, collector);
+        }
+    }
+
+    template<class Collector>
+    void considerPointsInBucket(int left, int right, Collector &collector) {
+        for (int i = left; i <= right; i++) {
+            collector.consider(points[i]);
+        }
+    }
+
+    bool isLeaf(int left, int right) {
+        return left + bucketSize > right;
+    }
+
+    int getAxis(int depth) {
+        return depth % ndim;
+    }
+
 };
 
 int getMedianIndex(int left, int right) {
     return (left + right) / 2;
 }
 
+
+
+/* Main
+*******************************************/
+
+#define NDIM 3
+
+template<int N>
+using VectorKDTree = KDTree<Vector<N>, getIndex<N>, Vector<N>::distance>;
+
+void findPointsInRadius(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
+    TIMEIT
+    for (int i = 0; i < 100; i++) {
+        tree.collectInRadius(points[i], 0.1);
+        //std::cout << tree.collectInRadius(points[i], 0.1).size() << std::endl;
+    }
+}
+
+
 int main(int arc, char const *argv[]) {
-    auto points = generateRandomVectors<3>(1000000);
+    auto points = generateRandomVectors<NDIM>(100000000);
 
-
-    KDTree<Vector<3>, getIndex, Vector<3>::distance> tree(points->data(), points->size(), 3, 10);
+    VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 1);
     tree.balance();
+    // printVectors(points);
+    findPointsInRadius(tree, *points);
     std::cout << "Done." << std::endl;
     return 0;
 }
