@@ -6,6 +6,7 @@
 #include <random>
 #include <algorithm>
 #include <chrono>
+#include <queue>
 
 
 /* Timer
@@ -73,7 +74,7 @@ template<int N>
 std::vector<Vector<N>> *generateRandomVectors(int amount) {
     TIMEIT
     std::default_random_engine generator(42);
-    std::uniform_real_distribution<float> distribution(0, 10);
+    std::uniform_real_distribution<float> distribution(-10, 10);
 
     auto points = new std::vector<Vector<N>>();
     for (int i = 0; i < amount; i++) {
@@ -138,7 +139,30 @@ public:
         //quicksort(0, length - 1, 0);
     }
 
+    std::vector<Point> collectInRadius(Point &origin, float radius) {
+        InRadiusCollector collector(origin, radius);
+        collectInRadius(0, length - 1, 0, collector);
+        return collector.getPoints();;
+    }
+
+    std::vector<Point> collectKNearest(Point &origin, int k) {
+        KNearestCollector collector(origin, k);
+        collectKNearest(0, length - 1, 0, collector);
+        return collector.getPoints();
+    }
+
+    std::vector<Point> collectInRadius_Naive(Point &origin, float radius) {
+        return collectNaive(InRadiusCollector(origin, radius));
+    }
+
+    std::vector<Point> collectKNearest_Naive(Point &origin, int k) {
+        return collectNaive(KNearestCollector(origin, k));
+    }
+
 private:
+
+    /* Sort Point Array
+    *****************************************************/
 
     void sort(int left, int right, int depth) {
         if (isLeaf(left, right)) return;
@@ -154,14 +178,6 @@ private:
         quickselect(left, right, medianIndex, axis);
         return medianIndex;
     }
-
-    // void quicksort(int left, int right, int axis) {
-    //     std::cout << left << " - " << right << std::endl;
-    //     if (left >= right) return;
-    //     int split = partition(left, right, axis);
-    //     quicksort(left, split - 1, axis);
-    //     quicksort(split + 1, right, axis);
-    // }
 
     void quickselect(int left, int right, int k, int axis) {
         if (left >= right) return;
@@ -208,6 +224,10 @@ private:
     }
 
 
+
+    /* Collect in Radius
+    *********************************************/
+
     struct InRadiusCollector {
         Point origin;
         float radius;
@@ -223,25 +243,11 @@ private:
                 points.push_back(point);
             }
         }
-    };
 
-public:
-
-    std::vector<Point> collectInRadius(Point &origin, float radius) {
-        InRadiusCollector collector(origin, radius);
-        collectInRadius(0, length - 1, 0, collector);
-        return collector.points;
-    }
-
-    std::vector<Point> collectInRadius_Naive(Point &origin, float radius) {
-        InRadiusCollector collector(origin, radius);
-        for (int i = 0; i < length; i++) {
-            collector.consider(points[i]);
+        std::vector<Point> getPoints() {
+            return points;
         }
-        return collector.points;
-    }
-
-private:
+    };
 
     void collectInRadius(int left, int right, int depth, InRadiusCollector &collector) {
         if (isLeaf(left, right)) {
@@ -266,11 +272,107 @@ private:
         }
     }
 
+
+
+    /* Collect k Nearest
+    *************************************************/
+
+    struct PointWithDistance {
+        Point point;
+        float distance;
+
+        PointWithDistance(Point point, float distance)
+            : point(point), distance(distance) {}
+
+        friend bool operator<(const PointWithDistance &p1, const PointWithDistance &p2) {
+            return p1.distance < p2.distance;
+        }
+    };
+
+    struct KNearestCollector {
+        int k;
+        Point origin;
+        float maxDistance;
+        std::priority_queue<PointWithDistance> queue;
+
+        KNearestCollector(Point origin, int k) {
+            assert(k >= 0);
+            this->k = k;
+            this->origin = origin;
+            this->maxDistance = -1;
+        }
+
+        void consider(Point &point) {
+            float distance = CalcDistance(origin, point);
+            if (queue.size() < k) {
+                queue.push(PointWithDistance(point, distance));
+                maxDistance = getCurrentMaxDistance();
+            } else if (distance < maxDistance) {
+                queue.pop();
+                queue.push(PointWithDistance(point, distance));
+                maxDistance = getCurrentMaxDistance();
+            }
+        }
+
+        float getCurrentMaxDistance() {
+            return queue.top().distance;
+        }
+
+        std::vector<Point> getPoints() {
+            std::vector<Point> points;
+            while (!queue.empty()) {
+                points.push_back(queue.top().point);
+                queue.pop();
+            }
+            return points;
+        }
+    };
+
+    void collectKNearest(int left, int right, int depth, KNearestCollector &collector) {
+        if (isLeaf(left, right)) {
+            considerPointsInBucket(left, right, collector);
+            return;
+        }
+
+        int axis = getAxis(depth);
+        int medianIndex = getMedianIndex(left, right);
+
+        Point &splitPoint = points[medianIndex];
+        collector.consider(splitPoint);
+
+        float splitPos = GetKey(splitPoint, axis);
+        float originPos = GetKey(collector.origin, axis);
+
+        if (originPos <= splitPos) {
+            collectKNearest(left, medianIndex - 1, depth + 1, collector);
+            if (originPos + collector.maxDistance >= splitPos) {
+                collectKNearest(medianIndex + 1, right, depth + 1, collector);
+            }
+        } else {
+            collectKNearest(medianIndex + 1, right, depth + 1, collector);
+            if (originPos - collector.maxDistance <= splitPos) {
+                collectKNearest(left, medianIndex - 1, depth + 1, collector);
+            }
+        }
+    }
+
+
+    /* Utils
+    *************************************************/
+
     template<class Collector>
     void considerPointsInBucket(int left, int right, Collector &collector) {
         for (int i = left; i <= right; i++) {
             collector.consider(points[i]);
         }
+    }
+
+    template<class Collector>
+    std::vector<Point> collectNaive(Collector collector) {
+        for (int i = 0; i < length; i++) {
+            collector.consider(points[i]);
+        }
+        return collector.getPoints();
     }
 
     bool isLeaf(int left, int right) {
@@ -299,9 +401,17 @@ using VectorKDTree = KDTree<Vector<N>, getIndex<N>, Vector<N>::distance>;
 
 void findPointsInRadius(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
     TIMEIT
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100000; i++) {
         tree.collectInRadius(points[i], 0.1);
-        //std::cout << tree.collectInRadius(points[i], 0.1).size() << std::endl;
+        // std::cout << tree.collectInRadius(points[i], 1).size() << std::endl;
+    }
+}
+
+void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
+    TIMEIT
+    for (int i = 0; i < 100; i++) {
+        tree.collectKNearest(points[i], 1000);
+        // std::cout << tree.collectKNearest(points[i], 5).size() << std::endl;
     }
 }
 
@@ -312,7 +422,8 @@ int main(int arc, char const *argv[]) {
     VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 1);
     tree.balance();
     // printVectors(points);
-    findPointsInRadius(tree, *points);
+    //findPointsInRadius(tree, *points);
+    //findKNearestPoints(tree, *points);
     std::cout << "Done." << std::endl;
     return 0;
 }
