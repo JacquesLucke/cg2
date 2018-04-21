@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
+#include <cmath>
 #include <thread>
-
 
 /* Timer
 ***************************************************/
@@ -120,6 +120,7 @@ class KDTree {
     int length;
     int ndim;
     int bucketSize;
+    int threadDepth;
 
 public:
 
@@ -132,6 +133,7 @@ public:
         this->length = length;
         this->ndim = ndim;
         this->bucketSize = bucketSize;
+        this->threadDepth = std::log2(getCpuCoreCount());
     }
 
     void balance() {
@@ -171,7 +173,7 @@ private:
         int axis = getAxis(depth);
         int medianIndex = fixateMedian(left, right, axis);
 
-        if (depth < 3) {
+        if (depth < threadDepth) {
             std::thread thread(&KDTree::sort, this, left, medianIndex - 1, depth + 1);
             sort(medianIndex + 1, right, depth + 1);
             thread.join();
@@ -200,7 +202,16 @@ private:
 
     void quickselect_Iterative(int left, int right, int k, int axis) {
         while (left < right) {
-            int split = partition(left, right, axis);
+            int split;
+            split = partition(left, right, axis);
+            // if (right - left > 10000000){
+            //     std::cout << "Partion size: " << (right - left) << "  ";
+            //     TIMEIT
+            //     split = partition(left, right, axis);
+            // } else {
+            //     split = partition(left, right, axis);
+
+            // }
             if (k < split) {
                 right = split - 1;
             } else if (k > split) {
@@ -416,6 +427,9 @@ int getMedianIndex(int left, int right) {
     return (left + right) / 2;
 }
 
+int getCpuCoreCount() {
+    return std::thread::hardware_concurrency();
+}
 
 
 /* Main
@@ -444,7 +458,7 @@ void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &poi
 
 
 int main(int arc, char const *argv[]) {
-    auto points = generateRandomVectors<NDIM>(10000000);
+    auto points = generateRandomVectors<NDIM>(100000000);
 
     VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 10);
     tree.balance();
