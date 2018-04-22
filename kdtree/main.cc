@@ -16,6 +16,9 @@
 /* forward decl */
 int getCpuCoreCount();
 inline int getMedianIndex(int left, int right);
+inline int randomInt(int x);
+inline float randomFloat_Range(int x, float scale);
+int partition(int left, int right, int axis, int pivotIndex);
 
 /* Timer
 ***************************************************/
@@ -281,7 +284,7 @@ private:
 
     void quicksort(int left, int right, int axis) {
         if (left >= right) return;
-        int split = partition(left, right, axis, selectPivotIndex_Small(left, right));
+        int split = partition(left, right, axis, selectPivotIndex(left, right));
         quicksort(left, split - 1, axis);
         quicksort(split + 1, right, axis);
     }
