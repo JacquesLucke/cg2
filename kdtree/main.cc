@@ -74,7 +74,7 @@ public:
 template<int N>
 std::vector<Vector<N>> *generateRandomVectors(int amount) {
     TIMEIT
-    std::default_random_engine generator(42);
+    std::default_random_engine generator(44);
     std::uniform_real_distribution<float> distribution(-10, 10);
 
     auto points = new std::vector<Vector<N>>();
@@ -113,25 +113,24 @@ float getIndex(Vector<N> &point, int axis) {
 
 template<
     class Point,
+    int ndim,
     float (*GetKey)(Point &p, int axis),
     float (*CalcDistance)(Point &a, Point &b)>
 class KDTree {
     Point *points;
     int length;
-    int ndim;
     int bucketSize;
     int threadDepth;
 
 public:
 
-    KDTree(Point *points, int length, int ndim, int bucketSize) {
+    KDTree(Point *points, int length, int bucketSize) {
         assert(ndim >= 1);
         assert(length >= 0);
         assert(bucketSize >= 1);
 
         this->points = points;
         this->length = length;
-        this->ndim = ndim;
         this->bucketSize = bucketSize;
         this->threadDepth = std::log2(getCpuCoreCount());
     }
@@ -139,7 +138,6 @@ public:
     void balance() {
         TIMEIT
         sort(0, length - 1, 0);
-        //quicksort(0, length - 1, 0);
     }
 
     std::vector<Point> collectInRadius(Point &origin, float radius) {
@@ -202,16 +200,8 @@ private:
 
     void quickselect_Iterative(int left, int right, int k, int axis) {
         while (left < right) {
-            int split;
-            split = partition(left, right, axis);
-            // if (right - left > 10000000){
-            //     std::cout << "Partion size: " << (right - left) << "  ";
-            //     TIMEIT
-            //     split = partition(left, right, axis);
-            // } else {
-            //     split = partition(left, right, axis);
-
-            // }
+            //int split = partition_WithoutMedian(left, right, axis, getValue(selectPivotIndex(left, right), axis));
+            int split = partition(left, right, axis);
             if (k < split) {
                 right = split - 1;
             } else if (k > split) {
@@ -222,9 +212,16 @@ private:
         }
     }
 
+    void quicksort(int left, int right, int axis) {
+        if (left >= right) return;
+        int split = partition(left, right, axis);
+        quicksort(left, split - 1, axis);
+        quicksort(split + 1, right, axis);
+    }
+
     int partition(int left, int right, int axis) {
         int pivotIndex = selectPivotIndex(left, right);
-        float pivotValue = GetKey(points[pivotIndex], axis);
+        float pivotValue = getValue(pivotIndex, axis);
 
         // move pivot to the end
         swap(pivotIndex, right);
@@ -232,7 +229,7 @@ private:
         // swap values that are smaller than the pivot to the front
         int index = left;
         for (int i = left; i < right; i++) {
-            if (GetKey(points[i], axis) < pivotValue) {
+            if (getValue(i, axis) < pivotValue) {
                 swap(index, i);
                 index++;
             }
@@ -244,15 +241,45 @@ private:
         // try to move the split index closer to the median if possible
         // this is important when there are many points on an axis aligned line
         int medianIndex = getMedianIndex(left, right);
-        while (index < medianIndex && GetKey(points[index + 1], axis) == pivotValue) {
+        while (index < medianIndex && getValue(index + 1, axis) == pivotValue) {
             index++;
         }
 
         return index;
     }
 
+    int partition_WithoutMedian(int left, int right, int axis, float pivot) {
+        int pivotIndex = -1;
+
+        int index = right;
+        int i = left;
+        while (i < index) {
+            float value = getValue(i, axis);
+            if (value > pivot) {
+                swap(i, index);
+                index--;
+            } else if (value < pivot) {
+                i++;
+            } else {
+                pivotIndex = i;
+                i++;
+            }
+        }
+
+        if (pivotIndex >= 0) {
+            if (getValue(index, axis) < pivot) {
+                swap(pivotIndex, index);
+            } else {
+                swap(pivotIndex, index - 1);
+                index--;
+            }
+        }
+
+        return index;
+    }
+
     int selectPivotIndex(int left, int right) {
-        return left;
+        return left + rand() % (right - left);
     }
 
 
@@ -370,7 +397,6 @@ private:
         int medianIndex = getMedianIndex(left, right);
 
         Point &splitPoint = points[medianIndex];
-        collector.consider(splitPoint);
 
         float splitPos = GetKey(splitPoint, axis);
         float originPos = GetKey(collector.origin, axis);
@@ -386,6 +412,8 @@ private:
                 collectKNearest(left, medianIndex - 1, depth + 1, collector);
             }
         }
+
+        collector.consider(splitPoint);
     }
 
 
@@ -407,23 +435,27 @@ private:
         return collector.getPoints();
     }
 
-    bool isLeaf(int left, int right) {
+    inline bool isLeaf(int left, int right) {
         return left + bucketSize > right;
     }
 
-    int getAxis(int depth) {
+    inline int getAxis(int depth) {
         return depth % ndim;
     }
 
-    void swap(int a, int b) {
+    inline void swap(int a, int b) {
         Point tmp = points[a];
         points[a] = points[b];
         points[b] = tmp;
     }
 
+    inline float getValue(int index, int axis) {
+        return GetKey(points[index], axis);
+    }
+
 };
 
-int getMedianIndex(int left, int right) {
+inline int getMedianIndex(int left, int right) {
     return (left + right) / 2;
 }
 
@@ -435,10 +467,10 @@ int getCpuCoreCount() {
 /* Main
 *******************************************/
 
-#define NDIM 3
+#define NDIM 1
 
 template<int N>
-using VectorKDTree = KDTree<Vector<N>, getIndex<N>, Vector<N>::distance>;
+using VectorKDTree = KDTree<Vector<N>, N, getIndex<N>, Vector<N>::distance>;
 
 void findPointsInRadius(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
     TIMEIT
@@ -458,14 +490,16 @@ void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &poi
 
 
 int main(int arc, char const *argv[]) {
-    auto points = generateRandomVectors<NDIM>(100000000);
+    srand(6);
+    auto points = generateRandomVectors<NDIM>(10'000'000);
 
-    VectorKDTree<NDIM> tree(points->data(), points->size(), NDIM, 10);
+    VectorKDTree<NDIM> tree(points->data(), points->size(), 10);
     tree.balance();
-    // printVectors(points);
+
+    //printVectors(points);
     //findPointsInRadius(tree, *points);
     //findKNearestPoints(tree, *points);
-    auto result = tree.collectInRadius((*points)[435345], 0.15);
+    //auto result = tree.collectInRadius((*points)[435345], 0.15);
     //printVectors(&result);
     std::cout << "Done." << std::endl;
     return 0;
