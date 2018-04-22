@@ -13,12 +13,16 @@
 #include <string>
 #include <limits>
 
+/* forward decl */
+int getCpuCoreCount();
+inline int getMedianIndex(int left, int right);
+
 /* Timer
 ***************************************************/
 
 struct Timer {
     const char *name;
-    std::chrono::time_point<std::chrono::steady_clock> start, end;
+    std::chrono::high_resolution_clock::time_point start, end;
     std::chrono::duration<float> duration;
 
     Timer(const char *name = "") {
@@ -657,3 +661,4 @@ int main(int arc, char const *argv[]) {
     std::cout << "Done." << std::endl;
     return 0;
 }
+
