@@ -11,6 +11,7 @@
 #include <thread>
 #include <fstream>
 #include <string>
+#include <limits>
 
 /* Timer
 ***************************************************/
@@ -123,6 +124,22 @@ float getIndex(Vector<N> &point, int axis) {
 /* KDTree
 ******************************************************/
 
+template<int N>
+struct BoundingBox {
+    std::array<float, N> min;
+    std::array<float, N> max;
+
+    friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
+        stream << "[";
+        for (size_t i = 0; i < N; i++) {
+            stream << "(" << box.min[i] << ", " << box.max[i] << ")";
+            if (i < N - 1) stream << ", ";
+        }
+        stream << "]";
+        return stream;
+    }
+};
+
 template<
     class Point,
     int ndim,
@@ -170,6 +187,39 @@ public:
 
     std::vector<Point> collectKNearest_Naive(Point &origin, int k) {
         return collectNaive(KNearestCollector(origin, k));
+    }
+
+    struct BoundingBoxWithDepth {
+        BoundingBox<ndim> box;
+        int depth;
+
+        BoundingBoxWithDepth(BoundingBox<ndim> box, int depth)
+            : box(box), depth(depth) {}
+    };
+
+    std::vector<BoundingBoxWithDepth> getBoundingBoxes(BoundingBox<ndim> outerBox) {
+        TIMEIT
+        std::vector<BoundingBoxWithDepth> boxes;
+        insertBoundingBoxes(0, length - 1, 0, outerBox, boxes);
+        return boxes;
+    }
+
+    void insertBoundingBoxes(int left, int right, int depth, BoundingBox<ndim> outerBox, std::vector<BoundingBoxWithDepth> &boxes) {
+        if (isLeaf(left, right)) return;
+
+        int axis = getAxis(depth);
+        int medianIndex = getMedianIndex(left, right);
+        float splitPos = getValue(medianIndex, axis);
+
+        boxes.push_back(BoundingBoxWithDepth(outerBox, depth));
+
+        BoundingBox<ndim> leftBox = outerBox;
+        leftBox.max[axis] = splitPos;
+        insertBoundingBoxes(left, medianIndex - 1, depth + 1, leftBox, boxes);
+
+        BoundingBox<ndim> rightBox = outerBox;
+        rightBox.min[axis] = splitPos;
+        insertBoundingBoxes(medianIndex + 1, right, depth + 1, rightBox, boxes);
     }
 
 private:
@@ -486,6 +536,26 @@ int getCpuCoreCount() {
     return std::thread::hardware_concurrency();
 }
 
+template<int N>
+BoundingBox<N> findBoundingBox(Vector<N> *points, int length) {
+    TIMEIT
+    BoundingBox<N> box;
+    for (int i = 0; i < N; i++) {
+        box.min[i] = +std::numeric_limits<float>::infinity();
+        box.max[i] = -std::numeric_limits<float>::infinity();
+    }
+
+    for (int i = 0; i < length; i++) {
+        for (int j = 0; j < N; j++) {
+            float value = points[i][j];
+            if (value < box.min[j]) box.min[j] = value;
+            if (value > box.max[j]) box.max[j] = value;
+        }
+    }
+
+    return box;
+}
+
 
 /* Main
 *******************************************/
@@ -547,6 +617,18 @@ OffFileData *readOffFile(std::string path) {
     return data;
 }
 
+void saveBoundingBoxesWithDepth(std::string path, std::vector<VectorKDTree<NDIM>::BoundingBoxWithDepth> &boxes) {
+    TIMEIT
+    std::ofstream fs(path);
+    for (int i = 0; i < boxes.size(); i++) {
+        for (int j = 0; j < NDIM; j++) {
+            fs << boxes[i].box.min[j] << " " << boxes[i].box.max[j] << std::endl;
+        }
+        fs << boxes[i].depth << std::endl;
+    }
+    fs.close();
+}
+
 
 int main(int arc, char const *argv[]) {
     OffFileData *input = readOffFile("off_files\\dragon.off");
@@ -558,9 +640,14 @@ int main(int arc, char const *argv[]) {
     std::cout << "Vertex Amount: " << input->vertices.size() << std::endl;
 
     //auto points = generateRandomVectors<NDIM>(100'000, 42);
+
     auto points = input->vertices;
+    BoundingBox<NDIM> bounds = findBoundingBox(points.data(), points.size());
     VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
     tree.balance();
+
+    auto boxes = tree.getBoundingBoxes(bounds);
+    saveBoundingBoxesWithDepth("boxes.txt", boxes);
 
     //printVectors(points);
     //findPointsInRadius(tree, *points);
