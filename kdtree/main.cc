@@ -253,17 +253,6 @@ private:
         return medianIndex;
     }
 
-    void quickselect_Recursive(int left, int right, int k, int axis) {
-        if (left >= right) return;
-
-        int pivotIndex = selectPivotIndex(left, right);
-        int split = partition(left, right, axis, pivotIndex);
-        if (k < split) {
-            quickselect_Recursive(left, split - 1, k, axis);
-        } else if (k > split) {
-            quickselect_Recursive(split + 1, right, k, axis);
-        }
-    }
 
     void quickselect_Iterative(int left, int right, int k, int axis) {
         while (left < right) {
@@ -277,13 +266,6 @@ private:
                 return;
             }
         }
-    }
-
-    void quicksort(int left, int right, int axis) {
-        if (left >= right) return;
-        int split = partition(left, right, axis, selectPivotIndex_Small(left, right));
-        quicksort(left, split - 1, axis);
-        quicksort(split + 1, right, axis);
     }
 
     int partition(int left, int right, int axis, int pivotIndex) {
@@ -313,47 +295,6 @@ private:
 
         return index;
     }
-
-    int partition_WithoutMedian(int left, int right, int axis, float pivot) {
-        int pivotIndex = -1;
-
-        int index = right;
-        int i = left;
-        while (i < index) {
-            float value = getValue(i, axis);
-            if (value > pivot) {
-                swap(i, index);
-                index--;
-            } else if (value < pivot) {
-                i++;
-            } else {
-                pivotIndex = i;
-                i++;
-            }
-        }
-
-        if (pivotIndex >= 0) {
-            if (getValue(index, axis) < pivot) {
-                swap(pivotIndex, index);
-            } else {
-                swap(pivotIndex, index - 1);
-                index--;
-            }
-        }
-
-        return index;
-    }
-
-    struct ValueWithIndex {
-        float value;
-        int index;
-        ValueWithIndex() {}
-        ValueWithIndex(float value, int index) : value(value), index(index) {}
-
-        friend bool operator<(const ValueWithIndex &v1, const ValueWithIndex &v2) {
-            return v1.value < v2.value;
-        }
-    };
 
     inline int selectPivotIndex(int left, int right) {
         return left + randomInt_Positive(left ^ right) % (right - left);
