@@ -13,6 +13,12 @@
 #include <string>
 #include <limits>
 
+    #ifdef __unix__
+        std::string SLASH = "/";
+    #else
+        std::string SLASH = "\\";
+    #endif
+
 /* forward decl */
 int getCpuCoreCount();
 inline int getMedianIndex(int left, int right);
@@ -370,7 +376,7 @@ private:
     };
 
     struct KNearestCollector {
-        int k;
+        unsigned int k;
         Point origin;
         float maxDistance;
         std::priority_queue<PointWithDistance> queue;
@@ -538,11 +544,11 @@ OffFileData *readOffFile(std::string path) {
     OffFileData *data = new OffFileData();
 
     std::ifstream fs(path);
-
     std::string line;
     getline(fs, line);
-    if (line != "OFF") {
-        std::cerr << "file does not start with 'OFF" << std::endl;
+
+    if (line.compare(0,3,"OFF") != 0) {
+        std::cerr << "file does not start with OFF" << std::endl;
         return nullptr;
     }
 
@@ -558,6 +564,7 @@ OffFileData *readOffFile(std::string path) {
         point[1] = std::stof(line.c_str() + split1);
         point[2] = std::stof(line.c_str() + split2);
         data->vertices.push_back(point);
+
     }
 
     fs.close();
@@ -568,8 +575,8 @@ OffFileData *readOffFile(std::string path) {
 void saveBoundingBoxesWithDepth(std::string path, std::vector<VectorKDTree<NDIM>::BoundingBoxWithDepth> &boxes) {
     TIMEIT
     std::ofstream fs(path);
-    for (int i = 0; i < boxes.size(); i++) {
-        for (int j = 0; j < NDIM; j++) {
+    for (unsigned int i = 0; i < boxes.size(); i++) {
+        for (unsigned int j = 0; j < NDIM; j++) {
             fs << boxes[i].box.min[j] << " " << boxes[i].box.max[j] << std::endl;
         }
         fs << boxes[i].depth << std::endl;
@@ -579,7 +586,8 @@ void saveBoundingBoxesWithDepth(std::string path, std::vector<VectorKDTree<NDIM>
 
 
 int main(int arc, char const *argv[]) {
-    OffFileData *input = readOffFile("off_files\\dragon.off");
+
+    OffFileData *input = readOffFile("off_files"+SLASH+"dragon.off");
     if (input == nullptr) {
         std::cout << "Could not read file." << std::endl;
         return 1;
