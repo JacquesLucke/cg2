@@ -9,6 +9,8 @@
 #include <queue>
 #include <cmath>
 #include <thread>
+#include <fstream>
+#include <string>
 
 /* Timer
 ***************************************************/
@@ -72,21 +74,31 @@ public:
 };
 
 template<int N>
-std::vector<Vector<N>> *generateRandomVectors(int amount) {
-    TIMEIT
-    std::default_random_engine generator(44);
-    std::uniform_real_distribution<float> distribution(-10, 10);
-
-    auto points = new std::vector<Vector<N>>();
+std::vector<Vector<N>> generateRandomVectors(int amount, int seed = 0) {
+    std::vector<Vector<N>> points;
     for (int i = 0; i < amount; i++) {
         auto point = Vector<N>();
         for (int j = 0; j < N; j++) {
-            point[j] = distribution(generator);
+            point[j] = randomFloat_Range(seed, 10);
+            seed += 5233;
         }
-        points->push_back(point);
+        points.push_back(point);
     }
 
     return points;
+}
+
+inline int randomInt(int x) {
+    x = (x<<13) ^ x;
+    return x * (x * x * 15731 + 789221) + 1376312589;
+}
+
+inline int randomInt_Positive(int x) {
+    return randomInt(x) & 0x7fffffff;
+}
+
+inline float randomFloat_Range(int x, float scale) {
+    return randomInt(x) / 2147483648.0 * scale;
 }
 
 template<int N>
@@ -97,8 +109,8 @@ void printVectors(Vector<N> *vectors, int length) {
 }
 
 template<int N>
-void printVectors(std::vector<Vector<N>> *vectors) {
-    printVectors(vectors->data(), vectors->size());
+void printVectors(std::vector<Vector<N>> &vectors) {
+    printVectors(vectors.data(), vectors.size());
 }
 
 template<int N>
@@ -132,7 +144,7 @@ public:
         this->points = points;
         this->length = length;
         this->bucketSize = bucketSize;
-        this->threadDepth = std::log2(getCpuCoreCount());
+        this->threadDepth = std::log2(getCpuCoreCount()) + 1;
     }
 
     void balance() {
@@ -190,7 +202,8 @@ private:
     void quickselect_Recursive(int left, int right, int k, int axis) {
         if (left >= right) return;
 
-        int split = partition(left, right, axis);
+        int pivotIndex = selectPivotIndex(left, right);
+        int split = partition(left, right, axis, pivotIndex);
         if (k < split) {
             quickselect_Recursive(left, split - 1, k, axis);
         } else if (k > split) {
@@ -200,8 +213,8 @@ private:
 
     void quickselect_Iterative(int left, int right, int k, int axis) {
         while (left < right) {
-            //int split = partition_WithoutMedian(left, right, axis, getValue(selectPivotIndex(left, right), axis));
-            int split = partition(left, right, axis);
+            int pivotIndex = selectPivotIndex(left, right);
+            int split = partition(left, right, axis, pivotIndex);
             if (k < split) {
                 right = split - 1;
             } else if (k > split) {
@@ -214,13 +227,12 @@ private:
 
     void quicksort(int left, int right, int axis) {
         if (left >= right) return;
-        int split = partition(left, right, axis);
+        int split = partition(left, right, axis, selectPivotIndex_Small(left, right));
         quicksort(left, split - 1, axis);
         quicksort(split + 1, right, axis);
     }
 
-    int partition(int left, int right, int axis) {
-        int pivotIndex = selectPivotIndex(left, right);
+    int partition(int left, int right, int axis, int pivotIndex) {
         float pivotValue = getValue(pivotIndex, axis);
 
         // move pivot to the end
@@ -278,8 +290,19 @@ private:
         return index;
     }
 
-    int selectPivotIndex(int left, int right) {
-        return left + rand() % (right - left);
+    struct ValueWithIndex {
+        float value;
+        int index;
+        ValueWithIndex() {}
+        ValueWithIndex(float value, int index) : value(value), index(index) {}
+
+        friend bool operator<(const ValueWithIndex &v1, const ValueWithIndex &v2) {
+            return v1.value < v2.value;
+        }
+    };
+
+    inline int selectPivotIndex(int left, int right) {
+        return left + randomInt_Positive(left ^ right) % (right - left);
     }
 
 
@@ -467,7 +490,7 @@ int getCpuCoreCount() {
 /* Main
 *******************************************/
 
-#define NDIM 1
+#define NDIM 3
 
 template<int N>
 using VectorKDTree = KDTree<Vector<N>, N, getIndex<N>, Vector<N>::distance>;
@@ -488,12 +511,55 @@ void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &poi
     }
 }
 
+struct OffFileData {
+    std::vector<Vector<3>> vertices;
+};
+
+OffFileData *readOffFile(std::string path) {
+    TIMEIT
+    OffFileData *data = new OffFileData();
+
+    std::ifstream fs(path);
+
+    std::string line;
+    getline(fs, line);
+    if (line != "OFF") {
+        std::cerr << "file does not start with 'OFF" << std::endl;
+        return nullptr;
+    }
+
+    getline(fs, line);
+    int vertexAmount = std::stoi(line);
+    for (int i = 0; i < vertexAmount; i++) {
+        getline(fs, line);
+        int split1 = line.find(" ");
+        int split2 = line.find(" ", split1 + 1);
+
+        Vector<3> point;
+        point[0] = std::stof(line.c_str() + 0);
+        point[1] = std::stof(line.c_str() + split1);
+        point[2] = std::stof(line.c_str() + split2);
+        data->vertices.push_back(point);
+    }
+
+    fs.close();
+
+    return data;
+}
+
 
 int main(int arc, char const *argv[]) {
-    srand(6);
-    auto points = generateRandomVectors<NDIM>(10'000'000);
+    OffFileData *input = readOffFile("off_files\\dragon.off");
+    if (input == nullptr) {
+        std::cout << "Could not read file." << std::endl;
+        return 1;
+    }
 
-    VectorKDTree<NDIM> tree(points->data(), points->size(), 10);
+    std::cout << "Vertex Amount: " << input->vertices.size() << std::endl;
+
+    //auto points = generateRandomVectors<NDIM>(100'000, 42);
+    auto points = input->vertices;
+    VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
     tree.balance();
 
     //printVectors(points);
