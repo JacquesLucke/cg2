@@ -16,6 +16,9 @@
 /* forward decl */
 int getCpuCoreCount();
 inline int getMedianIndex(int left, int right);
+inline int randomInt(int x);
+inline float randomFloat_Range(int x, float scale);
+int partition(int left, int right, int axis, int pivotIndex);
 
 /* Timer
 ***************************************************/
