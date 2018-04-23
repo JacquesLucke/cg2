@@ -112,7 +112,7 @@ inline int randomInt_Positive(int x) {
 }
 
 inline float randomFloat_Range(int x, float scale) {
-    return randomInt(x) / 2147483648.0 * scale;
+    return randomInt(x) / 2147483648.0f * scale;
 }
 
 template<int N>
@@ -522,7 +522,7 @@ using VectorKDTree = KDTree<Vector<N>, N, getIndex<N>, Vector<N>::distance>;
 void findPointsInRadius(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
     TIMEIT
     for (int i = 0; i < 100000; i++) {
-        tree.collectInRadius(points[i], 0.1);
+        tree.collectInRadius(points[i], 0.1f);
         // std::cout << tree.collectInRadius(points[i], 1).size() << std::endl;
     }
 }
@@ -583,34 +583,3 @@ void saveBoundingBoxesWithDepth(std::string path, std::vector<VectorKDTree<NDIM>
     }
     fs.close();
 }
-
-
-int main(int arc, char const *argv[]) {
-
-    OffFileData *input = readOffFile("off_files"+SLASH+"dragon.off");
-    if (input == nullptr) {
-        std::cout << "Could not read file." << std::endl;
-        return 1;
-    }
-
-    std::cout << "Vertex Amount: " << input->vertices.size() << std::endl;
-
-    //auto points = generateRandomVectors<NDIM>(100'000, 42);
-
-    auto points = input->vertices;
-    BoundingBox<NDIM> bounds = findBoundingBox(points.data(), points.size());
-    VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
-    tree.balance();
-
-    auto boxes = tree.getBoundingBoxes(bounds);
-    saveBoundingBoxesWithDepth("boxes.txt", boxes);
-
-    //printVectors(points);
-    //findPointsInRadius(tree, *points);
-    //findKNearestPoints(tree, *points);
-    //auto result = tree.collectInRadius((*points)[435345], 0.15);
-    //printVectors(&result);
-    std::cout << "Done." << std::endl;
-    return 0;
-}
-

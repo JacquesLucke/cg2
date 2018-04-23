@@ -6,10 +6,25 @@ endif()
 
 project(cg2)
 
+
+macro (add_sources)
+    file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND SRCS "${_relPath}/${_src}")
+        else()
+            list (APPEND SRCS "${_src}")
+        endif()
+    endforeach()
+    if (_relPath)
+        # propagate SRCS to parent directory
+        set (SRC ${SRCS} PARENT_SCOPE)
+    endif()
+endmacro()
+
+
 add_subdirectory(extern)
 add_subdirectory(source)
-
-set(SRC source/main.cc)
 
 set(INC extern/glfw/include)
 
