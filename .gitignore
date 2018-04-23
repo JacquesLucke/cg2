@@ -1,9 +1,1 @@
-*
-!.gitignore
-!*/
-
-!*.py
-!*.cc
-!*.h
-!*.cpp
-
+.vs
