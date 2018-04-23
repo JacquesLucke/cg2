@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "kdtree.h"
 #include "vector.h"
@@ -8,46 +9,32 @@
 template<int N>
 using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
 
-
 int main(void)
 {
-    std::vector<Vector<NDIM>> points = generateRandomVectors<NDIM>(100'000, 42);
-    // std::vector<Vector<NDIM>> points;
-    // points.push_back(Vector<NDIM>());
-
-    VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
-    tree.balance();
-
-    GLFWwindow* window;
-
-    /* Initialize the library */
-    if (!glfwInit())
-        return -1;
-
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
+    if (!glfwInit()) {
+        exit(EXIT_FAILURE);
     }
 
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window);
+    GLFWwindow *window = glfwCreateWindow(640, 480, "CG 2", NULL, NULL);
+    if (window == nullptr)
+    {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
 
-    /* Loop until the user closes the window */
+    glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-
-        /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
-        /* Poll for and process events */
         glfwPollEvents();
     }
 
+    glfwDestroyWindow(window);
     glfwTerminate();
-    return 0;
+    exit(EXIT_SUCCESS);
 }

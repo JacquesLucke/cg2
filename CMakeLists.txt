@@ -16,7 +16,8 @@ endmacro()
 add_subdirectory(extern)
 add_subdirectory(source)
 
-set(INC extern/glfw/include)
+set(INC extern/glfw/include extern/glad/include)
+list(APPEND SRC extern/glad/src/glad.c)
 
 set(LIB glfw)
 
