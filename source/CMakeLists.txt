@@ -1,2 +1,2 @@
-add_sources(main.cc)
-add_sources(timer.cc)
+add_source(main.cc)
+add_source(timer.cc)
