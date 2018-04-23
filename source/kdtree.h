@@ -18,6 +18,7 @@
 #include "bounding_box.h"
 #include "timer.h"
 #include "random.h"
+#include "utils.h"
 
 template<
     class Point,
