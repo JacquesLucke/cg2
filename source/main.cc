@@ -5,6 +5,7 @@
 #include "kdtree.h"
 #include "vector.h"
 #include <iostream>
+#include <string>
 
 #define NDIM 3
 
@@ -33,12 +34,20 @@ int main(void)
     ImGui_ImplGlfwGL3_Init(window, true);
     ImGui::StyleColorsDark();
 
+    int counter = 0;
+
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplGlfwGL3_NewFrame();
 
         ImGui::Text("Hello World");
+        if (ImGui::Button("one more")) {
+            counter += 1;
+        }
+        for (int i = 0; i < counter; i++) {
+            ImGui::Text("Hey");
+        }
 
         ImGui::Render();
         ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
