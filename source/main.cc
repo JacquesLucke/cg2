@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 #include "kdtree.h"
 #include "vector.h"
+#include <iostream>
 
 #define NDIM 3
 
@@ -16,8 +17,8 @@ int main(void)
 
     VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
     tree.balance();
-
     return 0;
+
     GLFWwindow* window;
 
     /* Initialize the library */
