@@ -1,7 +1,8 @@
 #pragma once
 
-#include "vector.h"
 #include <array>
+#include "vector.h"
+#include "timer.h"
 
 template<int N>
 struct BoundingBox {
