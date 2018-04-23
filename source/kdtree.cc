@@ -5,13 +5,13 @@
 #include <cstdlib>
 #include <random>
 #include <algorithm>
-#include <chrono>
 #include <queue>
 #include <cmath>
 #include <thread>
 #include <fstream>
 #include <string>
 #include <limits>
+#include "timer.h"
 
     #ifdef __unix__
         std::string SLASH = "/";
@@ -25,29 +25,6 @@ inline int getMedianIndex(int left, int right);
 inline int randomInt(int x);
 inline float randomFloat_Range(int x, float scale);
 int partition(int left, int right, int axis, int pivotIndex);
-
-/* Timer
-***************************************************/
-
-struct Timer {
-    const char *name;
-    std::chrono::high_resolution_clock::time_point start, end;
-    std::chrono::duration<float> duration;
-
-    Timer(const char *name = "") {
-        this->name = name;
-        this->start = std::chrono::high_resolution_clock::now();
-    }
-
-    ~Timer() {
-        end = std::chrono::high_resolution_clock::now();
-        duration = end - start;
-        double ms = duration.count() * 1000.0f;
-        std::cout << "Timer '" << name << "' took " << ms << " ms" << std::endl;
-    }
-};
-
-#define TIMEIT Timer t(__FUNCTION__);
 
 
 /* Vector
