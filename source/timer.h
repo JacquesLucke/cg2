@@ -13,4 +13,4 @@ public:
     ~Timer();
 };
 
-#define TIMEIT Timer t(__FUNCTION__);
+#define TIMEIT(name) Timer t(name);

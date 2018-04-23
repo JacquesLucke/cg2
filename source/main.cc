@@ -17,7 +17,6 @@ int main(void)
 
     VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
     tree.balance();
-    return 0;
 
     GLFWwindow* window;
 

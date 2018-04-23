@@ -5,6 +5,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 project(cg2)
+set (CMAKE_CXX_STANDARD 14)
 
 
 macro (add_sources)

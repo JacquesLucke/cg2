@@ -44,7 +44,7 @@ public:
     }
 
     void balance() {
-        TIMEIT
+        TIMEIT("balance")
         sort(0, length - 1, 0);
     }
 
@@ -77,7 +77,7 @@ public:
     };
 
     std::vector<BoundingBoxWithDepth> getBoundingBoxes(BoundingBox<ndim> outerBox) {
-        TIMEIT
+        TIMEIT("getBoundingBoxes")
         std::vector<BoundingBoxWithDepth> boxes;
         insertBoundingBoxes(0, length - 1, 0, outerBox, boxes);
         return boxes;
@@ -358,7 +358,7 @@ int getCpuCoreCount() {
 
 template<int N>
 BoundingBox<N> findBoundingBox(Vector<N> *points, int length) {
-    TIMEIT
+    TIMEIT("findBoundingBox")
     BoundingBox<N> box;
     for (int i = 0; i < N; i++) {
         box.min[i] = +std::numeric_limits<float>::infinity();

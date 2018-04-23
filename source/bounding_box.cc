@@ -3,7 +3,7 @@
 
 template<int N>
 BoundingBox<N> findBoundingBox(Vector<N> *points, int length) {
-    TIMEIT
+    TIMEIT("Bounding Boxes")
     BoundingBox<N> box;
     for (int i = 0; i < N; i++) {
         box.min[i] = +std::numeric_limits<float>::infinity();
