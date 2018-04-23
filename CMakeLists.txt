@@ -11,7 +11,6 @@ macro(add_source fileName)
     file(RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
     list(APPEND _SRC "${_relPath}/${fileName}")
     set(SRC ${_SRC} PARENT_SCOPE)
-    message(STATUS "Hey")
 endmacro()
 
 add_subdirectory(extern)
