@@ -14,9 +14,16 @@ SET(SRC
     source/main.cc
     source/timer.cc
     extern/glad/src/glad.c
+    extern/imgui/imgui_draw.cpp
+    extern/imgui/imgui.cpp
+    extern/imgui/imgui_impl_glfw_gl3.cpp
 )
 
-set(INC extern/glfw/include extern/glad/include)
+set(INC
+    extern/glfw/include
+    extern/glad/include
+    extern/imgui
+)
 
 set(LIB glfw)
 
