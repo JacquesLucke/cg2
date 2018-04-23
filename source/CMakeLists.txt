@@ -1,3 +1,4 @@
 add_sources(main.cc)
-add_sources(kdtree.cc)
 add_sources(timer.cc)
+add_sources(vector.cc)
+add_sources(bounding_box.cc)

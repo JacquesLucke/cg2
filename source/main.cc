@@ -1,7 +1,23 @@
 #include <GLFW/glfw3.h>
+#include "kdtree.h"
+#include "vector.h"
+
+#define NDIM 3
+
+template<int N>
+using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
+
 
 int main(void)
 {
+    std::vector<Vector<NDIM>> points = generateRandomVectors<NDIM>(100'000, 42);
+    // std::vector<Vector<NDIM>> points;
+    // points.push_back(Vector<NDIM>());
+
+    VectorKDTree<NDIM> tree(points.data(), points.size(), 10);
+    tree.balance();
+
+    return 0;
     GLFWwindow* window;
 
     /* Initialize the library */

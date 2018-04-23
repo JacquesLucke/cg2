@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <cassert>
 #include <array>
@@ -5,130 +7,17 @@
 #include <cstdlib>
 #include <random>
 #include <algorithm>
+#include <chrono>
 #include <queue>
 #include <cmath>
 #include <thread>
 #include <fstream>
 #include <string>
 #include <limits>
+
+#include "bounding_box.h"
 #include "timer.h"
-
-    #ifdef __unix__
-        std::string SLASH = "/";
-    #else
-        std::string SLASH = "\\";
-    #endif
-
-/* forward decl */
-int getCpuCoreCount();
-inline int getMedianIndex(int left, int right);
-inline int randomInt(int x);
-inline float randomFloat_Range(int x, float scale);
-int partition(int left, int right, int axis, int pivotIndex);
-
-
-/* Vector
-***************************************************/
-
-template<int N>
-struct Vector {
-    std::array<float, N> data;
-
-public:
-
-    friend std::ostream& operator<<(std::ostream& stream, const Vector& p) {
-        stream << "(";
-        for (size_t i = 0; i < N; i++) {
-            stream << p.data[i];
-            if (i < N - 1) stream << ", ";
-        }
-        stream << ")";
-        return stream;
-    }
-
-    float& operator[](const int i) {
-        return this->data[i];
-    }
-
-    static float distanceSquared(Vector &a, Vector &b) {
-        float sum = 0;
-        for (int i = 0; i < N; i++) {
-            float value = a.data[i] - b.data[i];
-            sum += value * value;
-        }
-        return sum;
-    }
-
-    static float distance(Vector &a, Vector &b) {
-        return sqrt(distanceSquared(a, b));
-    }
-};
-
-template<int N>
-std::vector<Vector<N>> generateRandomVectors(int amount, int seed = 0) {
-    std::vector<Vector<N>> points;
-    for (int i = 0; i < amount; i++) {
-        auto point = Vector<N>();
-        for (int j = 0; j < N; j++) {
-            point[j] = randomFloat_Range(seed, 10);
-            seed += 5233;
-        }
-        points.push_back(point);
-    }
-
-    return points;
-}
-
-inline int randomInt(int x) {
-    x = (x<<13) ^ x;
-    return x * (x * x * 15731 + 789221) + 1376312589;
-}
-
-inline int randomInt_Positive(int x) {
-    return randomInt(x) & 0x7fffffff;
-}
-
-inline float randomFloat_Range(int x, float scale) {
-    return randomInt(x) / 2147483648.0f * scale;
-}
-
-template<int N>
-void printVectors(Vector<N> *vectors, int length) {
-    for (int i = 0; i < length; i++) {
-        std::cout << vectors[i] << std::endl;
-    }
-}
-
-template<int N>
-void printVectors(std::vector<Vector<N>> &vectors) {
-    printVectors(vectors.data(), vectors.size());
-}
-
-template<int N>
-float getIndex(Vector<N> &point, int axis) {
-    return point[axis];
-}
-
-
-
-/* KDTree
-******************************************************/
-
-template<int N>
-struct BoundingBox {
-    std::array<float, N> min;
-    std::array<float, N> max;
-
-    friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
-        stream << "[";
-        for (size_t i = 0; i < N; i++) {
-            stream << "(" << box.min[i] << ", " << box.max[i] << ")";
-            if (i < N - 1) stream << ", ";
-        }
-        stream << "]";
-        return stream;
-    }
-};
+#include "random.h"
 
 template<
     class Point,
@@ -151,7 +40,7 @@ public:
         this->points = points;
         this->length = length;
         this->bucketSize = bucketSize;
-        this->threadDepth = std::log2(getCpuCoreCount()) + 1;
+        this->threadDepth = (int)std::log2(getCpuCoreCount()) + 1;
     }
 
     void balance() {
@@ -485,78 +374,4 @@ BoundingBox<N> findBoundingBox(Vector<N> *points, int length) {
     }
 
     return box;
-}
-
-
-/* Main
-*******************************************/
-
-#define NDIM 3
-
-template<int N>
-using VectorKDTree = KDTree<Vector<N>, N, getIndex<N>, Vector<N>::distance>;
-
-void findPointsInRadius(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
-    TIMEIT
-    for (int i = 0; i < 100000; i++) {
-        tree.collectInRadius(points[i], 0.1f);
-        // std::cout << tree.collectInRadius(points[i], 1).size() << std::endl;
-    }
-}
-
-void findKNearestPoints(VectorKDTree<NDIM> &tree, std::vector<Vector<NDIM>> &points) {
-    TIMEIT
-    for (int i = 0; i < 100; i++) {
-        tree.collectKNearest(points[i], 1000);
-        // std::cout << tree.collectKNearest(points[i], 5).size() << std::endl;
-    }
-}
-
-struct OffFileData {
-    std::vector<Vector<3>> vertices;
-};
-
-OffFileData *readOffFile(std::string path) {
-    TIMEIT
-    OffFileData *data = new OffFileData();
-
-    std::ifstream fs(path);
-    std::string line;
-    getline(fs, line);
-
-    if (line.compare(0,3,"OFF") != 0) {
-        std::cerr << "file does not start with OFF" << std::endl;
-        return nullptr;
-    }
-
-    getline(fs, line);
-    int vertexAmount = std::stoi(line);
-    for (int i = 0; i < vertexAmount; i++) {
-        getline(fs, line);
-        int split1 = line.find(" ");
-        int split2 = line.find(" ", split1 + 1);
-
-        Vector<3> point;
-        point[0] = std::stof(line.c_str() + 0);
-        point[1] = std::stof(line.c_str() + split1);
-        point[2] = std::stof(line.c_str() + split2);
-        data->vertices.push_back(point);
-
-    }
-
-    fs.close();
-
-    return data;
-}
-
-void saveBoundingBoxesWithDepth(std::string path, std::vector<VectorKDTree<NDIM>::BoundingBoxWithDepth> &boxes) {
-    TIMEIT
-    std::ofstream fs(path);
-    for (unsigned int i = 0; i < boxes.size(); i++) {
-        for (unsigned int j = 0; j < NDIM; j++) {
-            fs << boxes[i].box.min[j] << " " << boxes[i].box.max[j] << std::endl;
-        }
-        fs << boxes[i].depth << std::endl;
-    }
-    fs.close();
 }
