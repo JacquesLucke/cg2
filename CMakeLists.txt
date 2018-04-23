@@ -7,17 +7,16 @@ endif()
 project(cg2)
 set(CMAKE_CXX_STANDARD 14)
 
-macro(add_source fileName)
-    file(RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
-    list(APPEND _SRC "${_relPath}/${fileName}")
-    set(SRC ${_SRC} PARENT_SCOPE)
-endmacro()
-
 add_subdirectory(extern)
 add_subdirectory(source)
 
+SET(SRC
+    source/main.cc
+    source/timer.cc
+    extern/glad/src/glad.c
+)
+
 set(INC extern/glfw/include extern/glad/include)
-list(APPEND SRC extern/glad/src/glad.c)
 
 set(LIB glfw)
 
