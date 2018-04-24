@@ -6,6 +6,7 @@
 #include "vector.h"
 #include <iostream>
 #include <string>
+#include "app.h"
 
 #define NDIM 3
 
@@ -27,37 +28,20 @@ int main(void)
 
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
 
-    ImGui::CreateContext();
-    ImGui_ImplGlfwGL3_Init(window, true);
-    ImGui::StyleColorsDark();
-
-    int counter = 0;
+    App *app = new TestApp(window);
+    app->setup();
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplGlfwGL3_NewFrame();
-
-        ImGui::Text("Hello World");
-        if (ImGui::Button("one more")) {
-            counter += 1;
-        }
-        for (int i = 0; i < counter; i++) {
-            ImGui::Text("Hey");
-        }
-
-        ImGui::Render();
-        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-
+        app->update();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    ImGui_ImplGlfwGL3_Shutdown();
-    ImGui::DestroyContext();
+    app->teardown();
 
     glfwDestroyWindow(window);
     glfwTerminate();
