@@ -5,7 +5,7 @@
 
 class Window {
 public:
-    static Window *Window::TryCreateNew(const std::string& title, int width, int height){
+    static Window *TryCreateNew(const std::string& title, int width, int height){
         GLFWwindow* handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
         if (handle == nullptr) {
             return nullptr;
@@ -31,4 +31,3 @@ public:
 private:
     GLFWwindow* _handle;
 };
-
