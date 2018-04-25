@@ -46,7 +46,7 @@ void GLProgram::compile() {
     fragmentShader->deleteCompiledResult();
 }
 
-void GLProgram::use() {
+void GLProgram::bind() {
     glUseProgram(programID);
 }
 

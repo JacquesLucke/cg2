@@ -2,54 +2,43 @@
 #include <glad/glad.h>
 #include "../window.hpp"
 
-namespace cgX
-{
-    Window::Window()
-        : window(nullptr) { }
+Window::Window(GLFWwindow* handle)
+    : _handle(handle) { }
 
-    Window::~Window() {
-      terminate();
-    }
+Window::~Window() {
+    glfwDestroyWindow(_handle);
+}
 
-    bool Window::setup(const std::string& name, const Config& config) {
-        if(!glfwInit())
-            return false;
+void Window::activateContext() {
+    glfwMakeContextCurrent(_handle);
+}
 
-        window = glfwCreateWindow(config.xRes, config.yRes, name.c_str(), nullptr, nullptr);
+bool Window::shouldClose() const {
+    return glfwWindowShouldClose(_handle);
+}
 
-        if(nullptr == window) {
-            terminate();
-            return false;
-        }
+void Window::beginFrame() {
+    glClear(GL_COLOR_BUFFER_BIT);
+}
 
-        glfwMakeContextCurrent(window);
-        gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+void Window::endFrame() {
+    glfwSwapBuffers(_handle);
+}
 
-        std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+float Window::aspect() {
+    int width, height;
+    glfwGetWindowSize(_handle, &width, &height);
+    return (float)width / (float)height;
+}
 
-        return true;
-     }
+int Window::width() {
+    int width;
+    glfwGetWindowSize(_handle, &width, nullptr);
+    return width;
+}
 
-    void Window::terminate() {
-        glfwDestroyWindow(window);
-        window = nullptr;
-        glfwTerminate();
-    }
-
-    bool Window::good() const {
-        return nullptr != window;
-    }
-
-    bool Window::shouldClose() const {
-        return !good() || glfwWindowShouldClose(window);
-    }
-
-    void Window::beginFrame() {
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    void Window::endFrame() {
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+int Window::height() {
+    int height;
+    glfwGetWindowSize(_handle, nullptr, &height);
+    return height;
 }

@@ -5,43 +5,44 @@
 #include <iostream>
 #include <string>
 
-#include "../app.hpp"
+#include "../kdtree_viewer.hpp"
 #include "../vector.hpp"
 #include "../kdtree.hpp"
+#include "../window.hpp"
 
-#define NDIM 3
+// #define NDIM 3
 
-template<int N>
-using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
+// template<int N>
+// using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
 
-using namespace cgX;
-
-App *createApp(const Config& config) {
-    App *app = new TestApp();
-
-    if(!app->setup("CG 2", config)) {
-        std::cout << "App setup failed" << std::endl;
-        delete app;
-        return nullptr;
-    }
-    return app;
-}
 
 int main(void) {
-    Config config(640, 480);
-
-    App *app = createApp(config);
-
-    if(nullptr == app)
-        return 1;
-
-    while(app->running()) {
-        app->update();
-        app->render();
+    if(!glfwInit()) {
+        return EXIT_FAILURE;
     }
 
-    app->teardown();
-    delete app;
+    Window* window = Window::TryCreateNew("My Test", 800, 600);
+    if (window == nullptr) {
+        return EXIT_FAILURE;
+    }
 
-    return 0;
+    window->activateContext();
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+
+    WindowController *controller = new KDTreeViewer(window);
+    if (!controller->setup()) {
+        std::cout << "Setup failed" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    while (controller->isRunning()) {
+        controller->update();
+        controller->render();
+    }
+
+    controller->teardown();
+    delete window;
+    glfwTerminate();
+    return EXIT_SUCCESS;
 }

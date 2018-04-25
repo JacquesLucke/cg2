@@ -3,38 +3,32 @@
 #include <string>
 #include <GLFW/glfw3.h>
 
-namespace cgX
-{
-    struct Config {
-        Config()
-            : xRes(0), yRes(0) {}
+class Window {
+public:
+    static Window *Window::TryCreateNew(const std::string& title, int width, int height){
+        GLFWwindow* handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+        if (handle == nullptr) {
+            return nullptr;
+        } else {
+            return new Window(handle);
+        }
+    }
 
-        Config(int xRes, int yRes)
-            : xRes(xRes), yRes(yRes) {}
+    Window(GLFWwindow* handle);
+    ~Window();
 
-        int xRes, yRes;
-    };
+    void activateContext();
+    bool shouldClose() const;
+    void beginFrame();
+    void endFrame();
 
-    class Window {
-    public:
-        Window();
-        ~Window();
+    float aspect();
+    int width();
+    int height();
 
-        bool setup(const std::string& name, const Config& config);
-        void terminate();
+    GLFWwindow* handle() { return _handle; }
 
-        bool good() const;
+private:
+    GLFWwindow* _handle;
+};
 
-        bool shouldClose() const;
-
-        void beginFrame();
-        void endFrame();
-
-        GLFWwindow* handle() { return window; }
-
-    private:
-        GLFWwindow* window;
-        std::string name;
-        Config config;
-    };
-}
