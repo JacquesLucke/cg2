@@ -18,7 +18,7 @@ namespace cgX
 
         bool running() const;
 
-        const Window& window() const { return _window; }
+        Window& window() { return _window; }
 
     protected:
         virtual bool onSetup() { return true; }
