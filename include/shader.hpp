@@ -34,4 +34,6 @@ public:
     GLProgram(std::string vertexShader, std::string fragmentShader);
     ~GLProgram();
     void compile();
+
+    static GLProgram *FromFile(std::string path);
 };

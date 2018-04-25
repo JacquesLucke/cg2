@@ -72,36 +72,23 @@ namespace cgX
         glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
         glEnableVertexAttribArray(0);
 
-        std::string vertexShader =
-            "#version 330 core\n"
-            "\n"
-            "layout(location = 0) in vec4 position;\n"
-            "\n"
-            "void main() {\n"
-            "    gl_Position = position;\n"
-            "}\n";
-
-        std::string fragmentShader =
-            "#version 330 core\n"
-            "\n"
-            "out vec4 color;\n"
-            "\n"
-            "void main() {\n"
-            "   color = vec4(1.0, 1.0, 0.0, 1.0);\n"
-            "}\n";
-
-        program = new GLProgram(vertexShader, fragmentShader);
-        program->compile();
-
         return true;
     }
 
     void TestApp::onRender() {
-        glUseProgram(program->programID);
+        if (program == nullptr) glUseProgram(0);
+        else glUseProgram(program->programID);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
     void TestApp::onRenderUI() {
-        ImGui::Text("Test App");
+        static char path[200];
+        ImGui::InputText("Path", path, sizeof(path));
+
+        if (ImGui::Button("Load Shader")) {
+            delete program;
+            program = GLProgram::FromFile(path);
+            program->compile();
+        }
     }
 }

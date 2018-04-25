@@ -1,17 +1,6 @@
 #pragma once
 
-#include <thread>
+#include <string>
 
-inline int getMedianIndex(int left, int right) {
-    return (left + right) / 2;
-}
-
-int getCpuCoreCount() {
-    return std::thread::hardware_concurrency();
-}
-
-#ifdef __unix__
-    std::string SLASH = "/";
-#else
-    std::string SLASH = "\\";
-#endif
+int getCpuCoreCount();
+std::string readFile(std::string path);

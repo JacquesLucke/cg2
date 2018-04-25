@@ -20,6 +20,10 @@
 #include "random.h"
 #include "utils.h"
 
+inline int getMedianIndex(int left, int right) {
+    return (left + right) / 2;
+}
+
 template<
     class Point,
     int ndim,

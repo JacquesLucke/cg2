@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <shader.hpp>
 #include <iostream>
+#include <utils.h>
 
 /* GLProgram
 ****************************************/
@@ -15,6 +16,20 @@ GLProgram::GLProgram(std::string vertexShader, std::string fragmentShader) {
 GLProgram::~GLProgram() {
     delete vertexShader;
     delete fragmentShader;
+    glDeleteProgram(programID);
+}
+
+GLProgram *GLProgram::FromFile(std::string path) {
+    std::string source = readFile(path);
+
+    int vsStart = source.find("// Vertex Shader");
+    int fsStart = source.find("// Fragment Shader");
+    int vsLength = fsStart - vsStart;
+
+    std::string vertexShader = source.substr(vsStart, vsLength);
+    std::string fragmentShader = source.substr(fsStart);
+
+    return new GLProgram(vertexShader, fragmentShader);
 }
 
 void GLProgram::compile() {
