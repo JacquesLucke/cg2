@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <window.hpp>
+#include <shader.hpp>
 
 namespace cgX
 {
@@ -41,8 +42,6 @@ namespace cgX
 
     private:
         unsigned int buffer;
+        GLProgram *program;
     };
 }
-
-static unsigned int compileShader(unsigned int type, const std::string& source);
-static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
