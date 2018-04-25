@@ -13,37 +13,38 @@
 template<int N>
 using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
 
+using namespace cgX;
+
+App *createApp(const Config& config)
+{
+  App *app = new TestApp();
+  
+  if(!app->setup("CG 2", config))
+  {
+    std::cout << "App setup failed" << std::endl;
+    delete app;
+    return nullptr;
+  }
+  return app;
+}
+
 int main(void)
 {
-    if (!glfwInit()) {
-        exit(EXIT_FAILURE);
-    }
+  Config config(640, 480);
 
-    GLFWwindow *window = glfwCreateWindow(640, 480, "CG 2", NULL, NULL);
-    if (window == nullptr)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+  App *app = createApp(config);
 
-    glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
-
-    App *app = new TestApp(window);
-    app->setup();
-
-    while (!glfwWindowShouldClose(window))
-    {
-        glClear(GL_COLOR_BUFFER_BIT);
-        app->update();
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    app->teardown();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    exit(EXIT_SUCCESS);
+  if(nullptr == app)
+    return 1;
+  
+  while(app->running())
+  {
+    app->update();
+    app->render();
+  }
+   
+  app->teardown();
+  delete app;
+  
+  return 0;
 }

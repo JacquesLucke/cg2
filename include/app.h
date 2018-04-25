@@ -1,35 +1,50 @@
 #pragma once
 
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <window.hpp>
 
+namespace cgX
+{
+  class App
+  {
+  public:    
+    virtual ~App() = 0;
 
-class App {
- public:
-  App(GLFWwindow* window);
+    bool setup(const std::string& windowName, const Config& config);
+    void teardown();
+    
+    void update();
+    void render();
+
+    bool running() const;
+
+    const Window& window() const { return _window; }
+
+  protected:
+    virtual bool onSetup() { return true; }
+    virtual void onTeardown() { }
+
+    virtual void onUpdate() { }
+    virtual void onRender() { }
+    virtual void onRenderUI() { }
+
+  private:
+    Window _window;
+  };
   
-  virtual ~App() = 0;
   
-  virtual void setup() {}
-  virtual void teardown() {}
-  virtual void update() {}
-  
- protected:
-  GLFWwindow* window;
-};
+  class TestApp : public App
+  {
+  protected:
+    bool onSetup() final override;
+
+    void onRender() final override;
+    void onRenderUI() final override;
+
+  private:
+    unsigned int buffer;
+  };
+}
 
 static unsigned int compileShader(unsigned int type, const std::string& source);
 static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
-
-class TestApp : public App {
- public:
-  TestApp(GLFWwindow* window);
-  
-  void setup() final override;
-  void teardown() final override;
-  void update() final override;
-
- private:
-  unsigned int buffer;
-};
