@@ -6,40 +6,36 @@
 
 namespace cgX
 {
-  struct Config
-  {
-    Config()
-      : xRes(0), yRes(0)
-    { }
-    
-    Config(int xRes, int yRes)
-      : xRes(xRes), yRes(yRes)
-    { }
-    
-    int xRes, yRes;
-  };
-  
-  class Window
-  {
-  public:
-    Window();
-    ~Window();
-    
-    bool setup(const std::string& name, const Config& config);
-    void terminate();
-    
-    bool good() const;
+    struct Config {
+        Config()
+            : xRes(0), yRes(0) {}
 
-    bool shouldClose() const;
+        Config(int xRes, int yRes)
+            : xRes(xRes), yRes(yRes) {}
 
-    void beginFrame();
-    void endFrame();
+        int xRes, yRes;
+    };
 
-    GLFWwindow* handle() { return window; }
+    class Window {
+    public:
+        Window();
+        ~Window();
 
-  private:
-    GLFWwindow* window;
-    std::string name;
-    Config config;
-  };
+        bool setup(const std::string& name, const Config& config);
+        void terminate();
+
+        bool good() const;
+
+        bool shouldClose() const;
+
+        void beginFrame();
+        void endFrame();
+
+        GLFWwindow* handle() { return window; }
+
+    private:
+        GLFWwindow* window;
+        std::string name;
+        Config config;
+    };
 }

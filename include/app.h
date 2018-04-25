@@ -5,45 +5,43 @@
 
 namespace cgX
 {
-  class App
-  {
-  public:    
-    virtual ~App() = 0;
+    class App {
+    public:
+        virtual ~App() = 0;
 
-    bool setup(const std::string& windowName, const Config& config);
-    void teardown();
-    
-    void update();
-    void render();
+        bool setup(const std::string& windowName, const Config& config);
+        void teardown();
 
-    bool running() const;
+        void update();
+        void render();
 
-    const Window& window() const { return _window; }
+        bool running() const;
 
-  protected:
-    virtual bool onSetup() { return true; }
-    virtual void onTeardown() { }
+        const Window& window() const { return _window; }
 
-    virtual void onUpdate() { }
-    virtual void onRender() { }
-    virtual void onRenderUI() { }
+    protected:
+        virtual bool onSetup() { return true; }
+        virtual void onTeardown() { }
 
-  private:
-    Window _window;
-  };
-  
-  
-  class TestApp : public App
-  {
-  protected:
-    bool onSetup() final override;
+        virtual void onUpdate() { }
+        virtual void onRender() { }
+        virtual void onRenderUI() { }
 
-    void onRender() final override;
-    void onRenderUI() final override;
+    private:
+        Window _window;
+    };
 
-  private:
-    unsigned int buffer;
-  };
+
+    class TestApp : public App {
+    protected:
+        bool onSetup() final override;
+
+        void onRender() final override;
+        void onRenderUI() final override;
+
+    private:
+        unsigned int buffer;
+    };
 }
 
 static unsigned int compileShader(unsigned int type, const std::string& source);

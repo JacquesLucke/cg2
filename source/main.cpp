@@ -15,36 +15,32 @@ using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance
 
 using namespace cgX;
 
-App *createApp(const Config& config)
-{
-  App *app = new TestApp();
-  
-  if(!app->setup("CG 2", config))
-  {
-    std::cout << "App setup failed" << std::endl;
-    delete app;
-    return nullptr;
-  }
-  return app;
+App *createApp(const Config& config) {
+    App *app = new TestApp();
+
+    if(!app->setup("CG 2", config)) {
+        std::cout << "App setup failed" << std::endl;
+        delete app;
+        return nullptr;
+    }
+    return app;
 }
 
-int main(void)
-{
-  Config config(640, 480);
+int main(void) {
+    Config config(640, 480);
 
-  App *app = createApp(config);
+    App *app = createApp(config);
 
-  if(nullptr == app)
-    return 1;
-  
-  while(app->running())
-  {
-    app->update();
-    app->render();
-  }
-   
-  app->teardown();
-  delete app;
-  
-  return 0;
+    if(nullptr == app)
+        return 1;
+
+    while(app->running()) {
+        app->update();
+        app->render();
+    }
+
+    app->teardown();
+    delete app;
+
+    return 0;
 }
