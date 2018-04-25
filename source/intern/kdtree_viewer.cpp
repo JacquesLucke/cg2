@@ -8,8 +8,11 @@
 #include "../kdtree_viewer.hpp"
 
 bool KDTreeViewer::onSetup() {
-    offData = readOffFile("C:\\Users\\jacques\\Downloads\\cg2_ex1\\off_files\\teapot.off");
-    shader = GLProgram::FromFile("C:\\Users\\jacques\\Desktop\\cg2-git\\testshader.shader");
+    offData = readOffFile("C:\\Users\\jacques\\Desktop\\cg2-git\\cg2\\resources\\teapot.off");
+    assert(offData != nullptr);
+
+    shader = GLProgram::FromFile("C:\\Users\\jacques\\Desktop\\cg2-git\\cg2\\resources\\default.shader");
+    assert(shader != nullptr);
     shader->compile();
 
     glGenBuffers(1, &buffer);

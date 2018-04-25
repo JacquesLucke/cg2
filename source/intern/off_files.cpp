@@ -6,6 +6,10 @@ OffFileData *readOffFile(std::string path) {
     OffFileData *data = new OffFileData();
 
     std::ifstream fs(path);
+    if (!fs.good()) {
+        std::cerr << "could not open file: " << path << std::endl;
+        return nullptr;
+    }
 
     std::string line;
     getline(fs, line);
