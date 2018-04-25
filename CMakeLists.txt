@@ -21,6 +21,7 @@ file(GLOB_RECURSE SOURCE "source/*.cpp")
 include_directories(
     extern/glfw/include/
     extern/glad/include/
+    extern/glm/
     extern/imgui/
     include/
 )
