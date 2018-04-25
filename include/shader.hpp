@@ -1,4 +1,5 @@
 #include <string>
+#include <glm/glm.hpp>
 
 class GLShader {
 public:
@@ -33,7 +34,16 @@ public:
 
     GLProgram(std::string vertexShader, std::string fragmentShader);
     ~GLProgram();
-    void compile();
 
     static GLProgram *FromFile(std::string path);
+
+    void compile();
+    void use();
+
+    void setUniform4f(const std::string& name, float v1, float v2, float v3, float v4);
+    void setUniform4f(const std::string& name, float* value);
+    void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
+
+private:
+    int getUniformLocation(const std::string& name);
 };
