@@ -2,11 +2,12 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
-#include "kdtree.h"
-#include "vector.h"
 #include <iostream>
 #include <string>
-#include "app.h"
+
+#include "../app.hpp"
+#include "../vector.hpp"
+#include "../kdtree.hpp"
 
 #define NDIM 3
 

@@ -1,9 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include <window.hpp>
-#include <shader.hpp>
-#include <off_files.hpp>
+
+#include "window.hpp"
+#include "shader.hpp"
+#include "off_files.hpp"
 
 namespace cgX
 {

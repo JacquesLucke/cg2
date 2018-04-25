@@ -1,8 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <shader.hpp>
 #include <iostream>
-#include <utils.h>
+#include "../utils.hpp"
+#include "../shader.hpp"
 
 /* GLProgram
 ****************************************/

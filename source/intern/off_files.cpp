@@ -1,6 +1,6 @@
 #include <iostream>
-#include <off_files.hpp>
 #include <fstream>
+#include "../off_files.hpp"
 
 OffFileData *readOffFile(std::string path) {
     OffFileData *data = new OffFileData();

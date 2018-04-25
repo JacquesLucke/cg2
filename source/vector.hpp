@@ -4,7 +4,7 @@
 #include <array>
 #include <cmath>
 #include <vector>
-#include "random.h"
+#include "random.hpp"
 
 template<int N>
 struct Vector {

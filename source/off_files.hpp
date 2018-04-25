@@ -1,6 +1,8 @@
+#pragma once
+
 #include <vector>
 #include <string>
-#include <vector.h>
+#include "vector.hpp"
 
 struct OffFileData {
     std::vector<Vector<3>> positions;

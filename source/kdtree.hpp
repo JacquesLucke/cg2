@@ -15,10 +15,10 @@
 #include <string>
 #include <limits>
 
-#include "bounding_box.h"
-#include "timer.h"
-#include "random.h"
-#include "utils.h"
+#include "bounding_box.hpp"
+#include "timer.hpp"
+#include "random.hpp"
+#include "utils.hpp"
 
 inline int getMedianIndex(int left, int right) {
     return (left + right) / 2;

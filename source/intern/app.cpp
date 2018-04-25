@@ -1,14 +1,14 @@
-#include <app.h>
-
 #include <cassert>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <camera.hpp>
-#include <glfw/glfw3.h>
+#include "../app.hpp"
+#include "../camera.hpp"
 
 
 float color[4] = {1, 1, 1, 1};
@@ -66,7 +66,7 @@ namespace cgX
     **/
 
     bool TestApp::onSetup() {
-        program = GLProgram::FromFile("C:\\Users\\jacques\\Desktop\\cg2-git\\cg2\\source\\testshader.shader");
+        program = GLProgram::FromFile("C:\\Users\\jacques\\Desktop\\cg2-git\\testshader.shader");
         program->compile();
 
         offData = readOffFile("C:\\Users\\jacques\\Downloads\\cg2_ex1\\off_files\\dragon.off");

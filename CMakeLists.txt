@@ -16,14 +16,14 @@ SET(EX_SRC
     extern/imgui/imgui_impl_glfw_gl3.cpp
 )
 
-file(GLOB_RECURSE SOURCE "source/*.cpp")
+file(GLOB_RECURSE SOURCE "source/intern/*.cpp")
 
 include_directories(
     extern/glfw/include/
     extern/glad/include/
     extern/glm/
     extern/imgui/
-    include/
+    source/
 )
 
 set(LIB glfw)
