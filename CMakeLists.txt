@@ -23,6 +23,7 @@ set(INC
     extern/glfw/include
     extern/glad/include
     extern/imgui
+    include
 )
 
 set(LIB glfw)
