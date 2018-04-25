@@ -3,6 +3,7 @@
 #include <iostream>
 #include <window.hpp>
 #include <shader.hpp>
+#include <off_files.hpp>
 
 namespace cgX
 {
@@ -43,5 +44,6 @@ namespace cgX
     private:
         unsigned int buffer;
         GLProgram *program;
+        OffFileData *offData;
     };
 }
