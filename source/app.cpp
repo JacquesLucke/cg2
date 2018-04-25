@@ -4,13 +4,14 @@
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-float positions[6] = {
-    -0.5f, -0.5f,
-     0.0f,  0.5f,
-     0.5f, -0.5f
-};
+#include <camera.hpp>
+#include <glfw/glfw3.h>
 
+
+float color[4] = {1, 1, 1, 1};
 
 
 namespace cgX
@@ -65,25 +66,48 @@ namespace cgX
     **/
 
     bool TestApp::onSetup() {
+        program = GLProgram::FromFile("C:\\Users\\jacques\\Desktop\\cg2-git\\cg2\\source\\testshader.shader");
+        program->compile();
+
+        offData = readOffFile("C:\\Users\\jacques\\Downloads\\cg2_ex1\\off_files\\dragon.off");
+        //printVectors(offData->positions);
+
         glGenBuffers(1, &buffer);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, offData->positions.size() * sizeof(Vector<3>), offData->positions.data(), GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
         glEnableVertexAttribArray(0);
 
         return true;
     }
 
     void TestApp::onRender() {
+        GLFWwindow *w = window().handle();
+        ImGuiIO& io = ImGui::GetIO();
+        bool wantskeyboard = io.WantCaptureKeyboard;
+        if (glfwGetKey(w, GLFW_KEY_F) == GLFW_PRESS && !wantskeyboard) {
+            std::cout << "Down" << std::endl;
+        }
+
         if (program == nullptr) glUseProgram(0);
-        else glUseProgram(program->programID);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        else {
+            program->use();
+            program->setUniform4f("u_Color", color);
+
+            OrthographicCamera camera1(glm::vec3(3, -1, -2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 2, 2, 0.1, 20);
+            PerspectiveCamera camera2(glm::vec3(150, 200, 150), glm::vec3(0, 50, 0), glm::vec3(0, 1, 0), 1.5, 1, 0.1, 2000);
+            program->setUniformMat4f("u_MVP", camera2.getViewProjectionMatrix());
+        }
+
+        glPointSize(1);
+        glDrawArrays(GL_POINTS, 0, offData->positions.size());
     }
 
     void TestApp::onRenderUI() {
         static char path[200];
         ImGui::InputText("Path", path, sizeof(path));
+        ImGui::ColorEdit3("Color", color);
 
         if (ImGui::Button("Load Shader")) {
             delete program;
