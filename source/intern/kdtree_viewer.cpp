@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
-#include <glm/glm.hpp>
 
 #include "../camera.hpp"
 #include "../kdtree_viewer.hpp"
@@ -25,17 +24,36 @@ bool KDTreeViewer::onSetup() {
     return true;
 }
 
+void KDTreeViewer::onUpdate() {
+    if (!camera->isFlying() && isKeyDown(GLFW_KEY_F)) {
+        camera->enableFlyMode();
+    }
+    if (camera->isFlying() && isKeyDown(GLFW_KEY_ESCAPE)) {
+        camera->disableFlyMode();
+    }
+
+    camera->update();
+}
+
 void KDTreeViewer::onRender() {
     shader->bind();
     shader->setUniform4f("u_Color", color);
-
-    PerspectiveCamera camera(glm::vec3(10, 10, 10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 1, window()->aspect(), 0.1, 200);
-    shader->setUniformMat4f("u_MVP", camera.getViewProjectionMatrix());
+    shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
 
     glPointSize(2);
     glDrawArrays(GL_POINTS, 0, offData->positions.size());
 }
 
 void KDTreeViewer::onRenderUI() {
+    if (camera->isFlying()) {
+        ImGui::LabelText("", "ESC to exit fly mode.");
+        return;
+    }
+
+    ImGui::LabelText("", "Press F to start fly mode.");
     ImGui::ColorEdit3("Color", color);
+}
+
+bool KDTreeViewer::isKeyDown(int key) {
+    return glfwGetKey(window()->handle(), key) == GLFW_PRESS;
 }
