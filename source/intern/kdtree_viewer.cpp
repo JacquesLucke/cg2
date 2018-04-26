@@ -50,9 +50,16 @@ void KDTreeViewer::onRender() {
     glDrawArrays(GL_POINTS, 0, offData->positions.size());
 }
 
+static void drawFlyCameraControls() {
+    ImGui::LabelText("", "ESC: stop fly mode");
+    ImGui::LabelText("", "WASDQE : move camera");
+    ImGui::LabelText("", "mouse: rotate camera");
+    ImGui::LabelText("", "scroll wheel: change speed");
+}
+
 void KDTreeViewer::onRenderUI() {
     if (camera->isFlying()) {
-        ImGui::LabelText("", "ESC to exit fly mode.");
+        drawFlyCameraControls();
         return;
     }
 
