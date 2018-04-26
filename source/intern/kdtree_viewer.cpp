@@ -37,6 +37,11 @@ void KDTreeViewer::onUpdate() {
 }
 
 void KDTreeViewer::onRender() {
+    int width, height;
+    glfwGetFramebufferSize(window()->handle(), &width, &height);
+    glViewport(0, 0, width, height);
+    ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
+
     shader->bind();
     shader->setUniform4f("u_Color", color);
     shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
