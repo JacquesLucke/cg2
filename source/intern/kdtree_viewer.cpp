@@ -6,12 +6,13 @@
 
 #include "../camera.hpp"
 #include "../kdtree_viewer.hpp"
+#include "../resources.hpp"
 
 bool KDTreeViewer::onSetup() {
-    offData = readOffFile("/home/jacques/cg2-git/cg2/resources/teapot.off");
+    offData = Resources::loadOffFile("teapot.off");
     assert(offData != nullptr);
 
-    shader = GLProgram::FromFile("/home/jacques/cg2-git/cg2/resources/default.shader");
+    shader = Resources::loadShader("default.shader");
     assert(shader != nullptr);
     shader->compile();
 
