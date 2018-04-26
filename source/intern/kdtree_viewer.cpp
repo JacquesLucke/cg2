@@ -8,10 +8,10 @@
 #include "../resources.hpp"
 
 bool KDTreeViewer::onSetup() {
-    offData = Resources::loadOffFile("teapot.off");
+    offData = loadRelOffFile("teapot.off");
     assert(offData != nullptr);
 
-    shader = Resources::loadShader("default.shader");
+    shader = loadRelShader("default.shader");
     assert(shader != nullptr);
     shader->compile();
 
