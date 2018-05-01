@@ -1,7 +1,7 @@
 #include <glm/glm.hpp>
 
 #include "window_controller.hpp"
-#include "off_files.hpp"
+#include "mesh.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
 
@@ -9,7 +9,7 @@ class KDTreeViewer : public WindowController {
 public:
     KDTreeViewer(Window* window)
         : WindowController(window),
-          buffer(0), color{1.0f, 1.0f, 1.0f, 1.0f}, offData(nullptr), shader(nullptr),
+          buffer(0), color{1.0f, 1.0f, 1.0f, 1.0f}, mesh(nullptr), shader(nullptr),
           camera(new CameraController(new PerspectiveCamera(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), 1, window->aspect()), window)) {}
 
 protected:
@@ -24,7 +24,7 @@ private:
 
     unsigned int buffer;
     float color[4];
-    OffFileData* offData;
+    Mesh<VertexP>* mesh;
     GLProgram* shader;
     CameraController* camera;
 };

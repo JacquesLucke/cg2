@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <iostream>
+
 namespace Resources
 {
     static std::string subPath("");
@@ -23,19 +25,19 @@ namespace Resources
     }
 }
 
-std::string loadRelTextFile(const std::string& path) {
-    return loadTextFile(Resources::getPath(path));
+std::string loadRelTextResource(const std::string& path) {
+    return loadTextResource(Resources::getPath(path));
 }
 
-OffFileData *loadRelOffFile(const std::string& path) {
-    return loadOffFile(Resources::getPath(path));
+OffFileData *loadRelOffResource(const std::string& path) {
+    return loadOffResource(Resources::getPath(path));
 }
 
-GLProgram *loadRelShader(const std::string& path) {
-    return loadShader(Resources::getPath(path));
+GLProgram *loadRelShaderResource(const std::string& path) {
+    return loadShaderResource(Resources::getPath(path));
 }
 
-std::string loadTextFile(const std::string& path) {
+std::string loadTextResource(const std::string& path) {
     std::ifstream fs(path);
 
     assert(fs.good());
@@ -46,37 +48,86 @@ std::string loadTextFile(const std::string& path) {
     return buffer.str();
 }
 
-OffFileData *loadOffFile(const std::string& path) {
+template<>
+Mesh<VertexP> *createMesh(const OffFileData *data)
+{
+    std::vector<VertexP> vertices;
+    for(int i=0; i < data->vertices.size(); i++)
+	vertices.push_back(VertexP(data->vertices[i]));
+    
+    return new Mesh<VertexP>(vertices, data->indices);
+}
+
+bool loadVertex(const std::string &line, OffFileData *data)
+{
+    static float x,y,z;
+    
+    int split1 = line.find(" ");
+    int split2 = line.find(" ", split1 + 1);
+
+    x = std::stof(line.c_str() + 0);
+    y = std::stof(line.c_str() + split1);
+    z = std::stof(line.c_str() + split2);
+
+    data->vertices.push_back(glm::vec3(x, y, z));
+
+    return true;
+}
+
+bool loadIndices(const std::string &line, OffFileData *data)
+{
+    if(std::stoi(line) != 3) {
+	std::cerr << "could not read indices because index count was unequal 3" << std::endl;
+	return false;
+    }
+
+    int cur = 0;
+    for(int i = 0; i < 3 /* index count per triangle */; i++) {
+	cur = line.find(" ", cur+1);
+	data->indices.push_back(std::stoi(line.c_str() + cur));
+    }
+
+    return true;
+}
+
+OffFileData *loadOffResource(const std::string& path) {
     std::ifstream fs(path);
-    if (!fs.good())
-    {
+    if (!fs.good()) {
         std::cerr << "could not open file: " << path << std::endl;
         return nullptr;
     }
 
     std::string line;
     getline(fs, line);
-    if (line != "OFF")
-    {
+    if (line != "OFF") {
         std::cerr << "file does not start with 'OFF" << std::endl;
         return nullptr;
     }
 
     OffFileData *data = new OffFileData();
 
+    // Get vertex and index count
     getline(fs, line);
-    int vertexAmount = std::stoi(line);
-    for (int i = 0; i < vertexAmount; i++)
-    {
-        getline(fs, line);
-        int split1 = line.find(" ");
-        int split2 = line.find(" ", split1 + 1);
+    int vertexCount = std::stoi(line);
+    int split = line.find(" ");
+    int indexCount = std::stoi(line.c_str() + split);
 
-        Vector<3> point;
-        point[0] = std::stof(line.c_str() + 0);
-        point[1] = std::stof(line.c_str() + split1);
-        point[2] = std::stof(line.c_str() + split2);
-        data->positions.push_back(point);
+    // Load vertices
+    for (int i = 0; i < vertexCount; i++) {
+	getline(fs, line);
+	if(!loadVertex(line, data)) {
+	    delete data;
+	    return nullptr;
+	}
+    }
+
+    // Load indices
+    for (int i = 0; i < indexCount; i++) {
+	getline(fs, line);
+	if(!loadIndices(line, data)) {
+	    delete data;
+	    return nullptr;
+	}
     }
 
     fs.close();
@@ -84,8 +135,8 @@ OffFileData *loadOffFile(const std::string& path) {
     return data;
 }
 
-GLProgram *loadShader(const std::string& path) {
-    std::string source = loadTextFile(path);
+GLProgram *loadShaderResource(const std::string& path) {
+    std::string source = loadTextResource(path);
 
     int vsStart = source.find("// Vertex Shader");
     int fsStart = source.find("// Fragment Shader");

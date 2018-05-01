@@ -8,19 +8,12 @@
 #include "../resources.hpp"
 
 bool KDTreeViewer::onSetup() {
-    offData = loadRelOffFile("teapot.off");
-    assert(offData != nullptr);
+    mesh = loadRelMeshResource<VertexP>("teapot.off");
+    assert(mesh != nullptr);
 
-    shader = loadRelShader("default.shader");
+    shader = loadRelShaderResource("default.shader");
     assert(shader != nullptr);
     shader->compile();
-
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, offData->positions.size() * sizeof(Vector<3>), offData->positions.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
-    glEnableVertexAttribArray(0);
 
     return true;
 }
@@ -46,8 +39,12 @@ void KDTreeViewer::onRender() {
     shader->setUniform4f("u_Color", color);
     shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
 
+    mesh->bindBuffers();
+
     glPointSize(2);
-    glDrawArrays(GL_POINTS, 0, offData->positions.size());
+    glDrawElements(GL_POINTS, mesh->getIndexCount(), GL_UNSIGNED_INT, 0);
+
+    mesh->unbindBuffers();
 }
 
 static void drawFlyCameraControls() {
@@ -62,6 +59,8 @@ void KDTreeViewer::onRenderUI() {
         drawFlyCameraControls();
         return;
     }
+
+    ImGui::LabelText("", std::to_string(mesh->getVertexCount()).c_str());
 
     ImGui::LabelText("", "Press F to start fly mode.");
     ImGui::ColorEdit3("Color", color);
