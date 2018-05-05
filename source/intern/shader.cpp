@@ -1,5 +1,4 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "../ogl.hpp"
 #include <iostream>
 #include "../utils.hpp"
 #include "../shader.hpp"

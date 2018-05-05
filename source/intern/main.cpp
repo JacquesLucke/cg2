@@ -1,9 +1,9 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 #include <iostream>
 #include <string>
+
+#include "../ogl.hpp"
 
 #include "../kdtree_viewer.hpp"
 #include "../vector.hpp"

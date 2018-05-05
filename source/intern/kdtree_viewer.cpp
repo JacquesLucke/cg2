@@ -1,5 +1,4 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "../ogl.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 
@@ -14,6 +13,8 @@ bool KDTreeViewer::onSetup() {
     shader = loadRelShaderResource("default.shader");
     assert(shader != nullptr);
     shader->compile();
+
+    window()->setRenderMode(RENDER_MODE::WIREFRAME);
 
     return true;
 }
@@ -39,12 +40,7 @@ void KDTreeViewer::onRender() {
     shader->setUniform4f("u_Color", color);
     shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
 
-    mesh->bindBuffers();
-
-    glPointSize(2);
-    glDrawElements(GL_POINTS, mesh->getIndexCount(), GL_UNSIGNED_INT, 0);
-
-    mesh->unbindBuffers();
+    window()->render(mesh);
 }
 
 static void drawFlyCameraControls() {
@@ -59,8 +55,6 @@ void KDTreeViewer::onRenderUI() {
         drawFlyCameraControls();
         return;
     }
-
-    ImGui::LabelText("", std::to_string(mesh->getVertexCount()).c_str());
 
     ImGui::LabelText("", "Press F to start fly mode.");
     ImGui::ColorEdit3("Color", color);

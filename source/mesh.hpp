@@ -3,8 +3,7 @@
 #include <vector>
 #include <glm/vec3.hpp>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "ogl.hpp"
 
 struct VertexP
 {

@@ -1,6 +1,7 @@
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
+
+#include "../window.hpp"
 #include "../camera.hpp"
 
 

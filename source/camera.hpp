@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "window.hpp"
+#include "raycaster.hpp"
 
 class Camera {
 public:
@@ -16,6 +17,8 @@ public:
     glm::mat4 getViewMatrix();
     virtual glm::mat4 getProjectionMatrix() = 0;
     glm::mat4 getViewProjectionMatrix();
+
+//    virtual Ray screenPointToRay(const glm::vec2 &point) const = 0;
 
     void moveForward(float step);
     void moveBackward(float step);

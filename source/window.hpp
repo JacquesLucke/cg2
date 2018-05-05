@@ -1,7 +1,16 @@
 #pragma once
 
+#include "ogl.hpp"
+
 #include <string>
-#include <GLFW/glfw3.h>
+#include "mesh.hpp"
+
+enum class RENDER_MODE
+{
+    SOLID,
+    WIREFRAME,
+    POINTS
+};
 
 class Window {
 public:
@@ -17,6 +26,17 @@ public:
     Window(GLFWwindow* handle);
     ~Window();
 
+
+    template<typename TVertex>
+    void render(Mesh<TVertex> *mesh) {
+	mesh->bindBuffers();
+	onRender(mesh->getIndexCount());
+	mesh->unbindBuffers();
+    }
+
+    void setRenderMode(RENDER_MODE mode);
+    void setPointSize(int pointSize);
+
     void activateContext();
     bool shouldClose() const;
     void beginFrame();
@@ -29,5 +49,8 @@ public:
     GLFWwindow* handle() { return _handle; }
 
 private:
+    void onRender(unsigned int indexCount);
+    
     GLFWwindow* _handle;
+    unsigned int drawFlag;
 };
