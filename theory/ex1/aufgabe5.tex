@@ -1,6 +1,21 @@
 \section*{Aufgabe 5: }
-\subsection*{a)}
+TODO: Definition der verwendeten Symbole und mathematische Umformung zwischen T und L (Dimensionen ändern sich, hier noch nicht berücksichtigt)\\
 
-\subsection*{b)}
-
-\subsection*{c)}
+Seien $T$ eine affine Transformation der Form $T = \left(\begin{matrix}L & t \\ 0 & 1\end{matrix}\right)$\\
+Zu zeigen:
+$$
+T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = \sum_{i=0}^{n}TP_iL_i^n(u)
+$$
+gdw.
+$$
+\sum_{i=0}^{n}L_i^n(u) = 1 
+$$
+Sei $l = \sum_{i=0}^{n}L_i^n(u)$. Aufgrund der Linearität von L folgt:
+$$
+T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = L\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) + t = t + \sum_{i=0}^{n}LP_iL_i^n(u)
+$$
+und
+$$
+\sum_{i=0}^{n}TP_iL_i^n(u) = \sum_{i=0}^{n}(LP_i + t)L_i^n(u) = \sum_{i=0}^{n}LP_iL_i^n(u) + \sum_{i=0}^{n}tL_i^n(u) = lt + \sum_{i=0}^{n}LP_iL_i^n(u)
+$$
+Offensichtlich sind beide Terme für $l = 1$ identisch.

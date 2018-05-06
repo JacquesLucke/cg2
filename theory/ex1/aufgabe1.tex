@@ -1,6 +1,34 @@
 \section*{Aufgabe 1: }
-\subsection*{a)}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+Sei $N = \{n_1 \cdots n_n\}$ eine Menge von Zahlen. Der folgende Algorithmus findet die k-kleinste Zahl der Menge in [Komplexität]:\\
+\begin{center}
+  \begin{figure}[ht]
+    $FindKMedian(N, k)$:
+    \begin{enumerate}
+    \item Wähle eine zufällige Zahl $m \in N$
+    \item Erzeuge folgende Mengen
+      \begin{itemize}
+      \item $S = \{n \in N | n < m\}$
+      \item $B = \{n \in N | n > m\}$
+      \end{itemize}
+    \item Fallunterscheidung über die Kardinalität von $S$:
+      \begin{itemize}
+      \item Falls $|S| = k - 1$ gilt, ist $m$ der gesuchte Median
+      \item Falls $|S| < k - 1$ gilt, liegt der gesuchte Median in B. Rufe $FindKMedian(B, k - |S| - 1)$ rekursiv auf.
+      \item Falls $|S| > k - 1$ gilt, liegt der gesuchte Median in S. Rufe $FindKMedian(S, k)$ rekursiv auf.
+      \end{itemize}
+    \end{enumerate}
+  \end{figure}
+\end{center}
+Diese Funktion hat im Average-Case eine Laufzeitkomplexität von $\mathcal{O}(n)$, da...\\
 
-\subsection*{b)}
-
-\subsection*{c)}
+Der Median für eine beliebige Menge von Zahlen lässt sich nun folgendermaßen berechnen:
+\begin{center}
+  \begin{figure}[ht]
+    $Median(N)$:
+    \begin{itemize}
+    \item Falls $|N| mod 2 = 0$, gib $\frac{FindKMedian(N, \frac{|N|}{2}) + FindKMedian(N, \frac{|N|}{2} + 1)}{2}$ zurück
+    \item Ansonsten gib $FindKMedian(N, \floor{\frac{|N|}{2}})$ zurück.
+    \end{itemize}
+  \end{figure}
+\end{center}
