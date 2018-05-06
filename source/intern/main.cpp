@@ -12,6 +12,8 @@
 
 #include "../resources.hpp"
 
+#include "../app.hpp"
+
 // #define NDIM 3
 
 // template<int N>
@@ -34,8 +36,9 @@ int main(int argc, char *argv[]) {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
 
-    WindowController *controller = new KDTreeViewer(window);
-    if (!controller->setup()) {
+    // Call the application hook
+    WindowController *controller = createApplication(window);
+    if (nullptr == controller || !controller->setup()) {
         std::cout << "Setup failed" << std::endl;
         return EXIT_FAILURE;
     }
@@ -46,6 +49,7 @@ int main(int argc, char *argv[]) {
     }
 
     controller->teardown();
+    delete controller;
     delete window;
     glfwTerminate();
     return EXIT_SUCCESS;

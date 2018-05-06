@@ -34,5 +34,11 @@ set(LIB glfw)
 find_package(OpenGL REQUIRED)
 list(APPEND LIB ${OPENGL_LIBRARIES})
 
-add_executable(cg2 ${SOURCE} ${EX_SRC})
-target_link_libraries(cg2 ${LIB})
+# compile applications
+file(GLOB apps "source/apps/*.cpp")
+foreach(app ${apps})
+  string(REGEX REPLACE "[^.]*/([^.]+)\\.[^/]*" "\\1" APP_NAME ${app})
+
+  add_executable(${APP_NAME} ${SOURCE} ${EX_SRC} ${app})
+  target_link_libraries(${APP_NAME} ${LIB})
+endforeach()

@@ -51,6 +51,9 @@ static void drawFlyCameraControls() {
 }
 
 void KDTreeViewer::onRenderUI() {
+    auto v = getMousePos();
+    std::string s = "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
+    ImGui::LabelText("", s.c_str());
     if (camera->isFlying()) {
         drawFlyCameraControls();
         return;

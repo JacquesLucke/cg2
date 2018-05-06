@@ -18,8 +18,6 @@ public:
     virtual glm::mat4 getProjectionMatrix() = 0;
     glm::mat4 getViewProjectionMatrix();
 
-//    virtual Ray screenPointToRay(const glm::vec2 &point) const = 0;
-
     void moveForward(float step);
     void moveBackward(float step);
     void moveRight(float step);

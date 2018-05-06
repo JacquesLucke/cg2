@@ -3,6 +3,8 @@
 #include <string>
 #include "window.hpp"
 
+#include "glm/vec2.hpp"
+
 class WindowController {
 public:
     WindowController(Window* window)
@@ -15,6 +17,8 @@ public:
     void render();
     void teardown();
     bool isRunning() const;
+
+    glm::vec2 getMousePos();
 
     virtual bool onSetup() { return true; };
     virtual void onTeardown() {}

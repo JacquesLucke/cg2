@@ -37,3 +37,9 @@ void WindowController::render() {
 bool WindowController::isRunning() const {
     return !_window->shouldClose();
 }
+
+glm::vec2 WindowController::getMousePos() {
+    double x, y;
+    glfwGetCursorPos(window()->handle(), &x, &y);
+    return glm::vec2(x, y);
+}

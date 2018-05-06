@@ -81,8 +81,6 @@ glm::mat4 PerspectiveCamera::getProjectionMatrix() {
     return glm::perspective(fov, aspect, zNear, zFar);
 }
 
-
-
 /* Camera Controller
 *******************************************/
 
