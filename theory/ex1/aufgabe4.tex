@@ -14,4 +14,4 @@ Diese Basisfunktionen resultieren in folgendem Graphen:
     \includegraphics[width=\textwidth, keepaspectratio]{splines}
   \end{figure}
 \end{center}
-[TODO: Erklärung Verbindung Grad, Stetigkeit, (lokaler) Support]
+Wie man sieht, ist die Kurve zwar stetig, allerdings nicht stetig differenzierbar. Der Grund dafür ist, dass ein B-Spline $n$-ten Grades immer genau $(n-1)$-mal stetig differenzierbar ist. Da der Grad des hier verwendeten Splines $1$ ist, ist der Graph folglich nur stetig. Im Gegensatz zu einem Polynom mit Grad $1$ (also einer linearen Funktion) ist die Steigung des Splines allerdings nicht konstant, sondern besteht aus mehreren Abschnitten mit unterschiedlicher Steigung. Dies liegt daran, dass die Basisfunktionen der Kontrollpunkte des Splines lokalen Support besitzen, die Kurve also nur in ihrer näheren Umgebung beeinflussen. So hat der zweite Kontrollpunkt $P_1 = (1, 3)$ nur im Interval $x\in [0;2]$ einen Einfluss auf die Steigung.
