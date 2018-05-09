@@ -24,7 +24,7 @@ include_directories(
     extern/glm/
     extern/imgui/
     source/
-    )
+)
 
 # copy resource files
 file(COPY "resources" DESTINATION ".")
