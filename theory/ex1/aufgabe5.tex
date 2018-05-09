@@ -1,9 +1,8 @@
 \section*{Aufgabe 5: }
-Seien $n, m \in \mathbb{N}$, $P$ eine Menge von Punkten mit $|P| = n$, wobei für alle $P_i \in P$ gilt, dass $P_i \in \mathbb{R}^m$.
-Weiter seien $L_i^n(u)$ eine Menge von Basisfunktionen und $T(P_i) = L \cdot P_i + t$ eine affine Transformation, wobei $L$ eine lineare Transformation und $t \in \mathbb{R}^m$ ist.\\
+Seien $n, m \in \mathbb{N}$, $P$ eine Menge von Punkten mit $|P| = n$, wobei für alle $P_i \in P$ gilt, dass $P_i \in \mathbb{R}^m$ und $\{L_1^n, \hdots, L_n^n\}$ eine Menge von Basisfunktionen. Weiter sei $T(P_i) = L(P_i) + t$ eine affine Transformation, wobei $L$ eine lineare Transformation und $t \in \mathbb{R}^m$ ist.\\
 Zu zeigen:
 $$
-T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = \sum_{i=0}^{n}TP_iL_i^n(u)
+T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = \sum_{i=0}^{n}T\left(P_iL_i^n(u)\right)
 $$
 gdw.
 $$
@@ -11,10 +10,10 @@ $$
 $$
 Sei $l = \sum_{i=0}^{n}L_i^n(u)$. Aufgrund der Linearität von L folgt:
 $$
-T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = L\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) + t = t + \sum_{i=0}^{n}LP_iL_i^n(u)
+T\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) = L\left(\sum_{i=0}^{n}P_iL_i^n(u)\right) + t = t + \sum_{i=0}^{n}L(P_i)L_i^n(u)
 $$
 und
 $$
-\sum_{i=0}^{n}TP_iL_i^n(u) = \sum_{i=0}^{n}(LP_i + t)L_i^n(u) = \sum_{i=0}^{n}LP_iL_i^n(u) + \sum_{i=0}^{n}tL_i^n(u) = lt + \sum_{i=0}^{n}LP_iL_i^n(u)
+\sum_{i=0}^{n}T(P_i)L_i^n(u) = \sum_{i=0}^{n}(LP_i + t)L_i^n(u) = \sum_{i=0}^{n}L(P_i)L_i^n(u) + \sum_{i=0}^{n}tL_i^n(u) = lt + \sum_{i=0}^{n}L(P_i)L_i^n(u)
 $$
-Offensichtlich sind beide Terme für $l = 1$ identisch.
+Offensichtlich sind die beiden Terme nur für $l = 1$ identisch. Damit ist gezeigt, was zu zeigen war.
