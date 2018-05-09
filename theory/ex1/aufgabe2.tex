@@ -1,9 +1,9 @@
 \section*{Aufgabe 2: }
-Gegeben sind $n$ Punkte mit einem paarweisen Abstand von $\geq \epsilon$, die sich alle in einer Zelle mit der Seitenlänge $s$ befinden. Bei der Konstruktion eines Octrees wird diese Zelle in acht Unterzellen aufgeteilt, die jeweils eine halbierte Seitenlänge besitzen. Folglich lässt sich die Seitenlänge einer dieser Zellen auf der Tiefe $d$ des Octrees mit $s_d = \frac{s}{2^d}$ berechnen. Die maximale Tiefe des Octtrees ist dann erreicht, wenn es keine Zelle gibt, in der sich mehr als ein Punkt befindet. Dies ist garantiert, wenn die Diagnonale der Zelle gleiner als $\epsilon$ ist, also $\sqrt{2 s_d} \leq \epsilon$ gilt. Es folgt:
+Gegeben sind $n$ Punkte mit einem paarweisen Abstand von $\geq \epsilon$, die sich alle in einer Zelle mit der Seitenlänge $s$ befinden. Bei der Konstruktion eines Octrees wird diese Zelle in acht Unterzellen aufgeteilt, die jeweils eine halbierte Seitenlänge besitzen. Folglich lässt sich die Seitenlänge einer dieser Zellen auf der Tiefe $d$ des Octrees mit $s_d = \frac{s}{2^d}$ berechnen. Die maximale Tiefe des Octrees ist dann erreicht, wenn es keine Zelle gibt, in der sich mehr als ein Punkt befindet. Dies ist garantiert, wenn die Diagnonale der Zelle gleiner als $\epsilon$ ist, also $\sqrt{3 s_d^2} \leq \epsilon$ gilt. Es folgt:
 \begin{align*}
-  && \sqrt{2 s_d} & \leq \epsilon\\
-  &\Rightarrow & 2\frac{s}{2^d} & \leq \epsilon^2\\
-  &\Leftrightarrow & 2\frac{s}{\epsilon^2} & \leq 2^d\\
-  &\Leftrightarrow & d & \geq log_2(2\frac{s}{\epsilon^2}) = log_2(2) + log_2(\frac{s}{\epsilon^2}) = 1 + log_2(\frac{s}{\epsilon^2})\\
+  && \sqrt{3 s_d^2} & \leq \epsilon\\
+  &\Rightarrow & 3\frac{s^2}{2^{2d}} & \leq \epsilon^2\\
+  &\Leftrightarrow & 3\frac{s^2}{\epsilon^2} & \leq 2^{2d}\\
+  &\Leftrightarrow & d & \geq \frac{1}{2}log_2(3\frac{s^2}{\epsilon^2})\\
 \end{align*}
-Damit beträgt die maximale Tiefe $d$ eines Octrees in diesem Szenario $d = \lceil 1 + log_2(\frac{s}{\epsilon^2}) \rceil$.
+Damit beträgt die maximale Tiefe $d$ eines Octrees in diesem Szenario $d = \lceil \frac{1}{2}log_2(\frac{s^2}{3\epsilon^2}) \rceil$.
