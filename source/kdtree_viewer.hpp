@@ -45,10 +45,10 @@ private:
 
     void drawQueryPoint();
     void drawPreSelectionPoint();
-    glm::vec3 KDTreeViewer::getPreSelectedPoint();
+    glm::vec3 getPreSelectedPoint();
     void performSelection();
-    void KDTreeViewer::drawCollectedPoints();
-    std::vector<glm::vec3> KDTreeViewer::getCollectedPoints();
+    void drawCollectedPoints();
+    std::vector<glm::vec3> getCollectedPoints();
 
     enum CollectMode {
         RADIUS, KNEAREST

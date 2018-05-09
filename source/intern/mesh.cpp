@@ -42,7 +42,7 @@ TriangleMesh<VertexP>::~TriangleMesh() {
 
 template<typename VertexType>
 void TriangleMesh<VertexType>::draw(const GLProgram *shader) {
-    bindVertexBuffer(shader);
+    this->bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -50,8 +50,8 @@ void TriangleMesh<VertexType>::draw(const GLProgram *shader) {
 
 template<typename VertexType>
 void PointCloud<VertexType>::draw(const GLProgram *shader) {
-    bindVertexBuffer(shader);
-    glDrawArrays(GL_POINTS, 0, vertices.size());
+    this->bindVertexBuffer(shader);
+    glDrawArrays(GL_POINTS, 0, this->vertices.size());
 }
 
 template class Mesh<VertexP>;

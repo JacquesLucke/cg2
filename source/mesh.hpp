@@ -44,8 +44,9 @@ protected:
 template<typename VertexType>
 class PointCloud : public Mesh<VertexType> {
 public:
-    PointCloud(const std::vector<VertexType> &vertices) : Mesh(vertices) {}
-    ~PointCloud() {};
+    PointCloud(const std::vector<VertexType> &vertices)
+        : Mesh<VertexType>(vertices) {}
+    ~PointCloud() {}
 
     void draw(const GLProgram *shader);
 };
