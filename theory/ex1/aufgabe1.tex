@@ -1,34 +1,13 @@
 \section*{Aufgabe 1: }
-\newcommand{\floor}[1]{\lfloor #1 \rfloor}
-Sei $N = \{n_1 \cdots n_n\}$ eine Menge von Zahlen. Der folgende Algorithmus findet die k-kleinste Zahl der Menge in [Komplexität]:\\
+Sei $N = \{n_1 \cdots n_n\}$ eine Menge von Zahlen. Eine Möglichkeit, den Median dieser Zahlen zu finden, ist der Quickselect-Algorithmus. Dieser erhält als Eingabe ein Array aus Zahlen $N$ und eine Zahl $k\in [0, |N|]$ und findet die k-kleinste Zahl aus $N$. Damit lässt sich der Median durch folgende einfache Fallunterscheidung finden:
 \begin{center}
-  \begin{figure}[ht]
-    $FindKMedian(N, k)$:
-    \begin{enumerate}
-    \item Wähle eine zufällige Zahl $m \in N$
-    \item Erzeuge folgende Mengen
-      \begin{itemize}
-      \item $S = \{n \in N | n < m\}$
-      \item $B = \{n \in N | n > m\}$
-      \end{itemize}
-    \item Fallunterscheidung über die Kardinalität von $S$:
-      \begin{itemize}
-      \item Falls $|S| = k - 1$ gilt, ist $m$ der gesuchte Median
-      \item Falls $|S| < k - 1$ gilt, liegt der gesuchte Median in B. Rufe $FindKMedian(B, k - |S| - 1)$ rekursiv auf.
-      \item Falls $|S| > k - 1$ gilt, liegt der gesuchte Median in S. Rufe $FindKMedian(S, k)$ rekursiv auf.
-      \end{itemize}
-    \end{enumerate}
-  \end{figure}
-\end{center}
-Diese Funktion hat im Average-Case eine Laufzeitkomplexität von $\mathcal{O}(n)$, da...\\
-
-Der Median für eine beliebige Menge von Zahlen lässt sich nun folgendermaßen berechnen:
-\begin{center}
-  \begin{figure}[ht]
-    $Median(N)$:
+  \begin{figure}[H]
     \begin{itemize}
-    \item Falls $|N| mod 2 = 0$, gib $\frac{FindKMedian(N, \frac{|N|}{2}) + FindKMedian(N, \frac{|N|}{2} + 1)}{2}$ zurück
-    \item Ansonsten gib $FindKMedian(N, \floor{\frac{|N|}{2}})$ zurück.
+    \item Falls $|N| \mod 2 = 1$ gilt, hat der Median den Wert $qs(N, \lfloor \frac{N}{2} \rfloor)$
+    \item Ansonsten hat der Median den Wert $\frac{qs(N, \frac{N}{2}-1) + qs(N, \frac{N}{2})}{2}$
     \end{itemize}
   \end{figure}
 \end{center}
+Quickselect findet das k-kleinste Element, indem ähnlich wie bei Quicksort ein Pivotelement $p$ ausgewählt und die Umgebung des Pivotelements in Linearzeit so umsortiert wird, dass danach alle Elemente, die kleiner als $p$ sind links von $p$ und alle anderen rechts von $p$ stehen. Steht $p$ danach an $k$-ter Stelle im Array, ist $p$ die gesuchte Zahl. Andernfalls muss ein neues Pivotelement ausgewählt und die unsortierte Umgebung des neuen Pivotelementes erneut partitioniert werden, bis das passende Pivotelement gefunden wurde.\\\\
+Die Laufzeit von Quickselect ist im Averagecase $\mathcal{O}(n)$, im Worstcase (bei einer schlechten Auswahl des Pivotelements) allerdings $\mathcal{O}(n^2)$. Für diesen Fall kann der ``Median of Medians''-Algorithmus verwendet werden, um das $k$-kleinste Element zu schätzen und so ein besseres Pivotelement zu wählen.
+Dieser verbesserte Algorithmus heißt Introselect und besitzt eine Worstcase-Laufzeit von $\mathcal{O}(n)$.
