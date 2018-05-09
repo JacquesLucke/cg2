@@ -48,10 +48,18 @@ void GLProgram::setUniformMat4f(const std::string& name, const glm::mat4& matrix
     glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
 }
 
-int GLProgram::getUniformLocation(const std::string& name) {
+int GLProgram::getUniformLocation(const std::string& name) const {
     int location = glGetUniformLocation(programID, name.c_str());
     if (location == -1) {
         std::cout << "Warning, uniform not found: " << name << std::endl;
+    }
+    return location;
+}
+
+int GLProgram::getAttributeLocation(const std::string& name) const {
+    int location = glGetAttribLocation(programID, name.c_str());
+    if (location == -1) {
+        std::cout << "Warning, attribute not found: " << name << std::endl;
     }
     return location;
 }

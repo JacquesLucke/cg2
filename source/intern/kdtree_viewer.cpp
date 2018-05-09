@@ -6,18 +6,29 @@
 #include "../kdtree_viewer.hpp"
 #include "../resources.hpp"
 
-TriangleMesh<VertexP> *offDataToTriangleMesh(OffFileData *offData) {
+std::vector<VertexP> extractVerticesFromOffData(OffFileData *offData) {
     std::vector<VertexP> vertices;
     for (unsigned int i = 0; i < offData->vertices.size(); i++) {
         vertices.push_back(VertexP(offData->vertices[i]));
     }
+    return vertices;
+}
+
+TriangleMesh<VertexP> *offDataToTriangleMesh(OffFileData *offData) {
+    std::vector<VertexP> vertices = extractVerticesFromOffData(offData);
     return new TriangleMesh<VertexP>(vertices, offData->indices);
+}
+
+PointCloud<VertexP> *offDataToPointCloud(OffFileData *offData) {
+    std::vector<VertexP> vertices = extractVerticesFromOffData(offData);
+    return new PointCloud<VertexP>(vertices);
 }
 
 bool KDTreeViewer::onSetup() {
     OffFileData *offData = loadRelOffResource("teapot.off");
     assert(offData != nullptr);
     mesh = offDataToTriangleMesh(offData);
+    //mesh = offDataToPointCloud(offData);
     delete offData;
 
     shader = loadRelShaderResource("default.shader");
@@ -74,3 +85,4 @@ void KDTreeViewer::onRenderUI() {
 bool KDTreeViewer::isKeyDown(int key) {
     return glfwGetKey(window()->handle(), key) == GLFW_PRESS;
 }
+

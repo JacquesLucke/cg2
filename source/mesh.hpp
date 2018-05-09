@@ -20,6 +20,7 @@ public:
     Mesh(const std::vector<VertexType> &vertices);
     ~Mesh();
 
+    void bindVertexBuffer(const GLProgram *shader);
     virtual void draw(const GLProgram *shader) = 0;
 
 protected:
@@ -38,4 +39,13 @@ public:
 protected:
     std::vector<unsigned int> indices;
     unsigned int indexBufferID;
+};
+
+template<typename VertexType>
+class PointCloud : public Mesh<VertexType> {
+public:
+    PointCloud(const std::vector<VertexType> &vertices) : Mesh(vertices) {}
+    ~PointCloud() {};
+
+    void draw(const GLProgram *shader);
 };

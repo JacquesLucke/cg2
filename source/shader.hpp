@@ -46,6 +46,8 @@ public:
     void setUniform4f(const std::string& name, float* value);
     void setUniformMat4f(const std::string& name, const glm::mat4& matrix);
 
+    int getAttributeLocation(const std::string& name) const;
+
 private:
-    int getUniformLocation(const std::string& name);
+    int getUniformLocation(const std::string& name) const;
 };
