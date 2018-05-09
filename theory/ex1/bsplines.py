@@ -4,16 +4,20 @@ import scipy.interpolate as si
 import sys
 
 def draw_splines(filename, controlpoints, degree = 1):
-    plt.plot(controlpoints[:,0], controlpoints[:,1], "o", label="Kontrollpunkte", color="black")
+    cv_x = controlpoints[:,0]
+    cv_y = controlpoints[:,1]
+    plt.plot(cv_x, cv_y, "o", label="Kontrollpunkte", color="black")
     p = scipy_bspline(controlpoints, 100, degree);
     x, y = p.T
     plt.plot(x, y, "k-", label="B-Spline", color="blue")
     plt.legend()
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.xlim(-1, 5)
-    plt.ylim(-1, 4)
+    plt.xlim(min(cv_x)-0.5, max(cv_x)+0.5)
+    plt.ylim(min(cv_y)-0.5, max(cv_y)+0.5)
     plt.gca().set_aspect("equal", adjustable="box")
+    plt.axhline(0, color="black", ls="--")
+    plt.axvline(0, color="black", ls="--")
     plt.savefig(filename + ".png", transparent = True)
     
 
