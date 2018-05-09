@@ -48,20 +48,10 @@ std::string loadTextResource(const std::string& path) {
     return buffer.str();
 }
 
-template<>
-Mesh<VertexP> *createMesh(const OffFileData *data)
-{
-    std::vector<VertexP> vertices;
-    for(int i=0; i < data->vertices.size(); i++)
-	vertices.push_back(VertexP(data->vertices[i]));
-    
-    return new Mesh<VertexP>(vertices, data->indices);
-}
-
 bool loadVertex(const std::string &line, OffFileData *data)
 {
     static float x,y,z;
-    
+
     int split1 = line.find(" ");
     int split2 = line.find(" ", split1 + 1);
 
@@ -77,14 +67,14 @@ bool loadVertex(const std::string &line, OffFileData *data)
 bool loadIndices(const std::string &line, OffFileData *data)
 {
     if(std::stoi(line) != 3) {
-	std::cerr << "could not read indices because index count was unequal 3" << std::endl;
-	return false;
+        std::cerr << "could not read indices because index count was unequal 3" << std::endl;
+        return false;
     }
 
     int cur = 0;
     for(int i = 0; i < 3 /* index count per triangle */; i++) {
-	cur = line.find(" ", cur+1);
-	data->indices.push_back(std::stoi(line.c_str() + cur));
+        cur = line.find(" ", cur+1);
+        data->indices.push_back(std::stoi(line.c_str() + cur));
     }
 
     return true;
@@ -114,20 +104,20 @@ OffFileData *loadOffResource(const std::string& path) {
 
     // Load vertices
     for (int i = 0; i < vertexCount; i++) {
-	getline(fs, line);
-	if(!loadVertex(line, data)) {
-	    delete data;
-	    return nullptr;
-	}
+        getline(fs, line);
+        if (!loadVertex(line, data)) {
+            delete data;
+            return nullptr;
+        }
     }
 
     // Load indices
     for (int i = 0; i < indexCount; i++) {
-	getline(fs, line);
-	if(!loadIndices(line, data)) {
-	    delete data;
-	    return nullptr;
-	}
+        getline(fs, line);
+        if (!loadIndices(line, data)) {
+            delete data;
+            return nullptr;
+        }
     }
 
     fs.close();

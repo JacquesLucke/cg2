@@ -14,15 +14,11 @@
 
 #include "../app.hpp"
 
-// #define NDIM 3
-
-// template<int N>
-// using VectorKDTree = KDTree<Vector<N>, N, getVectorIndex<N>, Vector<N>::distance>;
 
 
 int main(int argc, char *argv[]) {
     Resources::init(argc, argv);
-    
+
     if(!glfwInit()) {
         return EXIT_FAILURE;
     }

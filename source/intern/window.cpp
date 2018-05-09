@@ -2,24 +2,10 @@
 #include "../window.hpp"
 
 Window::Window(GLFWwindow* handle)
-    : _handle(handle), drawFlag(GL_TRIANGLES) { }
+    : _handle(handle) { }
 
 Window::~Window() {
     glfwDestroyWindow(_handle);
-}
-
-void Window::setRenderMode(RENDER_MODE mode) {
-    if(RENDER_MODE::WIREFRAME == mode) {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	drawFlag = GL_TRIANGLES;
-    } else {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	drawFlag = (RENDER_MODE::SOLID == mode) ? GL_TRIANGLES : GL_POINTS;
-    }
-}
-
-void Window::setPointSize(int pointSize) {
-    glPointSize(pointSize);
 }
 
 void Window::activateContext() {
@@ -54,8 +40,4 @@ int Window::height() {
     int height;
     glfwGetWindowSize(_handle, nullptr, &height);
     return height;
-}
-
-void Window::onRender(unsigned int indexCount) {
-    glDrawElements(drawFlag, indexCount, GL_UNSIGNED_INT, 0);
 }

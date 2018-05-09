@@ -6,15 +6,23 @@
 #include "../kdtree_viewer.hpp"
 #include "../resources.hpp"
 
+TriangleMesh<VertexP> *offDataToTriangleMesh(OffFileData *offData) {
+    std::vector<VertexP> vertices;
+    for (unsigned int i = 0; i < offData->vertices.size(); i++) {
+        vertices.push_back(VertexP(offData->vertices[i]));
+    }
+    return new TriangleMesh<VertexP>(vertices, offData->indices);
+}
+
 bool KDTreeViewer::onSetup() {
-    mesh = loadRelMeshResource<VertexP>("teapot.off");
-    assert(mesh != nullptr);
+    OffFileData *offData = loadRelOffResource("teapot.off");
+    assert(offData != nullptr);
+    mesh = offDataToTriangleMesh(offData);
+    delete offData;
 
     shader = loadRelShaderResource("default.shader");
     assert(shader != nullptr);
     shader->compile();
-
-    window()->setRenderMode(RENDER_MODE::WIREFRAME);
 
     return true;
 }
@@ -40,7 +48,7 @@ void KDTreeViewer::onRender() {
     shader->setUniform4f("u_Color", color);
     shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
 
-    window()->render(mesh);
+    mesh->draw(shader);
 }
 
 static void drawFlyCameraControls() {
