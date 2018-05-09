@@ -1,1 +1,9 @@
 \section*{Aufgabe 2: }
+Gegeben sind $n$ Punkte mit einem paarweisen Abstand von $\geq \epsilon$, die sich alle in einer Zelle mit der Seitenlänge $s$ befinden. Bei der Konstruktion eines Octrees wird diese Zelle in acht Unterzellen aufgeteilt, die jeweils eine halbierte Seitenlänge besitzen. Folglich lässt sich die Seitenlänge einer dieser Zellen auf der Tiefe $d$ des Octrees mit $s_d = \frac{s}{2^d}$ berechnen. Die maximale Tiefe des Octtrees ist dann erreicht, wenn es keine Zelle gibt, in der sich mehr als ein Punkt befindet. Dies ist garantiert, wenn $s_d \leq \epsilon$ gilt. Es folgt:
+\begin{align*}
+  && s_d & \leq \epsilon\\
+  &\Leftrightarrow & \frac{s}{2^d} & \leq \epsilon\\
+  &\Leftrightarrow & \frac{s}{\epsilon} & \leq 2^d\\
+  &\Leftrightarrow & d & \geq log_2(\frac{s}{\epsilon})\\
+\end{align*}
+Damit beträgt die maximale Tiefe $d$ eines Octrees in diesem Szenario $d = \lceil log_2(\frac{s}{\epsilon}) \rceil$.
