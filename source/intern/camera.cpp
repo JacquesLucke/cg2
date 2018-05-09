@@ -8,11 +8,11 @@
 /* Base Camera
 **************************************/
 
-glm::mat4 Camera::getViewProjectionMatrix() {
+glm::mat4 Camera::getViewProjectionMatrix() const {
     return getProjectionMatrix() * getViewMatrix();
 }
 
-glm::mat4 Camera::getViewMatrix() {
+glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(eye, center, up());
 }
 
@@ -21,19 +21,19 @@ void Camera::move(glm::vec3 offset) {
     center += offset;
 }
 
-glm::vec3 Camera::direction() {
+glm::vec3 Camera::direction() const {
     glm::vec3 direction = center - eye;
     glm::normalize(direction);
     return direction;
 }
 
-glm::vec3 Camera::right() {
+glm::vec3 Camera::right() const {
     glm::vec3 right = glm::cross(direction(), up());
     glm::normalize(right);
     return right;
 }
 
-glm::vec3 Camera::up() {
+glm::vec3 Camera::up() const {
     glm::vec3 up = upDirection;
     glm::normalize(up);
     return up;
@@ -61,12 +61,22 @@ void Camera::rotateVertical(float angle) {
     center = eye + rotateVector(direction, right(), angle);
 }
 
+// x and y must be in [-1, 1]
+Ray Camera::getViewRay(glm::vec2 coords) const {
+    glm::mat4 matrixViewProj = getViewProjectionMatrix();
+    glm::mat4 invViewProj = glm::inverse(matrixViewProj);
+    glm::vec4 screenPosition = glm::vec4(coords.x, -coords.y, 1.0f, 1.0f);
+    glm::vec4 worldPosition = invViewProj * screenPosition;
+    glm::vec3 direction = glm::normalize(glm::vec3(worldPosition));
+    return Ray(eye, direction);
+}
+
 
 
 /* Orthographic Camera
 ****************************************/
 
-glm::mat4 OrthographicCamera::getProjectionMatrix() {
+glm::mat4 OrthographicCamera::getProjectionMatrix() const {
     float wHalf = width / 2.0f;
     float hHalf = height / 2.0f;
     return glm::ortho(-wHalf, wHalf, -hHalf, hHalf, zNear, zFar);
@@ -77,7 +87,7 @@ glm::mat4 OrthographicCamera::getProjectionMatrix() {
 /* Perspective Camera
 ******************************************/
 
-glm::mat4 PerspectiveCamera::getProjectionMatrix() {
+glm::mat4 PerspectiveCamera::getProjectionMatrix() const {
     return glm::perspective(fov, aspect, zNear, zFar);
 }
 

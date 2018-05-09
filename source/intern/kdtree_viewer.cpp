@@ -6,12 +6,16 @@
 #include "../kdtree_viewer.hpp"
 #include "../resources.hpp"
 
-std::vector<VertexP> extractVerticesFromOffData(OffFileData *offData) {
+std::vector<VertexP> convertVector_Vec3ToVertexP(std::vector<glm::vec3> &vectors) {
     std::vector<VertexP> vertices;
-    for (unsigned int i = 0; i < offData->vertices.size(); i++) {
-        vertices.push_back(VertexP(offData->vertices[i]));
+    for (unsigned int i = 0; i < vectors.size(); i++) {
+        vertices.push_back(VertexP(vectors[i]));
     }
     return vertices;
+}
+
+std::vector<VertexP> extractVerticesFromOffData(OffFileData *offData) {
+    return convertVector_Vec3ToVertexP(offData->positions);
 }
 
 TriangleMesh<VertexP> *offDataToTriangleMesh(OffFileData *offData) {
@@ -27,8 +31,13 @@ PointCloud<VertexP> *offDataToPointCloud(OffFileData *offData) {
 bool KDTreeViewer::onSetup() {
     OffFileData *offData = loadRelOffResource("teapot.off");
     assert(offData != nullptr);
+
     mesh = offDataToTriangleMesh(offData);
-    //mesh = offDataToPointCloud(offData);
+
+    kdTreePoints = std::vector<glm::vec3>(offData->positions.begin(), offData->positions.end());
+    kdTree = new KDTreeVec3(kdTreePoints.data(), kdTreePoints.size(), 10);
+    kdTree->balance();
+
     delete offData;
 
     shader = loadRelShaderResource("default.shader");
@@ -47,6 +56,10 @@ void KDTreeViewer::onUpdate() {
     }
 
     camera->update();
+
+    if (!camera->isFlying() && !ImGui::GetIO().WantCaptureMouse) {
+        performSelection();
+    }
 }
 
 void KDTreeViewer::onRender() {
@@ -60,6 +73,13 @@ void KDTreeViewer::onRender() {
     shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
 
     mesh->draw(shader);
+
+    drawQueryPoint();
+    drawCollectedPoints();
+
+    if (!camera->isFlying() && !ImGui::GetIO().WantCaptureMouse) {
+        drawPreSelectionPoint();
+    }
 }
 
 static void drawFlyCameraControls() {
@@ -69,20 +89,86 @@ static void drawFlyCameraControls() {
     ImGui::LabelText("", "scroll wheel: change speed");
 }
 
+void KDTreeViewer::drawQueryPoint() {
+    std::vector<VertexP> vertices;
+    vertices.push_back(VertexP(queryCenter));
+    PointCloud<VertexP> cloud(vertices);
+
+    glPointSize(10);
+    shader->setUniform4f("u_Color", 0, 0, 1, 1);
+    cloud.draw(shader);
+}
+
+void KDTreeViewer::drawPreSelectionPoint() {
+    glm::vec3 point = getPreSelectedPoint();
+
+    std::vector<VertexP> vertices;
+    vertices.push_back(VertexP(point));
+    PointCloud<VertexP> cloud(vertices);
+
+    glPointSize(5);
+    shader->setUniform4f("u_Color", 0.3f, 0.3f, 1, 1);
+    cloud.draw(shader);
+}
+
+void KDTreeViewer::drawCollectedPoints() {
+    std::vector<glm::vec3> points = getCollectedPoints();
+    PointCloud<VertexP> cloud(convertVector_Vec3ToVertexP(points));
+    glPointSize(5);
+    shader->setUniform4f("u_Color", 1, 0, 0, 1);
+    cloud.draw(shader);
+}
+
+std::vector<glm::vec3> KDTreeViewer::getCollectedPoints() {
+    if (collectMode == RADIUS) {
+        return kdTree->collectInRadius(queryCenter, collectRadius);
+    } else if (collectMode == KNEAREST) {
+        return kdTree->collectKNearest(queryCenter, collectAmount);
+    }
+    assert(false);
+    return std::vector<glm::vec3>();
+}
+
+void KDTreeViewer::performSelection() {
+    if (glfwGetMouseButton(window()->handle(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        queryCenter = getPreSelectedPoint();
+    }
+}
+
 void KDTreeViewer::onRenderUI() {
-    auto v = getMousePos();
-    std::string s = "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
-    ImGui::LabelText("", s.c_str());
     if (camera->isFlying()) {
         drawFlyCameraControls();
         return;
     }
 
-    ImGui::LabelText("", "Press F to start fly mode.");
-    ImGui::ColorEdit3("Color", color);
+    ImGui::RadioButton("Radius", (int*)&collectMode, RADIUS); ImGui::SameLine();
+    ImGui::RadioButton("K Nearest", (int*)&collectMode, KNEAREST);
+
+    if (collectMode == RADIUS) {
+        ImGui::SliderFloat("Radius", &collectRadius, 0.0f, 5.0f);
+    } else if (collectMode == KNEAREST) {
+        ImGui::SliderInt("Amount", &collectAmount, 0, 1000);
+    }
+
+    ImGui::Separator();
+
+    ImGui::Text("Press F to start fly mode.");
+    ImGui::ColorEdit3("Wireframe Color", color, ImGuiColorEditFlags_NoInputs);
+    ImGui::SliderFloat3("Query Center", (float*)&queryCenter, -10.0f, 10.0f);
 }
 
 bool KDTreeViewer::isKeyDown(int key) {
     return glfwGetKey(window()->handle(), key) == GLFW_PRESS;
 }
 
+Ray KDTreeViewer::getMouseRay() {
+    glm::vec2 mousePos = getMousePos();
+    float x = mousePos.x / window()->width() * 2 - 1;
+    float y = mousePos.y / window()->height() * 2 - 1;
+    return camera->camera->getViewRay(glm::vec2(x, y));
+}
+
+glm::vec3 KDTreeViewer::getPreSelectedPoint() {
+    Ray ray = getMouseRay();
+    return ray.getPointWithSmallestAngle(kdTreePoints);
+}

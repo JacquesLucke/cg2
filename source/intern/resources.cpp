@@ -48,7 +48,7 @@ std::string loadTextResource(const std::string& path) {
     return buffer.str();
 }
 
-bool loadVertex(const std::string &line, OffFileData *data)
+bool loadPosition(const std::string &line, OffFileData *data)
 {
     static float x,y,z;
 
@@ -59,7 +59,7 @@ bool loadVertex(const std::string &line, OffFileData *data)
     y = std::stof(line.c_str() + split1);
     z = std::stof(line.c_str() + split2);
 
-    data->vertices.push_back(glm::vec3(x, y, z));
+    data->positions.push_back(glm::vec3(x, y, z));
 
     return true;
 }
@@ -102,10 +102,10 @@ OffFileData *loadOffResource(const std::string& path) {
     int split = line.find(" ");
     int indexCount = std::stoi(line.c_str() + split);
 
-    // Load vertices
+    // Load positions
     for (int i = 0; i < vertexCount; i++) {
         getline(fs, line);
-        if (!loadVertex(line, data)) {
+        if (!loadPosition(line, data)) {
             delete data;
             return nullptr;
         }
