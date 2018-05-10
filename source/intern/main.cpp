@@ -4,15 +4,9 @@
 #include <string>
 
 #include "../ogl.hpp"
-
-#include "../kdtree_viewer.hpp"
-#include "../vector.hpp"
-#include "../kdtree.hpp"
 #include "../window.hpp"
-
-#include "../resources.hpp"
-
 #include "../app.hpp"
+#include "../resources.hpp"
 
 
 
