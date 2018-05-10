@@ -1,3 +1,5 @@
+#pragma once
+
 #include <glm/glm.hpp>
 #include <cmath>
 
@@ -56,6 +58,8 @@ private:
     TriangleMesh<VertexP> *getConsideredBoxesMesh();
     std::vector<KDTreeVec3::BoundingBoxWithDepth> getConsideredBoxes();
     void resetQueryResults();
+
+    void runKDTreePerformanceTest();
 
     enum CollectMode {
         RADIUS, KNEAREST

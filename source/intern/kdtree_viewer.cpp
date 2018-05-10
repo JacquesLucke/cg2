@@ -7,6 +7,8 @@
 #include "../resources.hpp"
 #include "../bounding_box.hpp"
 #include "../mesh_utils.hpp"
+#include "../random.hpp"
+#include "../timer.hpp"
 
 bool KDTreeViewer::onSetup() {
     OffFileData *offData = loadRelOffResource("teapot.off");
@@ -23,7 +25,24 @@ bool KDTreeViewer::onSetup() {
     flatShader = new FlatShader();
     solidShader = new SolidShader();
 
+    runKDTreePerformanceTest();
+
     return true;
+}
+
+void KDTreeViewer::runKDTreePerformanceTest() {
+    for (int i = 12; i < 25; i++) {
+        unsigned int amount = (unsigned int)pow(2, i);
+        std::cout << "Amount: " << amount << std::endl;
+        std::vector<glm::vec3> points = generateRandomPoints(amount, 0);
+        KDTreeVec3 tree(points.data(), points.size(), 5);
+        tree.balance();
+
+        for (int j = 0; j < 5; j++){
+            TIMEIT("find 1000 nearest")
+            tree.collectKNearest(glm::vec3((float)j/5.0, 0, 0), 1000);
+        }
+    }
 }
 
 void KDTreeViewer::onUpdate() {

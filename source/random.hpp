@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <glm/glm.hpp>
+
 inline int randomInt(int x) {
     x = (x<<13) ^ x;
     return x * (x * x * 15731 + 789221) + 1376312589;
@@ -12,3 +15,5 @@ inline int randomInt_Positive(int x) {
 inline float randomFloat_Range(int x, float scale) {
     return randomInt(x) / 2147483648.0f * scale;
 }
+
+std::vector<glm::vec3> generateRandomPoints(unsigned int amount, int seed);
