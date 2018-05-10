@@ -72,9 +72,7 @@ bool KDTreeViewer::onSetup() {
 
     delete offData;
 
-    shader = loadRelShaderResource("default.shader");
-    assert(shader != nullptr);
-    shader->compile();
+    flatShader = new FlatShader();
 
     return true;
 }
@@ -100,11 +98,11 @@ void KDTreeViewer::onRender() {
     glViewport(0, 0, width, height);
     ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
 
-    shader->bind();
-    shader->setUniform4f("u_Color", color);
-    shader->setUniformMat4f("u_MVP", camera->camera->getViewProjectionMatrix());
+    flatShader->bind();
+    flatShader->setColor(color);
+    flatShader->setTransforms(camera->camera->getViewProjectionMatrix());
 
-    mesh->draw(shader);
+    mesh->draw(flatShader);
 
     drawQueryPoint();
     drawCollectedPoints();
@@ -128,8 +126,8 @@ void KDTreeViewer::drawQueryPoint() {
     PointCloud<VertexP> cloud(vertices);
 
     glPointSize(10);
-    shader->setUniform4f("u_Color", 0, 0, 1, 1);
-    cloud.draw(shader);
+    flatShader->setColor(0, 0, 1);
+    cloud.draw(flatShader);
 }
 
 void KDTreeViewer::drawPreSelectionPoint() {
@@ -140,20 +138,20 @@ void KDTreeViewer::drawPreSelectionPoint() {
     PointCloud<VertexP> cloud(vertices);
 
     glPointSize(5);
-    shader->setUniform4f("u_Color", 0.3f, 0.3f, 1, 1);
-    cloud.draw(shader);
+    flatShader->setColor(0.3f, 0.3f, 1);
+    cloud.draw(flatShader);
 }
 
 void KDTreeViewer::drawCollectedPoints() {
     std::vector<glm::vec3> points = getCollectedPoints();
     PointCloud<VertexP> cloud(convertVector_Vec3ToVertexP(points));
     glPointSize(5);
-    shader->setUniform4f("u_Color", 1, 0, 0, 1);
-    cloud.draw(shader);
+    flatShader->setColor(1, 0, 0);
+    cloud.draw(flatShader);
 }
 
 void KDTreeViewer::drawConsideredBoxes() {
-    shader->setUniform4f("u_Color", 0, 1, 1, 1);
+    flatShader->setColor(0, 1, 1);
 
     std::vector<VertexP> vertices;
     std::vector<unsigned int> indices;
@@ -165,7 +163,7 @@ void KDTreeViewer::drawConsideredBoxes() {
     }
 
     TriangleMesh<VertexP> *boxMesh = new TriangleMesh<VertexP>(vertices, indices);
-    boxMesh->draw(shader);
+    boxMesh->draw(flatShader);
     delete boxMesh;
 }
 
@@ -205,7 +203,7 @@ void KDTreeViewer::onRenderUI() {
     ImGui::Separator();
 
     ImGui::Text("Press F to start fly mode.");
-    ImGui::ColorEdit3("Wireframe Color", color, ImGuiColorEditFlags_NoInputs);
+    ImGui::ColorEdit3("Wireframe Color", (float*)&color, ImGuiColorEditFlags_NoInputs);
     ImGui::SliderFloat3("Query Center", (float*)&queryCenter, -10.0f, 10.0f);
 }
 

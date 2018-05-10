@@ -11,10 +11,10 @@ Mesh<VertexP>::Mesh(const std::vector<VertexP> &vertices) {
 }
 
 template<>
-void Mesh<VertexP>::bindVertexBuffer(const GLProgram *shader) {
+void Mesh<VertexP>::bindVertexBuffer(const Shader *shader) {
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 
-    int positionAttrLoc = shader->getAttributeLocation("position");
+    int positionAttrLoc = shader->getAttributeLocation_Position();
     glVertexAttribPointer(positionAttrLoc, 3, GL_FLOAT, false, sizeof(glm::vec3), 0);
     glEnableVertexAttribArray(positionAttrLoc);
 }
@@ -41,7 +41,7 @@ TriangleMesh<VertexP>::~TriangleMesh() {
 }
 
 template<typename VertexType>
-void TriangleMesh<VertexType>::draw(const GLProgram *shader) {
+void TriangleMesh<VertexType>::draw(const Shader *shader) {
     this->bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -49,7 +49,7 @@ void TriangleMesh<VertexType>::draw(const GLProgram *shader) {
 }
 
 template<typename VertexType>
-void PointCloud<VertexType>::draw(const GLProgram *shader) {
+void PointCloud<VertexType>::draw(const Shader *shader) {
     this->bindVertexBuffer(shader);
     glDrawArrays(GL_POINTS, 0, this->vertices.size());
 }

@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 
 #include "ogl.hpp"
-#include "shader.hpp"
+#include "shaders.hpp"
 
 struct VertexP {
     VertexP(const glm::vec3 pos)
@@ -20,8 +20,8 @@ public:
     Mesh(const std::vector<VertexType> &vertices);
     ~Mesh();
 
-    void bindVertexBuffer(const GLProgram *shader);
-    virtual void draw(const GLProgram *shader) = 0;
+    void bindVertexBuffer(const Shader *shader);
+    virtual void draw(const Shader *shader) = 0;
 
 protected:
     std::vector<VertexType> vertices;
@@ -34,7 +34,7 @@ public:
     TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices);
     ~TriangleMesh();
 
-    void draw(const GLProgram *shader);
+    void draw(const Shader *shader);
 
 protected:
     std::vector<unsigned int> indices;
@@ -48,5 +48,5 @@ public:
         : Mesh<VertexType>(vertices) {}
     ~PointCloud() {}
 
-    void draw(const GLProgram *shader);
+    void draw(const Shader *shader);
 };

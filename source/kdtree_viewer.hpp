@@ -7,6 +7,7 @@
 #include "camera.hpp"
 #include "kdtree.hpp"
 #include "ray.hpp"
+#include "shaders.hpp"
 
 inline float getVec3Index(glm::vec3 &vector, int axis) {
     return vector[axis];
@@ -29,7 +30,6 @@ class KDTreeViewer : public WindowController {
 public:
     KDTreeViewer(Window* window)
         : WindowController(window),
-          color{1.0f, 1.0f, 1.0f, 1.0f}, mesh(nullptr), shader(nullptr), kdTree(nullptr),
           camera(new CameraController(new PerspectiveCamera(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), 1, window->aspect()), window)) {}
 
 protected:
@@ -56,9 +56,8 @@ private:
         RADIUS, KNEAREST
     };
 
-    float color[4];
     Mesh<VertexP>* mesh;
-    GLProgram* shader;
+    FlatShader* flatShader;
     CameraController* camera;
 
     KDTreeVec3 *kdTree;
@@ -71,4 +70,5 @@ private:
     int collectAmount = 5;
 
     int boxDepth = 4;
+    glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 };
