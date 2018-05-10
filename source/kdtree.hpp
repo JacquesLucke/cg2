@@ -81,30 +81,37 @@ public:
             : box(box), depth(depth) {}
     };
 
-    std::vector<BoundingBoxWithDepth> getBoundingBoxes(BoundingBox<ndim> outerBox) {
-        TIMEIT("getBoundingBoxes")
+    std::vector<BoundingBoxWithDepth> getBoundingBoxes_All() {
         std::vector<BoundingBoxWithDepth> boxes;
-        insertBoundingBoxes(0, length - 1, 0, outerBox, boxes);
+        insertBoundingBoxes_All(0, length - 1, 0, getBoundingBox(), boxes);
         return boxes;
     }
 
-    void insertBoundingBoxes(int left, int right, int depth, BoundingBox<ndim> outerBox, std::vector<BoundingBoxWithDepth> &boxes) {
-        if (isLeaf(left, right)) return;
-
-        int axis = getAxis(depth);
-        int medianIndex = getMedianIndex(left, right);
-        float splitPos = getValue(medianIndex, axis);
-
-        boxes.push_back(BoundingBoxWithDepth(outerBox, depth));
-
-        BoundingBox<ndim> leftBox = outerBox;
-        leftBox.max[axis] = splitPos;
-        insertBoundingBoxes(left, medianIndex - 1, depth + 1, leftBox, boxes);
-
-        BoundingBox<ndim> rightBox = outerBox;
-        rightBox.min[axis] = splitPos;
-        insertBoundingBoxes(medianIndex + 1, right, depth + 1, rightBox, boxes);
+    std::vector<BoundingBoxWithDepth> getBoundingBoxes_Radius(Point &origin, float radius) {
+        std::vector<BoundingBoxWithDepth> boxes;
+        InRadiusCollector collector(origin, radius);
+        insertBoundingBoxes_Radius(0, length - 1, 0, collector, getBoundingBox(), boxes);
+        return boxes;
     }
+
+    BoundingBox<ndim> getBoundingBox() {
+        BoundingBox<ndim> box;
+        for (int i = 0; i < ndim; i++) {
+            box.min[i] = +std::numeric_limits<float>::infinity();
+            box.max[i] = -std::numeric_limits<float>::infinity();
+        }
+
+        for (int i = 0; i < length; i++) {
+            for (int j = 0; j < ndim; j++) {
+                float value = getValue(i, j);
+                if (value < box.min[j]) box.min[j] = value;
+                if (value > box.max[j]) box.max[j] = value;
+            }
+        }
+
+        return box;
+    }
+
 
 private:
 
@@ -312,6 +319,51 @@ private:
         }
 
         collector.consider(splitPoint);
+    }
+
+
+    /* Simulate Collect and store Bounding Boxes
+    ************************************************/
+
+    void insertBoundingBoxes_All(int left, int right, int depth, BoundingBox<ndim> outerBox, std::vector<BoundingBoxWithDepth> &boxes) {
+        boxes.push_back(BoundingBoxWithDepth(outerBox, depth));
+        if (isLeaf(left, right)) return;
+
+        int axis = getAxis(depth);
+        int medianIndex = getMedianIndex(left, right);
+        float splitPos = getValue(medianIndex, axis);
+
+        BoundingBox<ndim> leftBox = outerBox;
+        leftBox.max[axis] = splitPos;
+        insertBoundingBoxes_All(left, medianIndex - 1, depth + 1, leftBox, boxes);
+
+        BoundingBox<ndim> rightBox = outerBox;
+        rightBox.min[axis] = splitPos;
+        insertBoundingBoxes_All(medianIndex + 1, right, depth + 1, rightBox, boxes);
+    }
+
+    void insertBoundingBoxes_Radius(int left, int right, int depth, InRadiusCollector &collector, BoundingBox<ndim> outerBox, std::vector<BoundingBoxWithDepth> &boxes) {
+        boxes.push_back(BoundingBoxWithDepth(outerBox, depth));
+        if (isLeaf(left, right)) return;
+
+        int axis = getAxis(depth);
+        int medianIndex = getMedianIndex(left, right);
+
+        Point &splitPoint = points[medianIndex];
+
+        float splitPos = GetKey(splitPoint, axis);
+        float originPos = GetKey(collector.origin, axis);
+
+        if (originPos - collector.radius <= splitPos) {
+            BoundingBox<ndim> box = outerBox;
+            box.max[axis] = splitPos;
+            insertBoundingBoxes_Radius(left, medianIndex - 1, depth + 1, collector, box, boxes);
+        }
+        if (originPos + collector.radius >= splitPos) {
+            BoundingBox<ndim> box = outerBox;
+            box.min[axis] = splitPos;
+            insertBoundingBoxes_Radius(medianIndex + 1, right, depth + 1, collector, box, boxes);
+        }
     }
 
 

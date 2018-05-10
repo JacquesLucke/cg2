@@ -45,9 +45,11 @@ private:
 
     void drawQueryPoint();
     void drawPreSelectionPoint();
-    glm::vec3 getPreSelectedPoint();
-    void performSelection();
     void drawCollectedPoints();
+    void drawConsideredBoxes();
+
+    void performSelection();
+    glm::vec3 getPreSelectedPoint();
     std::vector<glm::vec3> getCollectedPoints();
 
     enum CollectMode {
@@ -67,4 +69,6 @@ private:
 
     float collectRadius = 1;
     int collectAmount = 5;
+
+    int boxDepth = 4;
 };
