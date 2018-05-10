@@ -40,7 +40,8 @@ void KDTreeViewer::runKDTreePerformanceTest() {
 
         for (int j = 0; j < 5; j++){
             TIMEIT("find 1000 nearest")
-            tree.collectKNearest(glm::vec3((float)j/5.0, 0, 0), 1000);
+            glm::vec3 point = glm::vec3((float)j/5.0, 0, 0);
+            tree.collectKNearest(point, 1000);
         }
     }
 }
