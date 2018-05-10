@@ -43,6 +43,7 @@ private:
     bool isKeyDown(int key);
     Ray getMouseRay();
 
+    void drawMesh();
     void drawQueryPoint();
     void drawPreSelectionPoint();
     void drawCollectedPoints();
@@ -52,12 +53,17 @@ private:
     glm::vec3 getPreSelectedPoint();
     std::vector<glm::vec3> getCollectedPoints();
 
+    TriangleMesh<VertexP> *getConsideredBoxesMesh();
+    std::vector<KDTreeVec3::BoundingBoxWithDepth> getConsideredBoxes();
+    void resetQueryResults();
+
     enum CollectMode {
         RADIUS, KNEAREST
     };
 
-    Mesh<VertexP>* mesh;
+    Mesh<VertexPN>* mesh;
     FlatShader* flatShader;
+    SolidShader* solidShader;
     CameraController* camera;
 
     KDTreeVec3 *kdTree;
@@ -65,10 +71,16 @@ private:
 
     glm::vec3 queryCenter = glm::vec3(0, 0, 0);
     CollectMode collectMode = RADIUS;
+    int meshDrawMode = GL_LINE;
 
     float collectRadius = 1;
     int collectAmount = 5;
 
     int boxDepth = 4;
-    glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    bool shouldDrawBoxes = false;
+    float meshBrightness = 0.5f;
+
+    TriangleMesh<VertexP> *consideredBoxesMesh = nullptr;
+    PointCloud<VertexP> *collectedPoints = nullptr;
 };

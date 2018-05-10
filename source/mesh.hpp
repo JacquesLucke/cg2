@@ -7,11 +7,18 @@
 #include "shaders.hpp"
 
 struct VertexP {
-    VertexP(const glm::vec3 pos)
-	: position(pos)
-    {}
+    VertexP(glm::vec3 position)
+	    : position(position) {}
 
     glm::vec3 position;
+};
+
+struct VertexPN {
+    VertexPN(glm::vec3 position, glm::vec3 normal)
+        : position(position), normal(normal) {}
+
+    glm::vec3 position;
+    glm::vec3 normal;
 };
 
 template<typename VertexType>

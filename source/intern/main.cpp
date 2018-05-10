@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Window* window = Window::TryCreateNew("My Test", 800, 600);
+    Window* window = Window::TryCreateNew("My Test", 1200, 600);
     if (window == nullptr) {
         return EXIT_FAILURE;
     }

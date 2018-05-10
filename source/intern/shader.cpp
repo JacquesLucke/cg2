@@ -36,6 +36,10 @@ void GLProgram::bind() {
     glUseProgram(programID);
 }
 
+void GLProgram::setUniform1f(const std::string& name, float value) {
+    glUniform1f(getUniformLocation(name), value);
+}
+
 void GLProgram::setUniform4f(const std::string& name, float v1, float v2, float v3, float v4) {
     glUniform4f(getUniformLocation(name), v1, v2, v3, v4);
 }

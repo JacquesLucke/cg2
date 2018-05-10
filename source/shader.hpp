@@ -42,6 +42,7 @@ public:
     void compile();
     void bind();
 
+    void setUniform1f(const std::string& name, float value);
     void setUniform4f(const std::string& name, float v1, float v2, float v3, float v4);
     void setUniform4f(const std::string& name, float* value);
     void setUniformMat4f(const std::string& name, const glm::mat4& matrix);

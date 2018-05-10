@@ -8,6 +8,7 @@ project(cg2)
 set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(extern)
+add_definitions(-DGLM_ENABLE_EXPERIMENTAL)
 
 SET(EX_SRC
     extern/glad/src/glad.c
