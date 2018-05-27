@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include "../parametric_surface_utils.hpp"
 #include "../timer.hpp"
+#include "../utils.hpp"
 
 #define COEFF_AMOUNT 6
 
@@ -83,7 +84,7 @@ void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3
     TIMEIT("moving least squares")
 
     if (parallel) {
-        int threadCount = 8;
+        int threadCount = getCpuCoreCount() + 1;
         int chunkSize = (int)ceil((float)points.size() / (float)threadCount);
         std::vector<std::thread> threads;
         for (int i = 0; i < threadCount; i++) {

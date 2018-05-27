@@ -145,7 +145,7 @@ void ParametricSurfaceViewer::drawResultingSurface() {
     if (resultingSurface == nullptr) {
         std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
         std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
-        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius, true);
+        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius, parallelSurfaceGeneration);
         resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
     }
     flatShader->bind();
@@ -164,6 +164,8 @@ void ParametricSurfaceViewer::onRenderUI() {
         settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
         settingChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
         settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
+
+        settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
     }
 
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);

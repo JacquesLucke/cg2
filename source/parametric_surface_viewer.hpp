@@ -40,6 +40,7 @@ private:
     float weightRadius = 0.1f;
     bool displayGeneratedMesh = true;
     bool displaySourcePoints = true;
+    bool parallelSurfaceGeneration = true;
     int sourcePointSize = 1;
 
     LinesMesh<VertexP> *gridLinesMesh = nullptr;
