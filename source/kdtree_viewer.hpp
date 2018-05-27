@@ -38,7 +38,6 @@ protected:
     void onRenderUI() final override;
 
 private:
-    bool isKeyDown(int key);
     Ray getMouseRay();
 
     void drawMesh();

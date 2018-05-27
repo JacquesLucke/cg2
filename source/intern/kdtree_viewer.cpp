@@ -67,9 +67,11 @@ void KDTreeViewer::onRender() {
 
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
     solidShader->bind();
-    solidShader->setTransforms(matViewProj);
+    solidShader->setViewProj(matViewProj);
+    solidShader->resetModelMatrix();
     flatShader->bind();
-    flatShader->setTransforms(matViewProj);
+    flatShader->setViewProj(matViewProj);
+    flatShader->resetModelMatrix();
 
     drawMesh();
 
@@ -237,10 +239,6 @@ void KDTreeViewer::resetQueryResults() {
         delete collectedPoints;
         collectedPoints = nullptr;
     }
-}
-
-bool KDTreeViewer::isKeyDown(int key) {
-    return glfwGetKey(window()->handle(), key) == GLFW_PRESS;
 }
 
 Ray KDTreeViewer::getMouseRay() {

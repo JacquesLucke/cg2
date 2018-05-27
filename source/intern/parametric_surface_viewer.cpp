@@ -1,12 +1,23 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include "../ogl.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "../parametric_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
 
 bool ParametricSurfaceViewer::onSetup() {
-    gridShader = new FlatShader();
+    flatShader = new FlatShader();
+
+    OffFileData *offData = loadRelOffResource("franke4.off");
+    assert(offData != nullptr);
+    sourcePoints = offData->positions;
+    delete offData;
+
+    sourcePointsCloud = new PointCloudMesh<VertexP>(createVertexPVector(sourcePoints));
 
     return true;
 }
@@ -52,23 +63,34 @@ std::vector<EdgeIndices> *calcGridEdges(int div1, int div2) {
 LinesMesh<VertexP> *generateGridLinesMesh(int divX, int divZ, float scale) {
     std::vector<VertexP> vertices;
     for (float i = 0; i < divX; i++) {
-        float offset = i / (divX - 1) * 2 * scale - scale;
-        vertices.push_back(VertexP(glm::vec3(offset, 0, -scale)));
-        vertices.push_back(VertexP(glm::vec3(offset, 0, +scale)));
+        float offset = i / (divX - 1) * scale;
+        vertices.push_back(VertexP(glm::vec3(offset, 0,     0)));
+        vertices.push_back(VertexP(glm::vec3(offset, 0, scale)));
     }
     for (float i = 0; i < divZ; i++) {
-        float offset = i / (divZ - 1) * 2 * scale - scale;
-        vertices.push_back(VertexP(glm::vec3(-scale, 0, offset)));
-        vertices.push_back(VertexP(glm::vec3(+scale, 0, offset)));
+        float offset = i / (divZ - 1) * scale;
+        vertices.push_back(VertexP(glm::vec3(    0, 0, offset)));
+        vertices.push_back(VertexP(glm::vec3(scale, 0, offset)));
     }
     return new LinesMesh<VertexP>(vertices);
 }
 
+void ParametricSurfaceViewer::onUpdate() {
+    if (!camera->isFlying() && isKeyDown(GLFW_KEY_F)) {
+        camera->enableFlyMode();
+    }
+    if (camera->isFlying() && isKeyDown(GLFW_KEY_ESCAPE)) {
+        camera->disableFlyMode();
+    }
+
+    camera->update();
+}
 
 void ParametricSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
     drawGrid();
+    drawSourcePoints();
 }
 
 void ParametricSurfaceViewer::prepareDrawDimensions() {
@@ -78,8 +100,8 @@ void ParametricSurfaceViewer::prepareDrawDimensions() {
 
 void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
-    gridShader->bind();
-    gridShader->setTransforms(matViewProj);
+    flatShader->bind();
+    flatShader->setViewProj(matViewProj);
 }
 
 void ParametricSurfaceViewer::drawGrid() {
@@ -87,10 +109,24 @@ void ParametricSurfaceViewer::drawGrid() {
         gridLinesMesh = generateGridLinesMesh(xDivisions, zDivisions, baseGridSize);
     }
 
-    gridShader->bind();
-    gridShader->setColor(1, 1, 1);
-    gridLinesMesh->bindBuffers(gridShader);
+    flatShader->bind();
+    flatShader->resetModelMatrix();
+    flatShader->setColor(1, 1, 1);
+    gridLinesMesh->bindBuffers(flatShader);
     gridLinesMesh->draw();
+}
+
+void ParametricSurfaceViewer::drawSourcePoints() {
+    flatShader->bind();
+    flatShader->setColor(1, 0, 0);
+    glm::mat4 changeYandZMatrix = glm::mat4(
+        1, 0, 0, 0,
+        0, 0, 1, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1);
+    flatShader->setModelMatrix(changeYandZMatrix);
+    sourcePointsCloud->bindBuffers(flatShader);
+    sourcePointsCloud->draw();
 }
 
 void ParametricSurfaceViewer::onRenderUI() {

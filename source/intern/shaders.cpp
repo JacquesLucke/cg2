@@ -13,8 +13,15 @@ void Shader::bind() const {
     shader->bind();
 }
 
-void Shader::setTransforms(glm::mat4 matViewProjection, glm::mat4 matModel) {
+void Shader::setViewProj(glm::mat4 matViewProjection) {
     shader->setUniformMat4f("u_ViewProjection", matViewProjection);
+}
+
+void Shader::resetModelMatrix() {
+    setModelMatrix(glm::mat4(1.0f));
+}
+
+void Shader::setModelMatrix(glm::mat4 matModel) {
     shader->setUniformMat4f("u_Model", matModel);
 }
 

@@ -6,7 +6,9 @@
 class Shader {
 public:
     void bind() const;
-    void setTransforms(glm::mat4 matViewProjection, glm::mat4 matModel = glm::mat4(1));
+    void setViewProj(glm::mat4 matViewProjection);
+    void setModelMatrix(glm::mat4 matModel);
+    void resetModelMatrix();
 
     int getAttributeLocation_Position() const;
     int getAttributeLocation_Normal() const;

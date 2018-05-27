@@ -19,6 +19,7 @@ public:
     bool isRunning() const;
 
     glm::vec2 getMousePos();
+    bool isKeyDown(int key);
 
     virtual bool onSetup() { return true; };
     virtual void onTeardown() {}
