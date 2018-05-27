@@ -28,8 +28,13 @@ private:
     void setViewProjMatrixInShaders();
     void drawGrid();
     void drawSourcePoints();
-    void drawResultingSurface();
-    void resetGeneratedData();
+    void drawSurface();
+    void drawSurfaceNormals();
+
+    void updateGeneratedData();
+    void deleteGeneratedData();
+    void createGrid();
+    void createSurfaceAndNormals();
 
 
     CameraController* camera;
@@ -38,7 +43,7 @@ private:
     int zDivisions = 10;
     float baseGridSize = 1.0f;
     float weightRadius = 0.1f;
-    bool displayGeneratedMesh = true;
+    bool displaySurface = true;
     bool displaySourcePoints = true;
     bool displayNormals = true;
     bool parallelSurfaceGeneration = true;
