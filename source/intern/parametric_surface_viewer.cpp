@@ -143,8 +143,9 @@ void ParametricSurfaceViewer::drawResultingSurface() {
     if (resultingSurface == nullptr) {
         std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
         std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
-        std::vector<glm::vec3> normals = getNormalsWithMovingLeastSquares(points, kdTree, weightRadius);
-        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius, parallelSurfaceGeneration);
+        std::vector<glm::vec3> normals(points.size());
+
+        setDataWithMovingLeastSquares(points, normals, kdTree, weightRadius, parallelSurfaceGeneration);
         resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
 
         std::vector<glm::vec3> normalLinePoints;

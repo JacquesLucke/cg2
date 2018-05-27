@@ -72,43 +72,29 @@ float weightFunction_Wendland(float d) {
     return pow(1 - d, 4) * (4 * d + 1);
 }
 
-float getZBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &points, float radius) {
-    auto weights = calcWeights(points, position, weightFunction_Wendland, radius);
-    Coefficients coeffs = weightedLeastSquares(points, weights);
-    return coeffs.evaluate(position.x, position.y);
-}
-
-glm::vec3 calcNormalBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &points, float radius) {
-    auto weights = calcWeights(points, position, weightFunction_Wendland, radius);
-    Coefficients coeffs = weightedLeastSquares(points, weights);
-    return coeffs.derivative(position.x, position.y);
-}
-
-std::vector<glm::vec3> getNormalsWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius) {
-    TIMEIT("normals")
-    std::vector<glm::vec3> normals;
-    for (unsigned int i = 0; i < points.size(); i++) {
-        std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
-        if (pointsToConsider.size() > 0) {
-            normals.push_back(calcNormalBasedOnMovingLeastSquares(points[i], pointsToConsider, radius));
-        } else {
-            normals.push_back(glm::vec3(0, 0, 1));
-        }
-    }
-    return normals;
-}
-
-void setZValuesWithMovingLeastSquares_Part(std::vector<glm::vec3> &points, int start, int end, KDTreeVec3_2D *kdTree, float radius) {
+void setDataWithMovingLeastSquares_Part(
+        std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
+        int start, int end, KDTreeVec3_2D *kdTree, float radius)
+{
     for (int i = start; i < end; i++) {
         std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
         if (pointsToConsider.size() > 0) {
-            points[i].z = getZBasedOnMovingLeastSquares(points[i], pointsToConsider, radius);
+            auto weights = calcWeights(pointsToConsider, points[i], weightFunction_Wendland, radius);
+            Coefficients coeffs = weightedLeastSquares(pointsToConsider, weights);
+            points[i].z = coeffs.evaluate(points[i].x, points[i].y);
+            normals[i] = coeffs.derivative(points[i].x, points[i].y);
+        } else {
+            normals[i] = glm::vec3(0, 0, 1);
         }
     }
 }
 
-void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius, bool parallel) {
+void setDataWithMovingLeastSquares(
+        std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
+        KDTreeVec3_2D *kdTree, float radius, bool parallel)
+{
     TIMEIT("moving least squares")
+    assert(points.size() == normals.size());
 
     if (parallel) {
         int threadCount = getCpuCoreCount() + 1;
@@ -118,7 +104,9 @@ void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3
             int start = i * chunkSize;
             int end = std::min(start + chunkSize, (int)points.size());
             threads.push_back(
-                std::thread(setZValuesWithMovingLeastSquares_Part, std::ref(points), start, end, kdTree, radius)
+                std::thread(setDataWithMovingLeastSquares_Part,
+                    std::ref(points), std::ref(normals),
+                    start, end, kdTree, radius)
             );
         }
         while (!threads.empty()) {
@@ -126,6 +114,6 @@ void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3
             threads.pop_back();
         }
     } else {
-        setZValuesWithMovingLeastSquares_Part(points, 0, points.size(), kdTree, radius);
+        setDataWithMovingLeastSquares_Part(points, normals, 0, points.size(), kdTree, radius);
     }
 }
