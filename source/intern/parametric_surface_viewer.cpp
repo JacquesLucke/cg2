@@ -49,31 +49,64 @@ std::vector<EdgeIndices> *calcGridEdges(int div1, int div2) {
     return edges;
 }
 
-void ParametricSurfaceViewer::onRender() {
-    int width, height;
-    glfwGetFramebufferSize(window()->handle(), &width, &height);
-    glViewport(0, 0, width, height);
-    ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
+LinesMesh<VertexP> *generateGridLinesMesh(int divX, int divZ, float scale) {
+    std::vector<VertexP> vertices;
+    for (float i = 0; i < divX; i++) {
+        float offset = i / (divX - 1) * 2 * scale - scale;
+        vertices.push_back(VertexP(glm::vec3(offset, 0, -scale)));
+        vertices.push_back(VertexP(glm::vec3(offset, 0, +scale)));
+    }
+    for (float i = 0; i < divZ; i++) {
+        float offset = i / (divZ - 1) * 2 * scale - scale;
+        vertices.push_back(VertexP(glm::vec3(-scale, 0, offset)));
+        vertices.push_back(VertexP(glm::vec3(+scale, 0, offset)));
+    }
+    return new LinesMesh<VertexP>(vertices);
+}
 
+
+void ParametricSurfaceViewer::onRender() {
+    prepareDrawDimensions();
+    setViewProjMatrixInShaders();
+    drawGrid();
+}
+
+void ParametricSurfaceViewer::prepareDrawDimensions() {
+    window()->fitGLViewportInWindow();
+    ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
+}
+
+void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
     gridShader->bind();
     gridShader->setTransforms(matViewProj);
+}
 
-    if (gridPoints == nullptr) {
-        gridPoints = calcGridPoints(xDivisions, zDivisions);
+void ParametricSurfaceViewer::drawGrid() {
+    if (gridLinesMesh == nullptr) {
+        gridLinesMesh = generateGridLinesMesh(xDivisions, zDivisions, baseGridSize);
     }
 
-    auto vertices = createVertexPVector(*gridPoints);
-    auto edges = calcGridEdges(xDivisions, zDivisions);
-    Wireframe<VertexP> points(vertices, *edges);
-
     gridShader->bind();
-    glPointSize(3);
     gridShader->setColor(1, 1, 1);
-    points.bindBuffers(gridShader);
-    points.draw();
+    gridLinesMesh->bindBuffers(gridShader);
+    gridLinesMesh->draw();
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
-    ImGui::Text("Hello World");
+    bool gridChanged = false;
+    gridChanged |= ImGui::SliderFloat("Base Grid Size", &baseGridSize, 0.1f, 10.0f);
+    gridChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
+    gridChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
+
+    if (gridChanged) {
+        resetGrid();
+    }
+}
+
+void ParametricSurfaceViewer::resetGrid() {
+    if (gridLinesMesh != nullptr) {
+        delete gridLinesMesh;
+        gridLinesMesh = nullptr;
+    }
 }

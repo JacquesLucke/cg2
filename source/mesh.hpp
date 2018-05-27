@@ -58,20 +58,20 @@ protected:
 };
 
 template<typename VertexType>
-class PointCloud : public Mesh<VertexType> {
+class PointCloudMesh : public Mesh<VertexType> {
 public:
-    PointCloud(const std::vector<VertexType> &vertices)
+    PointCloudMesh(const std::vector<VertexType> &vertices)
         : Mesh<VertexType>(vertices) {}
-    ~PointCloud() {}
+    ~PointCloudMesh() {}
 
     void draw();
 };
 
 template<typename VertexType>
-class Wireframe : public Mesh<VertexType> {
+class WireframeMesh : public Mesh<VertexType> {
 public:
-    Wireframe(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices);
-    ~Wireframe();
+    WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices);
+    ~WireframeMesh();
 
     void bindBuffers(const Shader *shader);
     void draw();
@@ -79,4 +79,14 @@ public:
 protected:
     std::vector<EdgeIndices> indices;
     unsigned int indexBufferID;
+};
+
+template<typename VertexType>
+class LinesMesh : public Mesh<VertexType> {
+public:
+    LinesMesh(const std::vector<VertexType> &vertices)
+        : Mesh<VertexType>(vertices) {}
+    ~LinesMesh() {}
+
+    void draw();
 };

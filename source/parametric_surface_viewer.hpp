@@ -21,11 +21,19 @@ protected:
     void onRenderUI() final override;
 
 private:
+    void prepareDrawDimensions();
+    void setViewProjMatrixInShaders();
+    void drawGrid();
+    void resetGrid();
+
+
     CameraController* camera;
 
     int xDivisions = 10;
     int zDivisions = 10;
+    float baseGridSize = 4.0f;
 
+    LinesMesh<VertexP> *gridLinesMesh = nullptr;
     std::vector<glm::vec3>* gridPoints = nullptr;
     FlatShader* gridShader = nullptr;
 };

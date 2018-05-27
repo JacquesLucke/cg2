@@ -12,6 +12,6 @@ std::vector<VertexPN> createVertexPNVector(std::vector<glm::vec3> &positions, st
 
 TriangleMesh<VertexP> *offDataToTriangleMesh_VertexP(OffFileData *offData);
 TriangleMesh<VertexPN> *offDataToTriangleMesh_VertexPN(OffFileData *offData);
-PointCloud<VertexP> *offDataToPointCloud(OffFileData *offData);
+PointCloudMesh<VertexP> *offDataToPointCloud(OffFileData *offData);
 
 void appendBoxTriangles(std::vector<VertexP> &vertices, std::vector<unsigned int> &indices, BoundingBox<3> &box);

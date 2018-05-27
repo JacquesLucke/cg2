@@ -84,17 +84,17 @@ void TriangleMesh<VertexType>::draw() {
 ***************************************/
 
 template<typename VertexType>
-void PointCloud<VertexType>::draw() {
+void PointCloudMesh<VertexType>::draw() {
     glDrawArrays(GL_POINTS, 0, this->vertices.size());
 }
 
 
 
-/* Wireframe
+/*  Wireframe Mesh
 ****************************************/
 
 template<typename VertexType>
-Wireframe<VertexType>::Wireframe(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices)
+WireframeMesh<VertexType>::WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices)
     : Mesh<VertexType>(vertices)
 {
     this->indices = indices;
@@ -105,19 +105,29 @@ Wireframe<VertexType>::Wireframe(const std::vector<VertexType> &vertices, const 
 }
 
 template<typename VertexType>
-Wireframe<VertexType>::~Wireframe() {
+WireframeMesh<VertexType>::~WireframeMesh() {
     glDeleteBuffers(1, &indexBufferID);
 }
 
 template<typename VertexType>
-void Wireframe<VertexType>::bindBuffers(const Shader *shader) {
+void WireframeMesh<VertexType>::bindBuffers(const Shader *shader) {
     bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 }
 
 template<typename VertexType>
-void Wireframe<VertexType>::draw() {
+void WireframeMesh<VertexType>::draw() {
     glDrawElements(GL_LINES, indices.size() * 2, GL_UNSIGNED_INT, 0);
+}
+
+
+
+/* Lines Mesh
+****************************************/
+
+template<typename VertexType>
+void LinesMesh<VertexType>::draw() {
+    glDrawArrays(GL_LINES, 0, this->vertices.size());
 }
 
 
@@ -127,8 +137,9 @@ void Wireframe<VertexType>::draw() {
 
 template class Mesh<VertexP>;
 template class TriangleMesh<VertexP>;
-template class PointCloud<VertexP>;
-template class Wireframe<VertexP>;
+template class PointCloudMesh<VertexP>;
+template class WireframeMesh<VertexP>;
+template class LinesMesh<VertexP>;
 
 template class Mesh<VertexPN>;
 template class TriangleMesh<VertexPN>;

@@ -41,3 +41,9 @@ int Window::height() {
     glfwGetWindowSize(_handle, nullptr, &height);
     return height;
 }
+
+void Window::fitGLViewportInWindow() {
+    int width, height;
+    glfwGetFramebufferSize(_handle, &width, &height);
+    glViewport(0, 0, width, height);
+}

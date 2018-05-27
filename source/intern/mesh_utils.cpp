@@ -71,9 +71,9 @@ TriangleMesh<VertexPN> *offDataToTriangleMesh_VertexPN(OffFileData *offData) {
     return new TriangleMesh<VertexPN>(vertices, offData->indices);
 }
 
-PointCloud<VertexP> *offDataToPointCloud(OffFileData *offData) {
+PointCloudMesh<VertexP> *offDataToPointCloud(OffFileData *offData) {
     std::vector<VertexP> vertices = extractPVerticesFromOffData(offData);
-    return new PointCloud<VertexP>(vertices);
+    return new PointCloudMesh<VertexP>(vertices);
 }
 
 void appendBoxTriangles(std::vector<VertexP> &vertices, std::vector<unsigned int> &indices, BoundingBox<3> &box) {

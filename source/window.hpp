@@ -27,6 +27,8 @@ public:
     int width();
     int height();
 
+    void fitGLViewportInWindow();
+
     GLFWwindow* handle() { return _handle; }
 
 private:

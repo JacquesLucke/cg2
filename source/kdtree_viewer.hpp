@@ -82,5 +82,5 @@ private:
     float meshBrightness = 0.5f;
 
     TriangleMesh<VertexP> *consideredBoxesMesh = nullptr;
-    PointCloud<VertexP> *collectedPoints = nullptr;
+    PointCloudMesh<VertexP> *collectedPoints = nullptr;
 };

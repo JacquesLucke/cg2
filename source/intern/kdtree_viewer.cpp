@@ -62,9 +62,7 @@ void KDTreeViewer::onUpdate() {
 }
 
 void KDTreeViewer::onRender() {
-    int width, height;
-    glfwGetFramebufferSize(window()->handle(), &width, &height);
-    glViewport(0, 0, width, height);
+    window()->fitGLViewportInWindow();
     ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
 
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
@@ -98,7 +96,7 @@ void KDTreeViewer::drawMesh() {
 void KDTreeViewer::drawQueryPoint() {
     std::vector<VertexP> vertices;
     vertices.push_back(VertexP(queryCenter));
-    PointCloud<VertexP> cloud(vertices);
+    PointCloudMesh<VertexP> cloud(vertices);
 
     glPointSize(10);
     flatShader->bind();
@@ -112,7 +110,7 @@ void KDTreeViewer::drawPreSelectionPoint() {
 
     std::vector<VertexP> vertices;
     vertices.push_back(VertexP(point));
-    PointCloud<VertexP> cloud(vertices);
+    PointCloudMesh<VertexP> cloud(vertices);
 
     glPointSize(5);
     flatShader->bind();
@@ -124,7 +122,7 @@ void KDTreeViewer::drawPreSelectionPoint() {
 void KDTreeViewer::drawCollectedPoints() {
     if (collectedPoints == nullptr) {
         std::vector<glm::vec3> points = getCollectedPoints();
-        collectedPoints = new PointCloud<VertexP>(createVertexPVector(points));
+        collectedPoints = new PointCloudMesh<VertexP>(createVertexPVector(points));
     }
 
     glPointSize(5);
