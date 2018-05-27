@@ -39,8 +39,8 @@ public:
     virtual void draw() = 0;
 
 protected:
-    std::vector<VertexType> vertices;
     unsigned int vertexBufferID;
+    int verticesAmount;
 };
 
 template<typename VertexType>
@@ -53,8 +53,8 @@ public:
     void draw();
 
 protected:
-    std::vector<unsigned int> indices;
     unsigned int indexBufferID;
+    int indicesAmount;
 };
 
 template<typename VertexType>
@@ -77,8 +77,8 @@ public:
     void draw();
 
 protected:
-    std::vector<EdgeIndices> indices;
     unsigned int indexBufferID;
+    int indicesAmount;
 };
 
 template<typename VertexType>
