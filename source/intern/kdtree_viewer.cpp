@@ -90,7 +90,8 @@ void KDTreeViewer::drawMesh() {
     glPointSize(2);
     solidShader->bind();
     solidShader->setBrightness(meshBrightness);
-    mesh->draw(solidShader);
+    mesh->bindBuffers(solidShader);
+    mesh->draw();
     glDisable(GL_DEPTH_TEST);
 }
 
@@ -102,7 +103,8 @@ void KDTreeViewer::drawQueryPoint() {
     glPointSize(10);
     flatShader->bind();
     flatShader->setColor(0, 0, 1);
-    cloud.draw(flatShader);
+    cloud.bindBuffers(flatShader);
+    cloud.draw();
 }
 
 void KDTreeViewer::drawPreSelectionPoint() {
@@ -115,7 +117,8 @@ void KDTreeViewer::drawPreSelectionPoint() {
     glPointSize(5);
     flatShader->bind();
     flatShader->setColor(0.3f, 0.3f, 1);
-    cloud.draw(flatShader);
+    cloud.bindBuffers(flatShader);
+    cloud.draw();
 }
 
 void KDTreeViewer::drawCollectedPoints() {
@@ -127,7 +130,8 @@ void KDTreeViewer::drawCollectedPoints() {
     glPointSize(5);
     flatShader->bind();
     flatShader->setColor(1, 0, 0);
-    collectedPoints->draw(flatShader);
+    collectedPoints->bindBuffers(flatShader);
+    collectedPoints->draw();
 }
 
 void KDTreeViewer::drawConsideredBoxes() {
@@ -138,7 +142,9 @@ void KDTreeViewer::drawConsideredBoxes() {
     if (consideredBoxesMesh == nullptr) {
         consideredBoxesMesh = getConsideredBoxesMesh();
     }
-    consideredBoxesMesh->draw(flatShader);
+
+    consideredBoxesMesh->bindBuffers(flatShader);
+    consideredBoxesMesh->draw();
 }
 
 TriangleMesh<VertexP> *KDTreeViewer::getConsideredBoxesMesh() {

@@ -1,6 +1,10 @@
 #include <iostream>
 #include "../mesh.hpp"
 
+
+/* Mesh
+***********************************************/
+
 template<typename VertexType>
 Mesh<VertexType>::Mesh(const std::vector<VertexType> &vertices) {
     this->vertices = vertices;
@@ -8,6 +12,16 @@ Mesh<VertexType>::Mesh(const std::vector<VertexType> &vertices) {
     glGenBuffers(1, &vertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexType), vertices.data(), GL_STATIC_DRAW);
+}
+
+template<typename VertexType>
+Mesh<VertexType>::~Mesh() {
+    glDeleteBuffers(1, &vertexBufferID);
+}
+
+template<typename VertexType>
+void Mesh<VertexType>::bindBuffers(const Shader *shader) {
+    bindVertexBuffer(shader);
 }
 
 template<>
@@ -32,10 +46,10 @@ void Mesh<VertexPN>::bindVertexBuffer(const Shader *shader) {
     glEnableVertexAttribArray(normalAttrLoc);
 }
 
-template<typename VertexType>
-Mesh<VertexType>::~Mesh() {
-    glDeleteBuffers(1, &vertexBufferID);
-}
+
+
+/* Triangle Mesh
+*****************************************/
 
 template<typename VertexType>
 TriangleMesh<VertexType>::TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices)
@@ -54,19 +68,30 @@ TriangleMesh<VertexType>::~TriangleMesh() {
 }
 
 template<typename VertexType>
-void TriangleMesh<VertexType>::draw(const Shader *shader) {
-    shader->bind();
-    this->bindVertexBuffer(shader);
+void TriangleMesh<VertexType>::bindBuffers(const Shader *shader) {
+    bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }
 
 template<typename VertexType>
-void PointCloud<VertexType>::draw(const Shader *shader) {
-    shader->bind();
-    this->bindVertexBuffer(shader);
+void TriangleMesh<VertexType>::draw() {
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+}
+
+
+
+/* Point Cloud
+***************************************/
+
+template<typename VertexType>
+void PointCloud<VertexType>::draw() {
     glDrawArrays(GL_POINTS, 0, this->vertices.size());
 }
+
+
+
+/* Explicit Template Instantiation
+****************************************/
 
 template class Mesh<VertexP>;
 template class TriangleMesh<VertexP>;

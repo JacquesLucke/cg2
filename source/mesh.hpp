@@ -28,7 +28,8 @@ public:
     ~Mesh();
 
     void bindVertexBuffer(const Shader *shader);
-    virtual void draw(const Shader *shader) = 0;
+    virtual void bindBuffers(const Shader *shader);
+    virtual void draw() = 0;
 
 protected:
     std::vector<VertexType> vertices;
@@ -41,7 +42,8 @@ public:
     TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices);
     ~TriangleMesh();
 
-    void draw(const Shader *shader);
+    void bindBuffers(const Shader *shader);
+    void draw();
 
 protected:
     std::vector<unsigned int> indices;
@@ -55,5 +57,5 @@ public:
         : Mesh<VertexType>(vertices) {}
     ~PointCloud() {}
 
-    void draw(const Shader *shader);
+    void draw();
 };
