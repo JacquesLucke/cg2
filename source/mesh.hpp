@@ -21,6 +21,13 @@ struct VertexPN {
     glm::vec3 normal;
 };
 
+struct EdgeIndices {
+    EdgeIndices(unsigned int v1, unsigned int v2)
+        : v1(v1), v2(v2) {}
+
+    unsigned int v1, v2;
+};
+
 template<typename VertexType>
 class Mesh {
 public:
@@ -58,4 +65,18 @@ public:
     ~PointCloud() {}
 
     void draw();
+};
+
+template<typename VertexType>
+class Wireframe : public Mesh<VertexType> {
+public:
+    Wireframe(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices);
+    ~Wireframe();
+
+    void bindBuffers(const Shader *shader);
+    void draw();
+
+protected:
+    std::vector<EdgeIndices> indices;
+    unsigned int indexBufferID;
 };

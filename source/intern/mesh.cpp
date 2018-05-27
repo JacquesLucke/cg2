@@ -90,12 +90,45 @@ void PointCloud<VertexType>::draw() {
 
 
 
+/* Wireframe
+****************************************/
+
+template<typename VertexType>
+Wireframe<VertexType>::Wireframe(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices)
+    : Mesh<VertexType>(vertices)
+{
+    this->indices = indices;
+
+    glGenBuffers(1, &indexBufferID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(EdgeIndices), indices.data(), GL_STATIC_DRAW);
+}
+
+template<typename VertexType>
+Wireframe<VertexType>::~Wireframe() {
+    glDeleteBuffers(1, &indexBufferID);
+}
+
+template<typename VertexType>
+void Wireframe<VertexType>::bindBuffers(const Shader *shader) {
+    bindVertexBuffer(shader);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+}
+
+template<typename VertexType>
+void Wireframe<VertexType>::draw() {
+    glDrawElements(GL_LINES, indices.size() * 2, GL_UNSIGNED_INT, 0);
+}
+
+
+
 /* Explicit Template Instantiation
 ****************************************/
 
 template class Mesh<VertexP>;
 template class TriangleMesh<VertexP>;
 template class PointCloud<VertexP>;
+template class Wireframe<VertexP>;
 
 template class Mesh<VertexPN>;
 template class TriangleMesh<VertexPN>;
