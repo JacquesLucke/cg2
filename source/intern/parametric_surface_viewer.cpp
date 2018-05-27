@@ -8,32 +8,34 @@
 
 #include "../parametric_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
+#include "../timer.hpp"
+
 
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
 
-    OffFileData *offData = loadRelOffResource("franke4.off");
+    OffFileData *offData = loadRelOffResource("franke6.off");
     assert(offData != nullptr);
     sourcePoints = offData->positions;
     delete offData;
 
     sourcePointsCloud = new PointCloudMesh<VertexP>(createVertexPVector(sourcePoints));
 
+    kdTree = new KDTreeVec3_2D(sourcePoints.data(), sourcePoints.size(), 5);
+    kdTree->balance();
+
     return true;
 }
 
-std::vector<glm::vec3> *calcGridPoints(int xDiv, int zDiv) {
-    auto points = new std::vector<glm::vec3>();
+std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, float scale) {
+    std::vector<glm::vec3> points;
 
-    float xOffset = -(xDiv - 1) / 2.0f;
-    float zOffset = -(zDiv - 1) / 2.0f;
-
-    for (float z = 0; z < zDiv; z++) {
-        for (float x = 0; x < xDiv; x++) {
-            points->push_back(glm::vec3(
-                x + xOffset,
-                0,
-                z + zOffset
+    for (float x = 0; x < xDiv; x++) {
+        for (float y = 0; y < yDiv; y++) {
+            points.push_back(glm::vec3(
+                x / (xDiv - 1) * scale,
+                y / (yDiv - 1) * scale,
+                0
             ));
         }
     }
@@ -41,18 +43,18 @@ std::vector<glm::vec3> *calcGridPoints(int xDiv, int zDiv) {
     return points;
 }
 
-std::vector<EdgeIndices> *calcGridEdges(int div1, int div2) {
-    auto edges = new std::vector<EdgeIndices>();
+std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
+    std::vector<EdgeIndices> edges;
     for (int i = 0; i < div1; i++) {
         for (int j = 0; j < div2 - 1; j++) {
-            edges->push_back(EdgeIndices(
+            edges.push_back(EdgeIndices(
                 i * div2 + j + 0,
                 i * div2 + j + 1));
         }
     }
     for (int i = 0; i < div2; i++) {
         for (int j = 0; j < div1 - 1; j++) {
-            edges->push_back(EdgeIndices(
+            edges.push_back(EdgeIndices(
                 (j + 0) * div2 + i,
                 (j + 1) * div2 + i));
         }
@@ -90,7 +92,13 @@ void ParametricSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
     drawGrid();
-    drawSourcePoints();
+
+    if (displaySourcePoints) {
+        drawSourcePoints();
+    }
+    if (displayGeneratedMesh) {
+        drawResultingSurface();
+    }
 }
 
 void ParametricSurfaceViewer::prepareDrawDimensions() {
@@ -111,38 +119,67 @@ void ParametricSurfaceViewer::drawGrid() {
 
     flatShader->bind();
     flatShader->resetModelMatrix();
-    flatShader->setColor(1, 1, 1);
+    flatShader->setColor(0.3f, 0.3f, 0.3f);
     gridLinesMesh->bindBuffers(flatShader);
     gridLinesMesh->draw();
 }
 
+glm::mat4 changeYandZMatrix(
+    1, 0, 0, 0,
+    0, 0, 1, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+);
+
 void ParametricSurfaceViewer::drawSourcePoints() {
     flatShader->bind();
     flatShader->setColor(1, 0, 0);
-    glm::mat4 changeYandZMatrix = glm::mat4(
-        1, 0, 0, 0,
-        0, 0, 1, 0,
-        0, 1, 0, 0,
-        0, 0, 0, 1);
     flatShader->setModelMatrix(changeYandZMatrix);
+    glPointSize((float)sourcePointSize);
     sourcePointsCloud->bindBuffers(flatShader);
     sourcePointsCloud->draw();
+    glPointSize(1);
+}
+
+void ParametricSurfaceViewer::drawResultingSurface() {
+    if (resultingSurface == nullptr) {
+        std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
+        std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
+        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius);
+        resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
+    }
+    flatShader->bind();
+    flatShader->setColor(1, 1, 0);
+    flatShader->setModelMatrix(changeYandZMatrix);
+    resultingSurface->bindBuffers(flatShader);
+    resultingSurface->draw();
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
-    bool gridChanged = false;
-    gridChanged |= ImGui::SliderFloat("Base Grid Size", &baseGridSize, 0.1f, 10.0f);
-    gridChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
-    gridChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
+    bool settingChanged = false;
+    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
+    ImGui::Checkbox("Display Source Points", &displaySourcePoints);
 
-    if (gridChanged) {
-        resetGrid();
+    if (displayGeneratedMesh) {
+        settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
+        settingChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
+        settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
+    }
+
+    ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
+
+    if (settingChanged) {
+        resetGeneratedData();
     }
 }
 
-void ParametricSurfaceViewer::resetGrid() {
+void ParametricSurfaceViewer::resetGeneratedData() {
     if (gridLinesMesh != nullptr) {
         delete gridLinesMesh;
         gridLinesMesh = nullptr;
+    }
+    if (resultingSurface != nullptr) {
+        delete resultingSurface;
+        resultingSurface = nullptr;
     }
 }

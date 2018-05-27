@@ -7,6 +7,8 @@
 #include "camera.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
+#include "parametric_surface_utils.hpp"
+
 
 class ParametricSurfaceViewer : public WindowController {
 public:
@@ -26,7 +28,8 @@ private:
     void setViewProjMatrixInShaders();
     void drawGrid();
     void drawSourcePoints();
-    void resetGrid();
+    void drawResultingSurface();
+    void resetGeneratedData();
 
 
     CameraController* camera;
@@ -34,6 +37,10 @@ private:
     int xDivisions = 10;
     int zDivisions = 10;
     float baseGridSize = 1.0f;
+    float weightRadius = 0.1f;
+    bool displayGeneratedMesh = true;
+    bool displaySourcePoints = true;
+    int sourcePointSize = 1;
 
     LinesMesh<VertexP> *gridLinesMesh = nullptr;
     std::vector<glm::vec3>* gridPoints = nullptr;
@@ -41,4 +48,7 @@ private:
 
     std::vector<glm::vec3> sourcePoints;
     PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
+    WireframeMesh<VertexP>* resultingSurface = nullptr;
+
+    KDTreeVec3_2D* kdTree = nullptr;
 };
