@@ -23,20 +23,17 @@ void Camera::move(glm::vec3 offset) {
 
 glm::vec3 Camera::direction() const {
     glm::vec3 direction = center - eye;
-    glm::normalize(direction);
-    return direction;
+    return glm::normalize(direction);
 }
 
 glm::vec3 Camera::right() const {
     glm::vec3 right = glm::cross(direction(), up());
-    glm::normalize(right);
-    return right;
+    return glm::normalize(right);
 }
 
 glm::vec3 Camera::up() const {
     glm::vec3 up = upDirection;
-    glm::normalize(up);
-    return up;
+    return glm::normalize(up);
 }
 
 void Camera::moveForward(float step) { move(direction() * step); }
