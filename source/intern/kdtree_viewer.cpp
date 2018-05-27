@@ -25,7 +25,7 @@ bool KDTreeViewer::onSetup() {
     flatShader = new FlatShader();
     solidShader = new SolidShader();
 
-    runKDTreePerformanceTest();
+    //runKDTreePerformanceTest();
 
     return true;
 }
