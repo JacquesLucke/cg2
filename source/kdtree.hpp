@@ -27,7 +27,6 @@ inline int getMedianIndex(int left, int right) {
 template<
     class Point,
     int ndim,
-    float (*GetKey)(Point &p, int axis),
     float (*CalcDistance)(Point &a, Point &b)>
 class KDTree {
     Point *points;
@@ -225,8 +224,8 @@ private:
         Point &splitPoint = points[medianIndex];
         collector.consider(splitPoint);
 
-        float splitPos = GetKey(splitPoint, axis);
-        float originPos = GetKey(collector.origin, axis);
+        float splitPos = splitPoint[axis];
+        float originPos = collector.origin[axis];
 
         if (originPos - collector.radius <= splitPos) {
             collectInRadius(left, medianIndex - 1, depth + 1, collector);
@@ -303,8 +302,8 @@ private:
 
         Point &splitPoint = points[medianIndex];
 
-        float splitPos = GetKey(splitPoint, axis);
-        float originPos = GetKey(collector.origin, axis);
+        float splitPos = splitPoint[axis];
+        float originPos = collector.origin[axis];
 
         if (originPos <= splitPos) {
             collectKNearest(left, medianIndex - 1, depth + 1, collector);
@@ -351,8 +350,8 @@ private:
 
         Point &splitPoint = points[medianIndex];
 
-        float splitPos = GetKey(splitPoint, axis);
-        float originPos = GetKey(collector.origin, axis);
+        float splitPos = splitPoint[axis];
+        float originPos = collector.origin[axis];
 
         if (originPos - collector.radius <= splitPos) {
             BoundingBox<ndim> box = outerBox;
@@ -400,7 +399,7 @@ private:
     }
 
     inline float getValue(int index, int axis) {
-        return GetKey(points[index], axis);
+        return points[index][axis];
     }
 
 };
