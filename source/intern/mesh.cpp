@@ -67,7 +67,7 @@ TriangleMesh<VertexType>::~TriangleMesh() {
 
 template<typename VertexType>
 void TriangleMesh<VertexType>::bindBuffers(const Shader *shader) {
-    bindVertexBuffer(shader);
+    this->bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 }
 
@@ -83,7 +83,7 @@ void TriangleMesh<VertexType>::draw() {
 
 template<typename VertexType>
 void PointCloudMesh<VertexType>::draw() {
-    glDrawArrays(GL_POINTS, 0, verticesAmount);
+    glDrawArrays(GL_POINTS, 0, this->verticesAmount);
 }
 
 
@@ -108,7 +108,7 @@ WireframeMesh<VertexType>::~WireframeMesh() {
 
 template<typename VertexType>
 void WireframeMesh<VertexType>::bindBuffers(const Shader *shader) {
-    bindVertexBuffer(shader);
+    this->bindVertexBuffer(shader);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 }
 
@@ -124,7 +124,7 @@ void WireframeMesh<VertexType>::draw() {
 
 template<typename VertexType>
 void LinesMesh<VertexType>::draw() {
-    glDrawArrays(GL_LINES, 0, verticesAmount);
+    glDrawArrays(GL_LINES, 0, this->verticesAmount);
 }
 
 
