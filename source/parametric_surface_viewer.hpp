@@ -9,4 +9,5 @@ public:
 
 protected:
     bool onSetup() final override;
+    void onRenderUI() final override;
 };
