@@ -29,56 +29,6 @@ bool ParametricSurfaceViewer::onSetup() {
     return true;
 }
 
-std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, float scale) {
-    std::vector<glm::vec3> points;
-
-    for (float x = 0; x < xDiv; x++) {
-        for (float y = 0; y < yDiv; y++) {
-            points.push_back(glm::vec3(
-                x / (xDiv - 1) * scale,
-                y / (yDiv - 1) * scale,
-                0
-            ));
-        }
-    }
-
-    return points;
-}
-
-std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
-    std::vector<EdgeIndices> edges;
-    for (int i = 0; i < div1; i++) {
-        for (int j = 0; j < div2 - 1; j++) {
-            edges.push_back(EdgeIndices(
-                i * div2 + j + 0,
-                i * div2 + j + 1));
-        }
-    }
-    for (int i = 0; i < div2; i++) {
-        for (int j = 0; j < div1 - 1; j++) {
-            edges.push_back(EdgeIndices(
-                (j + 0) * div2 + i,
-                (j + 1) * div2 + i));
-        }
-    }
-    return edges;
-}
-
-LinesMesh<VertexP> *generateGridLinesMesh(int divX, int divZ, float scale) {
-    std::vector<VertexP> vertices;
-    for (float i = 0; i < divX; i++) {
-        float offset = i / (divX - 1) * scale;
-        vertices.push_back(VertexP(glm::vec3(offset, 0,     0)));
-        vertices.push_back(VertexP(glm::vec3(offset, 0, scale)));
-    }
-    for (float i = 0; i < divZ; i++) {
-        float offset = i / (divZ - 1) * scale;
-        vertices.push_back(VertexP(glm::vec3(    0, 0, offset)));
-        vertices.push_back(VertexP(glm::vec3(scale, 0, offset)));
-    }
-    return new LinesMesh<VertexP>(vertices);
-}
-
 void ParametricSurfaceViewer::onUpdate() {
     if (!camera->isFlying() && isKeyDown(GLFW_KEY_F)) {
         camera->enableFlyMode();
@@ -196,7 +146,7 @@ void ParametricSurfaceViewer::deleteGeneratedData() {
 }
 
 void ParametricSurfaceViewer::createGrid() {
-    gridLinesMesh = generateGridLinesMesh(xDivisions, zDivisions, baseGridSize);
+    gridLinesMesh = generateXZGridLinesMesh(xDivisions, zDivisions, baseGridSize);
 }
 
 LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
