@@ -14,5 +14,9 @@ inline float distanceFunction(glm::vec3 &a, glm::vec3 &b) {
 
 using KDTreeVec3_2D = KDTree<glm::vec3, 2, distanceFunction>;
 
-float getZBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &points, float radius);
-void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius);
+float getZBasedOnMovingLeastSquares(
+    glm::vec3 position, std::vector<glm::vec3> &points, float radius);
+
+void setZValuesWithMovingLeastSquares(
+    std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree,
+    float radius, bool parallel = false);

@@ -1,3 +1,5 @@
+#include <thread>
+#include <algorithm>
 #include <Eigen/Dense>
 #include "../parametric_surface_utils.hpp"
 #include "../timer.hpp"
@@ -52,7 +54,7 @@ typedef float (*WeightFunction)(float distance);
 std::vector<float> calcWeights(std::vector<glm::vec3> &points, glm::vec3 position, WeightFunction f, float radius) {
     std::vector<float> weights;
     for (unsigned int i = 0; i < points.size(); i++) {
-        weights.push_back(f(glm::distance(glm::vec2(points[i]), glm::vec2(position))));
+        weights.push_back(f(glm::distance(glm::vec2(points[i]), glm::vec2(position)) / radius));
     }
     return weights;
 }
@@ -68,12 +70,34 @@ float getZBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &
     return coeffs.evaluate(position.x, position.y);
 }
 
-void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius) {
-    TIMEIT("moving least squares")
-    for (unsigned int i = 0; i < points.size(); i++) {
+void setZValuesWithMovingLeastSquares_Part(std::vector<glm::vec3> &points, int start, int end, KDTreeVec3_2D *kdTree, float radius) {
+    for (int i = start; i < end; i++) {
         std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
         if (pointsToConsider.size() > 0) {
             points[i].z = getZBasedOnMovingLeastSquares(points[i], pointsToConsider, radius);
         }
+    }
+}
+
+void setZValuesWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius, bool parallel) {
+    TIMEIT("moving least squares")
+
+    if (parallel) {
+        int threadCount = 8;
+        int chunkSize = (int)ceil((float)points.size() / (float)threadCount);
+        std::vector<std::thread> threads;
+        for (int i = 0; i < threadCount; i++) {
+            int start = i * chunkSize;
+            int end = std::min(start + chunkSize, (int)points.size());
+            threads.push_back(
+                std::thread(setZValuesWithMovingLeastSquares_Part, std::ref(points), start, end, kdTree, radius)
+            );
+        }
+        while (!threads.empty()) {
+            threads.back().join();
+            threads.pop_back();
+        }
+    } else {
+        setZValuesWithMovingLeastSquares_Part(points, 0, points.size(), kdTree, radius);
     }
 }

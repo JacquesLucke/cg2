@@ -14,7 +14,7 @@
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
 
-    OffFileData *offData = loadRelOffResource("franke6.off");
+    OffFileData *offData = loadRelOffResource("franke5.off");
     assert(offData != nullptr);
     sourcePoints = offData->positions;
     delete offData;
@@ -145,7 +145,7 @@ void ParametricSurfaceViewer::drawResultingSurface() {
     if (resultingSurface == nullptr) {
         std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
         std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
-        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius);
+        setZValuesWithMovingLeastSquares(points, kdTree, weightRadius, true);
         resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
     }
     flatShader->bind();
@@ -157,8 +157,8 @@ void ParametricSurfaceViewer::drawResultingSurface() {
 
 void ParametricSurfaceViewer::onRenderUI() {
     bool settingChanged = false;
-    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
+    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
 
     if (displayGeneratedMesh) {
         settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
