@@ -40,8 +40,10 @@ private:
     float weightRadius = 0.1f;
     bool displayGeneratedMesh = true;
     bool displaySourcePoints = true;
+    bool displayNormals = true;
     bool parallelSurfaceGeneration = true;
     int sourcePointSize = 1;
+    float normalsLength = 0.1f;
 
     LinesMesh<VertexP> *gridLinesMesh = nullptr;
     std::vector<glm::vec3>* gridPoints = nullptr;
@@ -50,6 +52,7 @@ private:
     std::vector<glm::vec3> sourcePoints;
     PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
     WireframeMesh<VertexP>* resultingSurface = nullptr;
+    LinesMesh<VertexP>* surfaceNormalLines = nullptr;
 
     KDTreeVec3_2D* kdTree = nullptr;
 };

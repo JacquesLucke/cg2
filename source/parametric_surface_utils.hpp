@@ -20,3 +20,6 @@ float getZBasedOnMovingLeastSquares(
 void setZValuesWithMovingLeastSquares(
     std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree,
     float radius, bool parallel = false);
+
+std::vector<glm::vec3> getNormalsWithMovingLeastSquares(
+    std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius);

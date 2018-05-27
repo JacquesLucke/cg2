@@ -93,12 +93,8 @@ void ParametricSurfaceViewer::onRender() {
     setViewProjMatrixInShaders();
     drawGrid();
 
-    if (displaySourcePoints) {
-        drawSourcePoints();
-    }
-    if (displayGeneratedMesh) {
-        drawResultingSurface();
-    }
+    drawSourcePoints();
+    drawResultingSurface();
 }
 
 void ParametricSurfaceViewer::prepareDrawDimensions() {
@@ -132,6 +128,8 @@ glm::mat4 changeYandZMatrix(
 );
 
 void ParametricSurfaceViewer::drawSourcePoints() {
+    if (!displaySourcePoints) return;
+
     flatShader->bind();
     flatShader->setColor(1, 0, 0);
     flatShader->setModelMatrix(changeYandZMatrix);
@@ -145,20 +143,38 @@ void ParametricSurfaceViewer::drawResultingSurface() {
     if (resultingSurface == nullptr) {
         std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
         std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
+        std::vector<glm::vec3> normals = getNormalsWithMovingLeastSquares(points, kdTree, weightRadius);
         setZValuesWithMovingLeastSquares(points, kdTree, weightRadius, parallelSurfaceGeneration);
         resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
+
+        std::vector<glm::vec3> normalLinePoints;
+        for (unsigned int i = 0; i < points.size(); i++) {
+            normalLinePoints.push_back(points[i]);
+            normalLinePoints.push_back(points[i] + normals[i] * normalsLength);
+        }
+        surfaceNormalLines = new LinesMesh<VertexP>(createVertexPVector(normalLinePoints));
     }
+
     flatShader->bind();
-    flatShader->setColor(1, 1, 0);
     flatShader->setModelMatrix(changeYandZMatrix);
-    resultingSurface->bindBuffers(flatShader);
-    resultingSurface->draw();
+    if (displayGeneratedMesh) {
+        flatShader->setColor(1, 1, 0);
+        resultingSurface->bindBuffers(flatShader);
+        resultingSurface->draw();
+    }
+
+    if (displayNormals) {
+        flatShader->setColor(0.3, 0.3, 0);
+        surfaceNormalLines->bindBuffers(flatShader);
+        surfaceNormalLines->draw();
+    }
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
     bool settingChanged = false;
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
+    ImGui::Checkbox("Display Normals", &displayNormals);
 
     if (displayGeneratedMesh) {
         settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
@@ -166,6 +182,7 @@ void ParametricSurfaceViewer::onRenderUI() {
         settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
 
         settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
+        settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
     }
 
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
@@ -183,5 +200,9 @@ void ParametricSurfaceViewer::resetGeneratedData() {
     if (resultingSurface != nullptr) {
         delete resultingSurface;
         resultingSurface = nullptr;
+    }
+    if (surfaceNormalLines != nullptr) {
+        delete surfaceNormalLines;
+        surfaceNormalLines = nullptr;
     }
 }

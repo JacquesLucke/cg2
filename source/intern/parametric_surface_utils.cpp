@@ -16,6 +16,13 @@ struct Coefficients {
         return c_1 + c_x*x + c_y*y + c_xx*x*x + c_xy*x*y + c_yy*y*y;
     }
 
+    glm::vec3 derivative(float x, float y) {
+        glm::vec3 tangentX(1, 0, c_x + 2*c_xx*x + c_xy*y);
+        glm::vec3 tangentY(0, 1, c_y + 2*c_yy*y + c_xy*x);
+        glm::vec3 normal = glm::cross(tangentX, tangentY);
+        return glm::normalize(normal);
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const Coefficients &c);
 };
 
@@ -69,6 +76,26 @@ float getZBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &
     auto weights = calcWeights(points, position, weightFunction_Wendland, radius);
     Coefficients coeffs = weightedLeastSquares(points, weights);
     return coeffs.evaluate(position.x, position.y);
+}
+
+glm::vec3 calcNormalBasedOnMovingLeastSquares(glm::vec3 position, std::vector<glm::vec3> &points, float radius) {
+    auto weights = calcWeights(points, position, weightFunction_Wendland, radius);
+    Coefficients coeffs = weightedLeastSquares(points, weights);
+    return coeffs.derivative(position.x, position.y);
+}
+
+std::vector<glm::vec3> getNormalsWithMovingLeastSquares(std::vector<glm::vec3> &points, KDTreeVec3_2D *kdTree, float radius) {
+    TIMEIT("normals")
+    std::vector<glm::vec3> normals;
+    for (unsigned int i = 0; i < points.size(); i++) {
+        std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
+        if (pointsToConsider.size() > 0) {
+            normals.push_back(calcNormalBasedOnMovingLeastSquares(points[i], pointsToConsider, radius));
+        } else {
+            normals.push_back(glm::vec3(0, 0, 1));
+        }
+    }
+    return normals;
 }
 
 void setZValuesWithMovingLeastSquares_Part(std::vector<glm::vec3> &points, int start, int end, KDTreeVec3_2D *kdTree, float radius) {
