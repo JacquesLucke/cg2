@@ -24,6 +24,7 @@ include_directories(
     extern/glad/include/
     extern/glm/
     extern/imgui/
+    extern/Eigen/
     source/
 )
 
