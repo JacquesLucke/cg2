@@ -15,7 +15,7 @@
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
 
-    OffFileData *offData = loadRelOffResource("franke5.off");
+    OffFileData *offData = loadRelOffResource("custom_landscape.off");
     assert(offData != nullptr);
     sourcePoints = offData->positions;
     delete offData;
@@ -24,6 +24,8 @@ bool ParametricSurfaceViewer::onSetup() {
 
     kdTree = new KDTreeVec3_2D(sourcePoints.data(), sourcePoints.size(), 5);
     kdTree->balance();
+
+    boundingBox = findBoundingBox<glm::vec3, 3>(sourcePoints);
 
     updateGeneratedData();
 
@@ -186,7 +188,7 @@ void ParametricSurfaceViewer::createSurfaceAndNormals() {
         yDiv += (yDiv - 1) * subdivisions;
     }
 
-    std::vector<glm::vec3> points = calcXYGridPoints(xDiv, yDiv, baseGridSize);
+    std::vector<glm::vec3> points = calcXYGridPoints(xDiv, yDiv, boundingBox);
     std::vector<EdgeIndices> edges = calcGridEdges(xDiv, yDiv);
     std::vector<glm::vec3> normals(points.size());
 

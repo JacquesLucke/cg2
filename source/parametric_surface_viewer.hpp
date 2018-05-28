@@ -3,10 +3,11 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "window_controller.hpp"
-#include "camera.hpp"
 #include "mesh.hpp"
+#include "camera.hpp"
 #include "shader.hpp"
+#include "bounding_box.hpp"
+#include "window_controller.hpp"
 #include "parametric_surface_utils.hpp"
 
 
@@ -52,6 +53,7 @@ private:
     int uDivisions = 10;
     int vDivisions = 10;
     float baseGridSize = 1.0f;
+    BoundingBox<3> boundingBox;
 
     /* Surface Generation Settings Settings */
     bool parallelSurfaceGeneration = true;

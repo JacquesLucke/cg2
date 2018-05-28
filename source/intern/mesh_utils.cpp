@@ -123,6 +123,22 @@ std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, float scale) {
     return points;
 }
 
+std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, BoundingBox<3> box) {
+    std::vector<glm::vec3> points;
+
+    for (float x = 0; x < xDiv; x++) {
+        for (float y = 0; y < yDiv; y++) {
+            points.push_back(glm::vec3(
+                x / (xDiv - 1.0f) * (box.max[0] - box.min[0]) + box.min[0],
+                y / (yDiv - 1.0f) * (box.max[1] - box.min[1]) + box.min[1],
+                0.0f
+            ));
+        }
+    }
+
+    return points;
+}
+
 std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
     std::vector<EdgeIndices> edges;
     for (int i = 0; i < div1; i++) {
