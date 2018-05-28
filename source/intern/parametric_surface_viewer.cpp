@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <algorithm>
 
 #include "../ogl.hpp"
 #include <imgui.h>
@@ -110,29 +111,30 @@ void ParametricSurfaceViewer::onRenderUI() {
 
     if (displaySurface | displayNormals) {
         ImGui::Separator();
+        ImGui::Text("Base Grid");
 
         settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
         settingChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
         settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
 
-        settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
-        settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
-
         settingChanged |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
         settingChanged |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
         settingChanged |= ImGui::RadioButton("Normal", (int*)&leastSquaresSolver, LeastSquaresSolver::Normal);
 
-        ImGui::Separator();
+        settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
 
-        settingChanged |= ImGui::Checkbox("Use Subdivision", &useSubdivision);
-        if (useSubdivision) {
-            settingChanged |= ImGui::InputInt("Subdivision Level", &subdivisionLevel);
-            subdivisionLevel = std::max(subdivisionLevel, 0);
-        }
+        ImGui::Separator();
+        settingChanged |= ImGui::RadioButton("Subdivide MLS", (int*)&finalSurfaceType, FinalSurfaceType::MLS); ImGui::SameLine();
+        settingChanged |= ImGui::RadioButton("Bezier Surface", (int*)&finalSurfaceType, FinalSurfaceType::Bezier);
+
+        settingChanged |= ImGui::InputInt("Subdivision Level", &subdivisionLevel, 1, 1, ImGuiInputTextFlags_::ImGuiInputTextFlags_ReadOnly);
+        subdivisionLevel = std::min(std::max(subdivisionLevel, 0), 5);
     }
 
     ImGui::Separator();
+    ImGui::Text("Draw Settings");
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
+    settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
 
     if (settingChanged) {
         updateGeneratedData();
@@ -178,7 +180,7 @@ LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::v
 void ParametricSurfaceViewer::createSurfaceAndNormals() {
     int xDiv = xDivisions;
     int yDiv = zDivisions;
-    if (useSubdivision && subdivisionLevel > 0) {
+    if (subdivisionLevel > 0) {
         int subdivisions = (int)pow(2, subdivisionLevel - 1);
         xDiv += (xDiv - 1) * subdivisions;
         yDiv += (yDiv - 1) * subdivisions;

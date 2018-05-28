@@ -57,10 +57,16 @@ private:
     bool parallelSurfaceGeneration = true;
     float weightRadius = 0.1f;
     float normalsLength = 0.1f;
-    bool useSubdivision = false;
-    int subdivisionLevel = 1;
+    int subdivisionLevel = 0;
     int subdivisionType = 0;
     LeastSquaresSolver leastSquaresSolver = LeastSquaresSolver::SVD;
+
+    enum FinalSurfaceType {
+        MLS,
+        Bezier
+    };
+
+    FinalSurfaceType finalSurfaceType = FinalSurfaceType::MLS;
 
     /* Meshes */
     PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
