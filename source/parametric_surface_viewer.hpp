@@ -31,11 +31,13 @@ private:
     void drawSourcePoints();
     void drawSurface();
     void drawSurfaceNormals();
+    void drawBezierBase();
 
     void updateGeneratedData();
     void deleteGeneratedData();
     void createGrid();
-    void createSurfaceAndNormals();
+    void createSurfaceAndNormals_MLS();
+    void createSurfaceAndNormals_Bezier();
 
 
     CameraController* camera;
@@ -46,7 +48,8 @@ private:
     /* Display Settings */
     bool displaySurface = true;
     bool displaySourcePoints = true;
-    bool displayNormals = true;
+    bool displayNormals = false;
+    bool displayBezierBase = false;
     int sourcePointSize = 1;
 
     /* Base Grid Settings */
@@ -71,9 +74,10 @@ private:
     FinalSurfaceType finalSurfaceType = FinalSurfaceType::MLS;
 
     /* Meshes */
+    LinesMesh<VertexP>* gridLinesMesh = nullptr;
     PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
     WireframeMesh<VertexP>* resultingSurface = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
-    LinesMesh<VertexP>* gridLinesMesh = nullptr;
+    WireframeMesh<VertexP>* bezierBaseSurface = nullptr;
 
 };

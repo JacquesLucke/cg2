@@ -21,3 +21,6 @@ enum LeastSquaresSolver {
 void setDataWithMovingLeastSquares(
     std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
     KDTreeVec3_2D *kdTree, float radius, LeastSquaresSolver solverType, bool parallel);
+
+void evaluateDeCasteljau(std::vector<glm::vec3> controlPoints, float t,
+    glm::vec3* outPosition, glm::vec3* outTangent);

@@ -15,20 +15,17 @@
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
 
-    OffFileData *offData = loadRelOffResource("custom_landscape.off");
+    OffFileData *offData = loadRelOffResource("franke5.off");
     assert(offData != nullptr);
     sourcePoints = offData->positions;
     delete offData;
 
-    sourcePointsCloud = new PointCloudMesh<VertexP>(createVertexPVector(sourcePoints));
-
     kdTree = new KDTreeVec3_2D(sourcePoints.data(), sourcePoints.size(), 5);
     kdTree->balance();
 
+    sourcePointsCloud = new PointCloudMesh<VertexP>(createVertexPVector(sourcePoints));
     boundingBox = findBoundingBox<glm::vec3, 3>(sourcePoints);
-
     updateGeneratedData();
-
     return true;
 }
 
@@ -43,6 +40,13 @@ void ParametricSurfaceViewer::onUpdate() {
     camera->update();
 }
 
+glm::mat4 changeYandZMatrix(
+    1, 0, 0, 0,
+    0, 0, 1, 0,
+    0, 1, 0, 0,
+    0, 0, 0, 1
+);
+
 void ParametricSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
@@ -50,7 +54,8 @@ void ParametricSurfaceViewer::onRender() {
 
     if (displaySourcePoints) drawSourcePoints();
     if (displaySurface) drawSurface();
-    if (displayNormals) drawSurfaceNormals();
+    if (displayNormals && finalSurfaceType == FinalSurfaceType::MLS) drawSurfaceNormals();
+    if (displayBezierBase && finalSurfaceType == FinalSurfaceType::Bezier) drawBezierBase();
 }
 
 void ParametricSurfaceViewer::prepareDrawDimensions() {
@@ -63,13 +68,6 @@ void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     flatShader->bind();
     flatShader->setViewProj(matViewProj);
 }
-
-glm::mat4 changeYandZMatrix(
-    1, 0, 0, 0,
-    0, 0, 1, 0,
-    0, 1, 0, 0,
-    0, 0, 0, 1
-);
 
 void ParametricSurfaceViewer::drawGrid() {
     flatShader->bind();
@@ -105,6 +103,16 @@ void ParametricSurfaceViewer::drawSurfaceNormals() {
     surfaceNormalLines->draw();
 }
 
+void ParametricSurfaceViewer::drawBezierBase() {
+    flatShader->bind();
+    flatShader->setModelMatrix(changeYandZMatrix);
+    flatShader->setColor(0.0, 1.0, 0.0);
+    glLineWidth(2);
+    bezierBaseSurface->bindBuffers(flatShader);
+    bezierBaseSurface->draw();
+    glLineWidth(1);
+}
+
 void ParametricSurfaceViewer::onRenderUI() {
     bool settingChanged = false;
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
@@ -131,6 +139,9 @@ void ParametricSurfaceViewer::onRenderUI() {
 
         settingChanged |= ImGui::InputInt("Subdivision Level", &subdivisionLevel, 1, 1, ImGuiInputTextFlags_::ImGuiInputTextFlags_ReadOnly);
         subdivisionLevel = std::min(std::max(subdivisionLevel, 0), 5);
+        if (finalSurfaceType == FinalSurfaceType::Bezier) {
+            ImGui::Checkbox("Display Base Grid", &displayBezierBase);
+        }
     }
 
     ImGui::Separator();
@@ -144,9 +155,15 @@ void ParametricSurfaceViewer::onRenderUI() {
 }
 
 void ParametricSurfaceViewer::updateGeneratedData() {
+    TIMEIT("update generated data")
+
     deleteGeneratedData();
     createGrid();
-    createSurfaceAndNormals();
+    if (finalSurfaceType == FinalSurfaceType::MLS){
+        createSurfaceAndNormals_MLS();
+    } else if (finalSurfaceType == FinalSurfaceType::Bezier) {
+        createSurfaceAndNormals_Bezier();
+    }
 }
 
 void ParametricSurfaceViewer::deleteGeneratedData() {
@@ -161,6 +178,10 @@ void ParametricSurfaceViewer::deleteGeneratedData() {
     if (surfaceNormalLines != nullptr) {
         delete surfaceNormalLines;
         surfaceNormalLines = nullptr;
+    }
+    if (bezierBaseSurface != nullptr) {
+        delete bezierBaseSurface;
+        bezierBaseSurface = nullptr;
     }
 }
 
@@ -179,14 +200,13 @@ LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::v
     return new LinesMesh<VertexP>(createVertexPVector(linePoints));
 }
 
-void ParametricSurfaceViewer::createSurfaceAndNormals() {
-    int xDiv = uDivisions;
-    int yDiv = vDivisions;
-    if (subdivisionLevel > 0) {
-        int subdivisions = (int)pow(2, subdivisionLevel - 1);
-        xDiv += (xDiv - 1) * subdivisions;
-        yDiv += (yDiv - 1) * subdivisions;
-    }
+int subdivideToDivisions(int divisions, int subdivisionLevel) {
+    return divisions + (divisions - 1) * (int)pow(2, subdivisionLevel - 1);
+}
+
+void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
+    int xDiv = subdivideToDivisions(uDivisions, subdivisionLevel);
+    int yDiv = subdivideToDivisions(vDivisions, subdivisionLevel);
 
     std::vector<glm::vec3> points = calcXYGridPoints(xDiv, yDiv, boundingBox);
     std::vector<EdgeIndices> edges = calcGridEdges(xDiv, yDiv);
@@ -197,4 +217,63 @@ void ParametricSurfaceViewer::createSurfaceAndNormals() {
 
     resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
+}
+
+std::vector<glm::vec3> calcPointsOnBezierSegment(std::vector<glm::vec3> controlPoints, int divisions) {
+    std::vector<glm::vec3> curvePoints;
+    for (int i = 0; i < divisions; i++) {
+        float t = i / (divisions - 1.0f);
+        glm::vec3 normal;
+        glm::vec3 position;
+        evaluateDeCasteljau(controlPoints, t, &position, &normal);
+        curvePoints.push_back(position);
+    }
+    return curvePoints;
+}
+
+std::vector<std::vector<glm::vec3>> calcSurfaceSegments(std::vector<glm::vec3> gridPoints, int stride, int divisions) {
+    std::vector<std::vector<glm::vec3>> segments;
+    for (unsigned int i = 0; i < gridPoints.size() / stride; i++) {
+        auto first = gridPoints.begin() + stride * i;
+        auto last = gridPoints.begin() + stride * (i + 1);
+        std::vector<glm::vec3> controls(first, last);
+        segments.push_back(calcPointsOnBezierSegment(controls, divisions));
+    }
+    return segments;
+}
+
+std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> gridPoints, int stride, int uDivisions, int vDivisions) {
+    auto segments = calcSurfaceSegments(gridPoints, stride, vDivisions);
+
+    std::vector<glm::vec3> surfacePoints;
+    for (int i = 0; i < vDivisions; i++) {
+        std::vector<glm::vec3> controls;
+        for (unsigned int j = 0; j < gridPoints.size() / stride; j++) {
+            controls.push_back(segments[j][i]);
+        }
+        auto curvePoints = calcPointsOnBezierSegment(controls, uDivisions);
+        surfacePoints.insert(surfacePoints.end(), curvePoints.begin(), curvePoints.end());
+    }
+    return surfacePoints;
+}
+
+void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
+    int xBaseDiv = uDivisions;
+    int yBaseDiv = vDivisions;
+
+    std::vector<glm::vec3> basePoints = calcXYGridPoints(xBaseDiv, yBaseDiv, boundingBox);
+    std::vector<glm::vec3> dummy(basePoints.size());
+
+    setDataWithMovingLeastSquares(basePoints, dummy, kdTree, weightRadius,
+        leastSquaresSolver, parallelSurfaceGeneration);
+
+    int xDiv = subdivideToDivisions(xBaseDiv, subdivisionLevel);
+    int yDiv = subdivideToDivisions(yBaseDiv, subdivisionLevel);
+
+    auto surfacePoints = calcBezierSurface(basePoints, yBaseDiv, xDiv, yDiv);
+    auto edges = calcGridEdges(yDiv, xDiv);
+    resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(surfacePoints), edges);
+
+    auto baseSurfaceEdges = calcGridEdges(xBaseDiv, yBaseDiv);
+    bezierBaseSurface = new WireframeMesh<VertexP>(createVertexPVector(basePoints), baseSurfaceEdges);
 }
