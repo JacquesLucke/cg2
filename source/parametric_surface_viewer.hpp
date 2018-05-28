@@ -49,8 +49,8 @@ private:
     int sourcePointSize = 1;
 
     /* Base Grid Settings */
-    int xDivisions = 10;
-    int zDivisions = 10;
+    int uDivisions = 10;
+    int vDivisions = 10;
     float baseGridSize = 1.0f;
 
     /* Surface Generation Settings Settings */

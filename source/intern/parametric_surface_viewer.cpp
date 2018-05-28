@@ -113,8 +113,8 @@ void ParametricSurfaceViewer::onRenderUI() {
         ImGui::Separator();
         ImGui::Text("Base Grid");
 
-        settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
-        settingChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
+        settingChanged |= ImGui::SliderInt("U Divisions", &uDivisions, 2, 30);
+        settingChanged |= ImGui::SliderInt("V Divisions", &vDivisions, 2, 30);
         settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
 
         settingChanged |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
@@ -163,7 +163,7 @@ void ParametricSurfaceViewer::deleteGeneratedData() {
 }
 
 void ParametricSurfaceViewer::createGrid() {
-    gridLinesMesh = generateXZGridLinesMesh(xDivisions, zDivisions, baseGridSize);
+    gridLinesMesh = generateXZGridLinesMesh(uDivisions, vDivisions, baseGridSize);
 }
 
 LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
@@ -178,8 +178,8 @@ LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::v
 }
 
 void ParametricSurfaceViewer::createSurfaceAndNormals() {
-    int xDiv = xDivisions;
-    int yDiv = zDivisions;
+    int xDiv = uDivisions;
+    int yDiv = vDivisions;
     if (subdivisionLevel > 0) {
         int subdivisions = (int)pow(2, subdivisionLevel - 1);
         xDiv += (xDiv - 1) * subdivisions;
