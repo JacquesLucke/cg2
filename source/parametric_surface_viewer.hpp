@@ -38,26 +38,34 @@ private:
 
 
     CameraController* camera;
+    KDTreeVec3_2D* kdTree = nullptr;
+    FlatShader* flatShader = nullptr;
+    std::vector<glm::vec3> sourcePoints;
 
-    int xDivisions = 10;
-    int zDivisions = 10;
-    float baseGridSize = 1.0f;
-    float weightRadius = 0.1f;
+    /* Display Settings */
     bool displaySurface = true;
     bool displaySourcePoints = true;
     bool displayNormals = true;
-    bool parallelSurfaceGeneration = true;
     int sourcePointSize = 1;
+
+    /* Base Grid Settings */
+    int xDivisions = 10;
+    int zDivisions = 10;
+    float baseGridSize = 1.0f;
+
+    /* Surface Generation Settings Settings */
+    bool parallelSurfaceGeneration = true;
+    float weightRadius = 0.1f;
     float normalsLength = 0.1f;
+    bool useSubdivision = false;
+    int subdivisionLevel = 1;
+    int subdivisionType = 0;
+    LeastSquaresSolver leastSquaresSolver = LeastSquaresSolver::SVD;
 
-    LinesMesh<VertexP> *gridLinesMesh = nullptr;
-    std::vector<glm::vec3>* gridPoints = nullptr;
-    FlatShader* flatShader = nullptr;
-
-    std::vector<glm::vec3> sourcePoints;
+    /* Meshes */
     PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
     WireframeMesh<VertexP>* resultingSurface = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
+    LinesMesh<VertexP>* gridLinesMesh = nullptr;
 
-    KDTreeVec3_2D* kdTree = nullptr;
 };

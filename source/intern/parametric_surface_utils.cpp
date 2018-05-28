@@ -31,7 +31,10 @@ std::ostream& operator<<(std::ostream &os, const Coefficients &c) {
     return os;
 }
 
-Coefficients weightedLeastSquares(std::vector<glm::vec3> &points, std::vector<float> &weights) {
+typedef float (*WeightFunction)(float distance);
+typedef Eigen::VectorXf (*LeastSquaresSolverFunction)(Eigen::MatrixXf &A, Eigen::VectorXf &b);
+
+Coefficients weightedLeastSquares(std::vector<glm::vec3> &points, std::vector<float> &weights, LeastSquaresSolverFunction solver) {
     assert(points.size() == weights.size());
 
     Eigen::MatrixXf A(points.size(), COEFF_AMOUNT);
@@ -50,14 +53,14 @@ Coefficients weightedLeastSquares(std::vector<glm::vec3> &points, std::vector<fl
         b[i] = z * w;
     }
 
-    Eigen::VectorXf result = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+    Eigen::VectorXf result = solver(A, b);
 
     Coefficients coeffs;
     memcpy(&coeffs, &result[0], sizeof(Coefficients));
     return coeffs;
 }
 
-typedef float (*WeightFunction)(float distance);
+
 
 std::vector<float> calcWeights(std::vector<glm::vec3> &points, glm::vec3 position, WeightFunction f, float radius) {
     std::vector<float> weights;
@@ -72,15 +75,37 @@ float weightFunction_Wendland(float d) {
     return pow(1 - d, 4) * (4 * d + 1);
 }
 
+Eigen::VectorXf solveLeastSquares_SVD(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+}
+
+Eigen::VectorXf solveLeastSquares_QR(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return A.colPivHouseholderQr().solve(b);
+}
+
+Eigen::VectorXf solveLeastSquares_Normal(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return (A.transpose() * A).ldlt().solve(A.transpose() * b);
+}
+
+LeastSquaresSolverFunction getLeastSquaresSolver(LeastSquaresSolver solverType) {
+    switch (solverType) {
+        case LeastSquaresSolver::SVD: return solveLeastSquares_SVD;
+        case LeastSquaresSolver::QR: return solveLeastSquares_QR;
+        case LeastSquaresSolver::Normal: return solveLeastSquares_Normal;
+        default: assert(false); return NULL;
+    }
+}
+
 void setDataWithMovingLeastSquares_Part(
         std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
-        int start, int end, KDTreeVec3_2D *kdTree, float radius)
+        int start, int end, KDTreeVec3_2D *kdTree, float radius,
+        LeastSquaresSolver solverType)
 {
     for (int i = start; i < end; i++) {
         std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
         if (pointsToConsider.size() > 0) {
             auto weights = calcWeights(pointsToConsider, points[i], weightFunction_Wendland, radius);
-            Coefficients coeffs = weightedLeastSquares(pointsToConsider, weights);
+            Coefficients coeffs = weightedLeastSquares(pointsToConsider, weights, getLeastSquaresSolver(solverType));
             points[i].z = coeffs.evaluate(points[i].x, points[i].y);
             normals[i] = coeffs.derivative(points[i].x, points[i].y);
         } else {
@@ -91,7 +116,7 @@ void setDataWithMovingLeastSquares_Part(
 
 void setDataWithMovingLeastSquares(
         std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
-        KDTreeVec3_2D *kdTree, float radius, bool parallel)
+        KDTreeVec3_2D *kdTree, float radius, LeastSquaresSolver solverType, bool parallel)
 {
     TIMEIT("moving least squares")
     assert(points.size() == normals.size());
@@ -106,7 +131,7 @@ void setDataWithMovingLeastSquares(
             threads.push_back(
                 std::thread(setDataWithMovingLeastSquares_Part,
                     std::ref(points), std::ref(normals),
-                    start, end, kdTree, radius)
+                    start, end, kdTree, radius, solverType)
             );
         }
         while (!threads.empty()) {
@@ -114,6 +139,6 @@ void setDataWithMovingLeastSquares(
             threads.pop_back();
         }
     } else {
-        setDataWithMovingLeastSquares_Part(points, normals, 0, points.size(), kdTree, radius);
+        setDataWithMovingLeastSquares_Part(points, normals, 0, points.size(), kdTree, radius, solverType);
     }
 }

@@ -115,6 +115,10 @@ void ParametricSurfaceViewer::onRenderUI() {
 
         settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
         settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
+
+        settingChanged |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
+        settingChanged |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
+        settingChanged |= ImGui::RadioButton("Normal", (int*)&leastSquaresSolver, LeastSquaresSolver::Normal);
     }
 
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
@@ -165,7 +169,8 @@ void ParametricSurfaceViewer::createSurfaceAndNormals() {
     std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
     std::vector<glm::vec3> normals(points.size());
 
-    setDataWithMovingLeastSquares(points, normals, kdTree, weightRadius, parallelSurfaceGeneration);
+    setDataWithMovingLeastSquares(points, normals, kdTree, weightRadius,
+        leastSquaresSolver, parallelSurfaceGeneration);
 
     resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
