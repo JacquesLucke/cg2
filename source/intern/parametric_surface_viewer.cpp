@@ -109,6 +109,8 @@ void ParametricSurfaceViewer::onRenderUI() {
     ImGui::Checkbox("Display Normals", &displayNormals);
 
     if (displaySurface | displayNormals) {
+        ImGui::Separator();
+
         settingChanged |= ImGui::SliderInt("X Divisions", &xDivisions, 2, 30);
         settingChanged |= ImGui::SliderInt("Z Divisions", &zDivisions, 2, 30);
         settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
@@ -119,8 +121,17 @@ void ParametricSurfaceViewer::onRenderUI() {
         settingChanged |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
         settingChanged |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
         settingChanged |= ImGui::RadioButton("Normal", (int*)&leastSquaresSolver, LeastSquaresSolver::Normal);
+
+        ImGui::Separator();
+
+        settingChanged |= ImGui::Checkbox("Use Subdivision", &useSubdivision);
+        if (useSubdivision) {
+            settingChanged |= ImGui::InputInt("Subdivision Level", &subdivisionLevel);
+            subdivisionLevel = std::max(subdivisionLevel, 0);
+        }
     }
 
+    ImGui::Separator();
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
 
     if (settingChanged) {
