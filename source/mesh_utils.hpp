@@ -19,4 +19,4 @@ void appendBoxTriangles(std::vector<VertexP> &vertices, std::vector<unsigned int
 std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, float scale);
 std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, BoundingBox<3> box);
 std::vector<EdgeIndices> calcGridEdges(int div1, int div2);
-LinesMesh<VertexP> *generateXZGridLinesMesh(int divX, int divZ, float scale);
+LinesMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box);

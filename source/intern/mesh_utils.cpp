@@ -158,17 +158,17 @@ std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
     return edges;
 }
 
-LinesMesh<VertexP> *generateXZGridLinesMesh(int divX, int divZ, float scale) {
+LinesMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box) {
     std::vector<VertexP> vertices;
-    for (float i = 0; i < divX; i++) {
-        float offset = i / (divX - 1) * scale;
-        vertices.push_back(VertexP(glm::vec3(offset, 0,     0)));
-        vertices.push_back(VertexP(glm::vec3(offset, 0, scale)));
+    for (float i = 0; i < xDiv; i++) {
+        float offset = i / (xDiv - 1) * (box.max[0] - box.min[0]) + box.min[0];
+        vertices.push_back(VertexP(glm::vec3(offset, box.min[0], 0)));
+        vertices.push_back(VertexP(glm::vec3(offset, box.max[0], 0)));
     }
-    for (float i = 0; i < divZ; i++) {
-        float offset = i / (divZ - 1) * scale;
-        vertices.push_back(VertexP(glm::vec3(    0, 0, offset)));
-        vertices.push_back(VertexP(glm::vec3(scale, 0, offset)));
+    for (float i = 0; i < yDiv; i++) {
+        float offset = i / (yDiv - 1) * (box.max[1] - box.min[1]) + box.min[1];
+        vertices.push_back(VertexP(glm::vec3(box.min[1], offset, 0)));
+        vertices.push_back(VertexP(glm::vec3(box.max[1], offset, 0)));
     }
     return new LinesMesh<VertexP>(vertices);
 }

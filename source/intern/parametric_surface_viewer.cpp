@@ -64,20 +64,20 @@ void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     flatShader->setViewProj(matViewProj);
 }
 
-void ParametricSurfaceViewer::drawGrid() {
-    flatShader->bind();
-    flatShader->resetModelMatrix();
-    flatShader->setColor(0.3f, 0.3f, 0.3f);
-    gridLinesMesh->bindBuffers(flatShader);
-    gridLinesMesh->draw();
-}
-
 glm::mat4 changeYandZMatrix(
     1, 0, 0, 0,
     0, 0, 1, 0,
     0, 1, 0, 0,
     0, 0, 0, 1
 );
+
+void ParametricSurfaceViewer::drawGrid() {
+    flatShader->bind();
+    flatShader->setModelMatrix(changeYandZMatrix);
+    flatShader->setColor(0.3f, 0.3f, 0.3f);
+    gridLinesMesh->bindBuffers(flatShader);
+    gridLinesMesh->draw();
+}
 
 void ParametricSurfaceViewer::drawSourcePoints() {
     flatShader->bind();
@@ -165,7 +165,7 @@ void ParametricSurfaceViewer::deleteGeneratedData() {
 }
 
 void ParametricSurfaceViewer::createGrid() {
-    gridLinesMesh = generateXZGridLinesMesh(uDivisions, vDivisions, baseGridSize);
+    gridLinesMesh = generateXYGridLinesMesh(uDivisions, vDivisions, boundingBox);
 }
 
 LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
