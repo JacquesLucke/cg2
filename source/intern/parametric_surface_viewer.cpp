@@ -176,8 +176,16 @@ LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::v
 }
 
 void ParametricSurfaceViewer::createSurfaceAndNormals() {
-    std::vector<glm::vec3> points = calcXYGridPoints(xDivisions, zDivisions, baseGridSize);
-    std::vector<EdgeIndices> edges = calcGridEdges(xDivisions, zDivisions);
+    int xDiv = xDivisions;
+    int yDiv = zDivisions;
+    if (useSubdivision && subdivisionLevel > 0) {
+        int subdivisions = (int)pow(2, subdivisionLevel - 1);
+        xDiv += (xDiv - 1) * subdivisions;
+        yDiv += (yDiv - 1) * subdivisions;
+    }
+
+    std::vector<glm::vec3> points = calcXYGridPoints(xDiv, yDiv, baseGridSize);
+    std::vector<EdgeIndices> edges = calcGridEdges(xDiv, yDiv);
     std::vector<glm::vec3> normals(points.size());
 
     setDataWithMovingLeastSquares(points, normals, kdTree, weightRadius,
