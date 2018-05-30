@@ -119,7 +119,7 @@ void ParametricSurfaceViewer::drawBezierBase() {
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
-    bool settingChanged = false;
+    bool recalc = false;
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displaySurface);
@@ -129,21 +129,21 @@ void ParametricSurfaceViewer::onRenderUI() {
         ImGui::Separator();
         ImGui::Text("Base Grid");
 
-        settingChanged |= ImGui::SliderInt("U Divisions", &uDivisions, 2, 30);
-        settingChanged |= ImGui::SliderInt("V Divisions", &vDivisions, 2, 30);
-        settingChanged |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
+        recalc |= ImGui::SliderInt("U Divisions", &uDivisions, 2, 30);
+        recalc |= ImGui::SliderInt("V Divisions", &vDivisions, 2, 30);
+        recalc |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
 
-        settingChanged |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
-        settingChanged |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
-        settingChanged |= ImGui::RadioButton("Normal", (int*)&leastSquaresSolver, LeastSquaresSolver::Normal);
+        recalc |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
+        recalc |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
+        recalc |= ImGui::RadioButton("Normal", (int*)&leastSquaresSolver, LeastSquaresSolver::Normal);
 
-        settingChanged |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
+        recalc |= ImGui::Checkbox("Parallel Surface Generation", &parallelSurfaceGeneration);
 
         ImGui::Separator();
-        settingChanged |= ImGui::RadioButton("Subdivide MLS", (int*)&finalSurfaceType, FinalSurfaceType::MLS); ImGui::SameLine();
-        settingChanged |= ImGui::RadioButton("Bezier Surface", (int*)&finalSurfaceType, FinalSurfaceType::Bezier);
+        recalc |= ImGui::RadioButton("Subdivide MLS", (int*)&finalSurfaceType, FinalSurfaceType::MLS); ImGui::SameLine();
+        recalc |= ImGui::RadioButton("Bezier Surface", (int*)&finalSurfaceType, FinalSurfaceType::Bezier);
 
-        settingChanged |= ImGui::InputInt("Subdivision Level", &subdivisionLevel, 1, 1, ImGuiInputTextFlags_::ImGuiInputTextFlags_ReadOnly);
+        recalc |= ImGui::InputInt("Subdivision Level", &subdivisionLevel, 1, 1, ImGuiInputTextFlags_::ImGuiInputTextFlags_ReadOnly);
         subdivisionLevel = std::min(std::max(subdivisionLevel, 0), 5);
         if (finalSurfaceType == FinalSurfaceType::Bezier) {
             ImGui::Checkbox("Display Base Grid", &displayBezierBase);
@@ -153,10 +153,10 @@ void ParametricSurfaceViewer::onRenderUI() {
     ImGui::Separator();
     ImGui::Text("Draw Settings");
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
-    settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
+    recalc |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
     ImGui::Checkbox("Depth Test", &useDepthTest);
 
-    if (settingChanged) {
+    if (recalc) {
         updateGeneratedData();
     }
 }
