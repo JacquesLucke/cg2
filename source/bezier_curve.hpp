@@ -14,4 +14,5 @@ private:
     std::vector<glm::vec3> controls;
 };
 
-std::vector<glm::vec3> evaluateMultipleBezierCurves(std::vector<BezierCurve> curves, float t);
+std::vector<glm::vec3> evaluateMultipleBezierCurves(std::vector<BezierCurve> &curves, float t);
+std::vector<glm::vec3> gridFromBezierCurves(std::vector<BezierCurve> &curves, int uDiv, int vDiv);

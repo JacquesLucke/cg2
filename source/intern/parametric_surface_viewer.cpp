@@ -225,7 +225,7 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
 }
 
 
-std::vector<BezierCurve> calcSurfaceSegments(std::vector<glm::vec3> gridPoints, int stride) {
+std::vector<BezierCurve> bezierCurvesFromGrid_Rows(std::vector<glm::vec3> &gridPoints, int stride) {
     std::vector<BezierCurve> curves;
     for (unsigned int i = 0; i < gridPoints.size() / stride; i++) {
         auto first = gridPoints.begin() + stride * i;
@@ -236,17 +236,22 @@ std::vector<BezierCurve> calcSurfaceSegments(std::vector<glm::vec3> gridPoints, 
     return curves;
 }
 
-std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> gridPoints, int stride, int uDivisions, int vDivisions) {
-    auto curves = calcSurfaceSegments(gridPoints, stride);
-
-    std::vector<glm::vec3> surfacePoints;
-    for (int i = 0; i < vDivisions; i++) {
-        float t = i / (vDivisions - 1.0f);
-        std::vector<glm::vec3> controls = evaluateMultipleBezierCurves(curves, t);
-        auto curvePoints = BezierCurve(controls).getPositionSamples(uDivisions);
-        surfacePoints.insert(surfacePoints.end(), curvePoints.begin(), curvePoints.end());
+std::vector<BezierCurve> bezierCurvesFromGrid_Columns(std::vector<glm::vec3> &gridPoints, int stride) {
+    std::vector<BezierCurve> curves;
+    for (unsigned int i = 0; i < gridPoints.size() / stride; i++) {
+        std::vector<glm::vec3> controls;
+        for (int j = 0; j < stride; j++) {
+            controls.push_back(gridPoints[i * stride + j]);
+        }
+        curves.push_back(BezierCurve(controls));
     }
-    return surfacePoints;
+    return curves;
+}
+
+std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> &gridPoints, int stride, int uDivisions, int vDivisions) {
+    auto curves = bezierCurvesFromGrid_Columns(gridPoints, stride);
+    std::cout << curves.size() << " " << stride << std::endl;
+    return gridFromBezierCurves(curves, vDivisions, uDivisions);
 }
 
 void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
