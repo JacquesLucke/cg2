@@ -38,6 +38,6 @@ protected:
 private:
     void updateElapsedTime();
 
-    std::chrono::high_resolution_clock::time_point lastUpdateTime;
-    std::chrono::duration<float> elapsedTime;
+    double lastUpdateTime;
+    double elapsedTime;
 };

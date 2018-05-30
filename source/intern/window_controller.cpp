@@ -9,7 +9,7 @@ bool WindowController::setup() {
     ImGui::CreateContext();
     ImGui_ImplGlfwGL3_Init(_window->handle(), true);
     ImGui::StyleColorsDark();
-    lastUpdateTime = std::chrono::high_resolution_clock::now();
+    lastUpdateTime = glfwGetTime();
     return onSetup();
 }
 
@@ -26,13 +26,13 @@ void WindowController::update() {
 }
 
 void WindowController::updateElapsedTime() {
-    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = glfwGetTime();
     elapsedTime = currentTime - lastUpdateTime;
     lastUpdateTime = currentTime;
 }
 
 float WindowController::getElapsedMilliseconds() {
-    return elapsedTime.count() * 1000;
+    return elapsedTime * 1000;
 }
 
 void WindowController::render() {
