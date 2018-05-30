@@ -112,6 +112,11 @@ void ParametricSurfaceViewer::drawBezierBase() {
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
+    if (camera->isFlying()) {
+        ImGui::Text("Disable fly mode with ESC");
+        return;
+    }
+
     bool recalc = false;
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
