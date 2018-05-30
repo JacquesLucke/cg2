@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 
@@ -8,6 +9,7 @@ bool WindowController::setup() {
     ImGui::CreateContext();
     ImGui_ImplGlfwGL3_Init(_window->handle(), true);
     ImGui::StyleColorsDark();
+    lastUpdateTime = std::chrono::high_resolution_clock::now();
     return onSetup();
 }
 
@@ -18,8 +20,19 @@ void WindowController::teardown() {
 }
 
 void WindowController::update() {
+    updateElapsedTime();
     glfwPollEvents();
     onUpdate();
+}
+
+void WindowController::updateElapsedTime() {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    elapsedTime = currentTime - lastUpdateTime;
+    lastUpdateTime = currentTime;
+}
+
+float WindowController::getElapsedMilliseconds() {
+    return elapsedTime.count() * 1000;
 }
 
 void WindowController::render() {

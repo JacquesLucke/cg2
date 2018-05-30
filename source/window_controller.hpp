@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
-#include "window.hpp"
+#include <chrono>
+#include <glm/glm.hpp>
 
-#include "glm/vec2.hpp"
+#include "window.hpp"
 
 class WindowController {
 public:
@@ -30,5 +31,13 @@ public:
     Window *window() { return _window; }
 
 protected:
+    float getElapsedMilliseconds();
+
     Window* _window;
+
+private:
+    void updateElapsedTime();
+
+    std::chrono::high_resolution_clock::time_point lastUpdateTime;
+    std::chrono::duration<float> elapsedTime;
 };
