@@ -71,7 +71,7 @@ template<typename VertexType>
 class TriangleMesh : public IndexedMesh<VertexType> {
 public:
     TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices)
-        : IndexedMesh(vertices, indices) {}
+        : IndexedMesh<VertexType>(vertices, indices) {}
 
     void draw();
 };
@@ -80,7 +80,7 @@ template<typename VertexType>
 class WireframeMesh : public IndexedMesh<VertexType> {
 public:
     WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices)
-        : IndexedMesh(vertices, (unsigned int*)indices.data(), (int)indices.size() * 2) {}
+        : IndexedMesh<VertexType>(vertices, (unsigned int*)indices.data(), (int)indices.size() * 2) {}
 
     void draw();
 };

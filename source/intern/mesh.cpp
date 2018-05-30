@@ -98,7 +98,7 @@ void IndexedMesh<VertexType>::bindBuffers(const Shader *shader) {
 
 template<typename VertexType>
 void TriangleMesh<VertexType>::draw() {
-    glDrawElements(GL_TRIANGLES, indicesAmount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, this->indicesAmount, GL_UNSIGNED_INT, 0);
 }
 
 
@@ -108,7 +108,7 @@ void TriangleMesh<VertexType>::draw() {
 
 template<typename VertexType>
 void WireframeMesh<VertexType>::draw() {
-    glDrawElements(GL_LINES, indicesAmount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, this->indicesAmount, GL_UNSIGNED_INT, 0);
 }
 
 
@@ -137,12 +137,16 @@ void LinesMesh<VertexType>::draw() {
 ****************************************/
 
 template class Mesh<VertexP>;
+template class IndexedMesh<VertexP>;
 template class TriangleMesh<VertexP>;
 template class PointCloudMesh<VertexP>;
 template class WireframeMesh<VertexP>;
 template class LinesMesh<VertexP>;
 
 template class Mesh<VertexPN>;
+template class IndexedMesh<VertexPN>;
 template class TriangleMesh<VertexPN>;
 
+template class Mesh<VertexPC>;
+template class IndexedMesh<VertexPC>;
 template class PointCloudMesh<VertexPC>;

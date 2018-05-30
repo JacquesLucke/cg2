@@ -266,7 +266,6 @@ std::vector<BezierCurve> bezierCurvesFromGrid_Columns(std::vector<glm::vec3> &gr
 
 std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> &gridPoints, int stride, int uDivisions, int vDivisions) {
     auto curves = bezierCurvesFromGrid_Columns(gridPoints, stride);
-    std::cout << curves.size() << " " << stride << std::endl;
     return gridFromBezierCurves(curves, vDivisions, uDivisions);
 }
 
