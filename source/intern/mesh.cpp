@@ -7,15 +7,15 @@
 
 template<typename VertexType>
 Mesh<VertexType>::Mesh(const std::vector<VertexType> &vertices) {
-    glGenBuffers(1, &vertexBufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexType), vertices.data(), GL_STATIC_DRAW);
     verticesAmount = vertices.size();
 }
 
 template<typename VertexType>
 Mesh<VertexType>::~Mesh() {
-    glDeleteBuffers(1, &vertexBufferID);
+    glDeleteBuffers(1, &vbo);
 }
 
 template<typename VertexType>
@@ -25,7 +25,7 @@ void Mesh<VertexType>::bindBuffers(const Shader *shader) {
 
 template<>
 void Mesh<VertexP>::bindVertexBuffer(const Shader *shader) {
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     int positionAttrLoc = shader->getAttributeLocation_Position();
     glVertexAttribPointer(positionAttrLoc, 3, GL_FLOAT, false, sizeof(VertexP), 0);
@@ -34,7 +34,7 @@ void Mesh<VertexP>::bindVertexBuffer(const Shader *shader) {
 
 template<>
 void Mesh<VertexPN>::bindVertexBuffer(const Shader *shader) {
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     int positionAttrLoc = shader->getAttributeLocation_Position();
     glVertexAttribPointer(positionAttrLoc, 3, GL_FLOAT, false, sizeof(VertexPN), 0);
@@ -47,7 +47,7 @@ void Mesh<VertexPN>::bindVertexBuffer(const Shader *shader) {
 
 template<>
 void Mesh<VertexPC>::bindVertexBuffer(const Shader *shader) {
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     int positionAttrLoc = shader->getAttributeLocation_Position();
     glVertexAttribPointer(positionAttrLoc, 3, GL_FLOAT, false, sizeof(VertexPC), 0);
@@ -60,33 +60,55 @@ void Mesh<VertexPC>::bindVertexBuffer(const Shader *shader) {
 
 
 
+/* Indexed Mesh
+****************************************/
+
+template<typename VertexType>
+IndexedMesh<VertexType>::IndexedMesh(
+        const std::vector<VertexType> &vertices,
+        const unsigned int* indices, const int indicesAmount)
+            : Mesh<VertexType>(vertices)
+{
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesAmount * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    this->indicesAmount = indicesAmount;
+}
+
+template<typename VertexType>
+IndexedMesh<VertexType>::~IndexedMesh() {
+    glDeleteBuffers(1, &ibo);
+}
+
+template<typename VertexType>
+void IndexedMesh<VertexType>::bindIndexBuffer() {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+}
+
+template<typename VertexType>
+void IndexedMesh<VertexType>::bindBuffers(const Shader *shader) {
+    this->bindVertexBuffer(shader);
+    this->bindIndexBuffer();
+}
+
+
+
 /* Triangle Mesh
 *****************************************/
 
 template<typename VertexType>
-TriangleMesh<VertexType>::TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices)
-    : Mesh<VertexType>(vertices)
-{
-    glGenBuffers(1, &indexBufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-    indicesAmount = indices.size();
-}
-
-template<typename VertexType>
-TriangleMesh<VertexType>::~TriangleMesh() {
-    glDeleteBuffers(1, &indexBufferID);
-}
-
-template<typename VertexType>
-void TriangleMesh<VertexType>::bindBuffers(const Shader *shader) {
-    this->bindVertexBuffer(shader);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-}
-
-template<typename VertexType>
 void TriangleMesh<VertexType>::draw() {
     glDrawElements(GL_TRIANGLES, indicesAmount, GL_UNSIGNED_INT, 0);
+}
+
+
+
+/*  Wireframe Mesh
+****************************************/
+
+template<typename VertexType>
+void WireframeMesh<VertexType>::draw() {
+    glDrawElements(GL_LINES, indicesAmount, GL_UNSIGNED_INT, 0);
 }
 
 
@@ -97,37 +119,6 @@ void TriangleMesh<VertexType>::draw() {
 template<typename VertexType>
 void PointCloudMesh<VertexType>::draw() {
     glDrawArrays(GL_POINTS, 0, this->verticesAmount);
-}
-
-
-
-/*  Wireframe Mesh
-****************************************/
-
-template<typename VertexType>
-WireframeMesh<VertexType>::WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &edges)
-    : Mesh<VertexType>(vertices)
-{
-    glGenBuffers(1, &indexBufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, edges.size() * sizeof(EdgeIndices), edges.data(), GL_STATIC_DRAW);
-    indicesAmount = edges.size() * 2;
-}
-
-template<typename VertexType>
-WireframeMesh<VertexType>::~WireframeMesh() {
-    glDeleteBuffers(1, &indexBufferID);
-}
-
-template<typename VertexType>
-void WireframeMesh<VertexType>::bindBuffers(const Shader *shader) {
-    this->bindVertexBuffer(shader);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-}
-
-template<typename VertexType>
-void WireframeMesh<VertexType>::draw() {
-    glDrawElements(GL_LINES, indicesAmount, GL_UNSIGNED_INT, 0);
 }
 
 

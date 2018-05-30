@@ -17,6 +17,10 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
     Window* window = Window::TryCreateNew("My Test", 1200, 600);
     if (window == nullptr) {
         return EXIT_FAILURE;

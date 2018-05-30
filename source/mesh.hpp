@@ -42,27 +42,47 @@ public:
     Mesh(const std::vector<VertexType> &vertices);
     ~Mesh();
 
-    void bindVertexBuffer(const Shader *shader);
     virtual void bindBuffers(const Shader *shader);
+    void bindVertexBuffer(const Shader *shader);
     virtual void draw() = 0;
 
 protected:
-    unsigned int vertexBufferID;
+    unsigned int vbo;
     int verticesAmount;
 };
 
 template<typename VertexType>
-class TriangleMesh : public Mesh<VertexType> {
+class IndexedMesh : public Mesh<VertexType> {
 public:
-    TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices);
-    ~TriangleMesh();
+    IndexedMesh(const std::vector<VertexType> &vertices, const unsigned int* indices, const int indicesAmount);
+    IndexedMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices)
+        : IndexedMesh(vertices, indices.data(), (int)indices.size()) {}
+    ~IndexedMesh();
 
+    void bindIndexBuffer();
     void bindBuffers(const Shader *shader);
-    void draw();
 
 protected:
-    unsigned int indexBufferID;
+    unsigned int ibo;
     int indicesAmount;
+};
+
+template<typename VertexType>
+class TriangleMesh : public IndexedMesh<VertexType> {
+public:
+    TriangleMesh(const std::vector<VertexType> &vertices, const std::vector<unsigned int> &indices)
+        : IndexedMesh(vertices, indices) {}
+
+    void draw();
+};
+
+template<typename VertexType>
+class WireframeMesh : public IndexedMesh<VertexType> {
+public:
+    WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices)
+        : IndexedMesh(vertices, (unsigned int*)indices.data(), (int)indices.size() * 2) {}
+
+    void draw();
 };
 
 template<typename VertexType>
@@ -70,23 +90,8 @@ class PointCloudMesh : public Mesh<VertexType> {
 public:
     PointCloudMesh(const std::vector<VertexType> &vertices)
         : Mesh<VertexType>(vertices) {}
-    ~PointCloudMesh() {}
 
     void draw();
-};
-
-template<typename VertexType>
-class WireframeMesh : public Mesh<VertexType> {
-public:
-    WireframeMesh(const std::vector<VertexType> &vertices, const std::vector<EdgeIndices> &indices);
-    ~WireframeMesh();
-
-    void bindBuffers(const Shader *shader);
-    void draw();
-
-protected:
-    unsigned int indexBufferID;
-    int indicesAmount;
 };
 
 template<typename VertexType>
@@ -94,7 +99,5 @@ class LinesMesh : public Mesh<VertexType> {
 public:
     LinesMesh(const std::vector<VertexType> &vertices)
         : Mesh<VertexType>(vertices) {}
-    ~LinesMesh() {}
-
     void draw();
 };
