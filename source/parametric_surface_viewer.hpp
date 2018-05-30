@@ -46,11 +46,13 @@ private:
     std::vector<glm::vec3> sourcePoints;
 
     /* Display Settings */
+    bool displayGrid = true;
     bool displaySurface = true;
     bool displaySourcePoints = true;
     bool displayNormals = false;
     bool displayBezierBase = false;
     int sourcePointSize = 1;
+    bool useDepthTest = false;
 
     /* Base Grid Settings */
     int uDivisions = 10;

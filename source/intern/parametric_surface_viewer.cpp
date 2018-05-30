@@ -51,12 +51,16 @@ glm::mat4 changeYandZMatrix(
 void ParametricSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
-    drawGrid();
 
+    if (useDepthTest) glEnable(GL_DEPTH_TEST);
+
+    if (displayGrid) drawGrid();
     if (displaySourcePoints) drawSourcePoints();
     if (displaySurface) drawSurface();
     if (displayNormals && finalSurfaceType == FinalSurfaceType::MLS) drawSurfaceNormals();
     if (displayBezierBase && finalSurfaceType == FinalSurfaceType::Bezier) drawBezierBase();
+
+    if (useDepthTest) glDisable(GL_DEPTH_TEST);
 }
 
 void ParametricSurfaceViewer::prepareDrawDimensions() {
@@ -116,6 +120,7 @@ void ParametricSurfaceViewer::drawBezierBase() {
 
 void ParametricSurfaceViewer::onRenderUI() {
     bool settingChanged = false;
+    ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displaySurface);
     ImGui::Checkbox("Display Normals", &displayNormals);
@@ -149,6 +154,7 @@ void ParametricSurfaceViewer::onRenderUI() {
     ImGui::Text("Draw Settings");
     ImGui::SliderInt("Point Size", &sourcePointSize, 1, 10);
     settingChanged |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
+    ImGui::Checkbox("Depth Test", &useDepthTest);
 
     if (settingChanged) {
         updateGeneratedData();
