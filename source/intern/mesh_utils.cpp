@@ -107,30 +107,14 @@ void appendBoxTriangles(std::vector<VertexP> &vertices, std::vector<unsigned int
     }
 }
 
-std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, float scale) {
-    std::vector<glm::vec3> points;
-
-    for (float x = 0; x < xDiv; x++) {
-        for (float y = 0; y < yDiv; y++) {
-            points.push_back(glm::vec3(
-                x / (xDiv - 1) * scale,
-                y / (yDiv - 1) * scale,
-                0
-            ));
-        }
-    }
-
-    return points;
-}
-
 std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, BoundingBox<3> box) {
     std::vector<glm::vec3> points;
 
     for (float x = 0; x < xDiv; x++) {
         for (float y = 0; y < yDiv; y++) {
             points.push_back(glm::vec3(
-                x / (xDiv - 1.0f) * (box.max[0] - box.min[0]) + box.min[0],
-                y / (yDiv - 1.0f) * (box.max[1] - box.min[1]) + box.min[1],
+                box.mapToBox(x / (xDiv - 1.0f), 0),
+                box.mapToBox(y / (yDiv - 1.0f), 1),
                 0.0f
             ));
         }

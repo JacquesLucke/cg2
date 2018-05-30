@@ -19,6 +19,10 @@ struct BoundingBox {
         return (value - min[axis]) / size(axis);
     }
 
+    float mapToBox(float value, int axis) {
+        return value * size(axis) + min[axis];
+    }
+
     friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
         stream << "[";
         for (size_t i = 0; i < N; i++) {
