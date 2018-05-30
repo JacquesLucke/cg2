@@ -133,16 +133,21 @@ void CameraController::update(int triggerKey, float elapsedMilliseconds) {
     if (isKeyDown(GLFW_KEY_S)) camera->moveBackward(step);
     if (isKeyDown(GLFW_KEY_A)) camera->moveLeft(step);
     if (isKeyDown(GLFW_KEY_D)) camera->moveRight(step);
-    if (isKeyDown(GLFW_KEY_Q)) camera->moveDown(step * 4);
-    if (isKeyDown(GLFW_KEY_E)) camera->moveUp(step * 4);
+    if (isKeyDown(GLFW_KEY_Q)) camera->moveDown(step * 3);
+    if (isKeyDown(GLFW_KEY_E)) camera->moveUp(step * 3);
 
-    float angleStep = 0.001f;
     glm::vec2 mousePos = getMousePosition();
-    glm::vec2 mouseDiff = mousePos - lastMousePosition;
-    camera->rotateHorizontal(-mouseDiff[0] * angleStep);
-    camera->rotateVertical(-mouseDiff[1] * angleStep);
-
+    glm::vec2 angleDiff = (mousePos - lastMousePosition) * 0.001f;
     lastMousePosition = mousePos;
+
+    float angleStep = 0.001f * elapsedMilliseconds;
+    if (isKeyDown(GLFW_KEY_LEFT)) angleDiff.x -= angleStep;
+    if (isKeyDown(GLFW_KEY_RIGHT)) angleDiff.x += angleStep;
+    if (isKeyDown(GLFW_KEY_UP)) angleDiff.y -= angleStep;
+    if (isKeyDown(GLFW_KEY_DOWN)) angleDiff.y += angleStep;
+
+    camera->rotateHorizontal(-angleDiff[0]);
+    camera->rotateVertical(-angleDiff[1]);
 }
 
 bool CameraController::isKeyDown(int key) {
