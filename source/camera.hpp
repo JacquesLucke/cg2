@@ -83,7 +83,7 @@ public:
     void disableFlyMode();
     bool isFlying() { return mode == FLY; }
 
-    void update();
+    void update(int triggerKey, float elapsedMilliseconds);
 
 private:
     bool isKeyDown(int key);

@@ -31,14 +31,7 @@ bool ParametricSurfaceViewer::onSetup() {
 }
 
 void ParametricSurfaceViewer::onUpdate() {
-    if (!camera->isFlying() && isKeyDown(GLFW_KEY_F)) {
-        camera->enableFlyMode();
-    }
-    if (camera->isFlying() && isKeyDown(GLFW_KEY_ESCAPE)) {
-        camera->disableFlyMode();
-    }
-
-    camera->update();
+    camera->update(GLFW_KEY_F, getElapsedMilliseconds());
 }
 
 glm::mat4 changeYandZMatrix(

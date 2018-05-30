@@ -118,10 +118,17 @@ void CameraController::disableFlyMode() {
     flyingCamera = NULL;
 }
 
-void CameraController::update() {
-    if (mode != FLY) return;
+void CameraController::update(int triggerKey, float elapsedMilliseconds) {
+    if (mode != FLY) {
+        if (isKeyDown(triggerKey)) enableFlyMode();
+        else return;
+    }
+    if (isKeyDown(GLFW_KEY_ESCAPE)) {
+        disableFlyMode();
+        return;
+    }
 
-    float step = 0.015f * speed;
+    float step = 0.001f * speed * elapsedMilliseconds;
     if (isKeyDown(GLFW_KEY_W)) camera->moveForward(step);
     if (isKeyDown(GLFW_KEY_S)) camera->moveBackward(step);
     if (isKeyDown(GLFW_KEY_A)) camera->moveLeft(step);
