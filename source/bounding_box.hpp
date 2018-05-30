@@ -11,6 +11,14 @@ struct BoundingBox {
     std::array<float, N> min;
     std::array<float, N> max;
 
+    float size(int axis) {
+        return max[axis] - min[axis];
+    }
+
+    float mapBetween0And1(float value, int axis) {
+        return (value - min[axis]) / size(axis);
+    }
+
     friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
         stream << "[";
         for (size_t i = 0; i < N; i++) {

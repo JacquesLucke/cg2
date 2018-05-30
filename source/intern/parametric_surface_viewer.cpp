@@ -12,9 +12,24 @@
 #include "../bezier_curve.hpp"
 #include "../timer.hpp"
 
+glm::vec4 colorFromZ(float z, BoundingBox<3> &box) {
+    float t = box.mapBetween0And1(z, 2);
+    glm::vec4 c1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec4 c2 = glm::vec4(1.0f, 0.6f, 0.0f, 1.0f);
+    return c1 * (1-t) + c2 * t;
+}
+
+PointCloudMesh<VertexPC> *coloredPointCloud(std::vector<glm::vec3> &positions, BoundingBox<3> &box) {
+    std::vector<VertexPC> vertices;
+    for (unsigned int i = 0; i < positions.size(); i++) {
+        vertices.push_back(VertexPC(positions[i], colorFromZ(positions[i].z, box)));
+    }
+    return new PointCloudMesh<VertexPC>(vertices);
+}
 
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
+    colorShader = new ShadelessColorShader();
 
     OffFileData *offData = loadRelOffResource("franke5.off");
     assert(offData != nullptr);
@@ -24,8 +39,8 @@ bool ParametricSurfaceViewer::onSetup() {
     kdTree = new KDTreeVec3_2D(sourcePoints.data(), sourcePoints.size(), 5);
     kdTree->balance();
 
-    sourcePointsCloud = new PointCloudMesh<VertexP>(createVertexPVector(sourcePoints));
     boundingBox = findBoundingBox<glm::vec3, 3>(sourcePoints);
+    sourcePointsCloud = coloredPointCloud(sourcePoints, boundingBox);
     updateGeneratedData();
     return true;
 }
@@ -65,6 +80,8 @@ void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
     flatShader->bind();
     flatShader->setViewProj(matViewProj);
+    colorShader->bind();
+    colorShader->setViewProj(matViewProj);
 }
 
 void ParametricSurfaceViewer::drawGrid() {
@@ -76,11 +93,10 @@ void ParametricSurfaceViewer::drawGrid() {
 }
 
 void ParametricSurfaceViewer::drawSourcePoints() {
-    flatShader->bind();
-    flatShader->setColor(1, 0, 0);
-    flatShader->setModelMatrix(changeYandZMatrix);
+    colorShader->bind();
+    colorShader->setModelMatrix(changeYandZMatrix);
     glPointSize((float)sourcePointSize);
-    sourcePointsCloud->bindBuffers(flatShader);
+    sourcePointsCloud->bindBuffers(colorShader);
     sourcePointsCloud->draw();
     glPointSize(1);
 }

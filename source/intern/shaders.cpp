@@ -33,6 +33,10 @@ int Shader::getAttributeLocation_Normal() const {
     return shader->getAttributeLocation("normal");
 }
 
+int Shader::getAttributeLocation_Color() const {
+    return shader->getAttributeLocation("color");
+}
+
 
 FlatShader::FlatShader() {
     shader = loadShader("flat.shader");
@@ -53,4 +57,9 @@ SolidShader::SolidShader() {
 
 void SolidShader::setBrightness(float brightness) {
     shader->setUniform1f("u_Brightness", brightness);
+}
+
+
+ShadelessColorShader::ShadelessColorShader() {
+    shader = loadShader("shadeless_color.shader");
 }

@@ -45,6 +45,19 @@ void Mesh<VertexPN>::bindVertexBuffer(const Shader *shader) {
     glEnableVertexAttribArray(normalAttrLoc);
 }
 
+template<>
+void Mesh<VertexPC>::bindVertexBuffer(const Shader *shader) {
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+
+    int positionAttrLoc = shader->getAttributeLocation_Position();
+    glVertexAttribPointer(positionAttrLoc, 3, GL_FLOAT, false, sizeof(VertexPC), 0);
+    glEnableVertexAttribArray(positionAttrLoc);
+
+    int colorAttrLoc = shader->getAttributeLocation_Color();
+    glVertexAttribPointer(colorAttrLoc, 4, GL_FLOAT, false, sizeof(VertexPC), (void*)sizeof(glm::vec3));
+    glEnableVertexAttribArray(colorAttrLoc);
+}
+
 
 
 /* Triangle Mesh
@@ -140,3 +153,5 @@ template class LinesMesh<VertexP>;
 
 template class Mesh<VertexPN>;
 template class TriangleMesh<VertexPN>;
+
+template class PointCloudMesh<VertexPC>;

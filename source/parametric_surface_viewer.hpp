@@ -16,7 +16,7 @@ public:
     ParametricSurfaceViewer(Window* window)
         : WindowController(window),
           camera(new CameraController(new PerspectiveCamera(
-              glm::vec3(2, 2, 2), glm::vec3(0, 0, 0), 1, window->aspect()), window)) {}
+              glm::vec3(2, 1, 2), glm::vec3(0, 0, 0), 1, window->aspect()), window)) {}
 
 protected:
     bool onSetup() final override;
@@ -43,6 +43,7 @@ private:
     CameraController* camera;
     KDTreeVec3_2D* kdTree = nullptr;
     FlatShader* flatShader = nullptr;
+    ShadelessColorShader* colorShader = nullptr;
     std::vector<glm::vec3> sourcePoints;
 
     /* Display Settings */
@@ -77,7 +78,7 @@ private:
 
     /* Meshes */
     LinesMesh<VertexP>* gridLinesMesh = nullptr;
-    PointCloudMesh<VertexP>* sourcePointsCloud = nullptr;
+    PointCloudMesh<VertexPC>* sourcePointsCloud = nullptr;
     WireframeMesh<VertexP>* resultingSurface = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
     WireframeMesh<VertexP>* bezierBaseSurface = nullptr;

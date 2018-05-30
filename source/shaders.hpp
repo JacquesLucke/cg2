@@ -12,6 +12,7 @@ public:
 
     int getAttributeLocation_Position() const;
     int getAttributeLocation_Normal() const;
+    int getAttributeLocation_Color() const;
 
 protected:
     GLProgram *shader;
@@ -28,4 +29,9 @@ class SolidShader : public Shader {
 public:
     SolidShader();
     void setBrightness(float brightness);
+};
+
+class ShadelessColorShader : public Shader {
+public:
+    ShadelessColorShader();
 };
