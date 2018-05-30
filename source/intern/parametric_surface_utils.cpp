@@ -141,21 +141,3 @@ void setDataWithMovingLeastSquares(
         setDataWithMovingLeastSquares_Part(points, normals, 0, points.size(), kdTree, radius, solverType);
     }
 }
-
-glm::vec3 mixVectors(glm::vec3 a, glm::vec3 b, float t) {
-    return a * (1 - t) + b * t;
-}
-
-void evaluateDeCasteljau(std::vector<glm::vec3> controlPoints, float t,
-        glm::vec3* outPosition, glm::vec3* outTangent)
-{
-    // controlPoints vector is reused
-    for (unsigned int pass = 0; pass < controlPoints.size() - 2; pass++) {
-        for (unsigned int j = 0; j < controlPoints.size() - pass - 1; j++) {
-            controlPoints[j] = mixVectors(controlPoints[j], controlPoints[j+1], t);
-        }
-    }
-
-    *outPosition = mixVectors(controlPoints[0], controlPoints[1], t);
-    *outTangent = controlPoints[1] - controlPoints[0];
-}

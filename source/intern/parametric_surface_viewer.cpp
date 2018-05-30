@@ -9,6 +9,7 @@
 
 #include "../parametric_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
+#include "../bezier_curve.hpp"
 #include "../timer.hpp"
 
 
@@ -219,39 +220,26 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
 }
 
-std::vector<glm::vec3> calcPointsOnBezierSegment(std::vector<glm::vec3> controlPoints, int divisions) {
-    std::vector<glm::vec3> curvePoints;
-    for (int i = 0; i < divisions; i++) {
-        float t = i / (divisions - 1.0f);
-        glm::vec3 normal;
-        glm::vec3 position;
-        evaluateDeCasteljau(controlPoints, t, &position, &normal);
-        curvePoints.push_back(position);
-    }
-    return curvePoints;
-}
 
-std::vector<std::vector<glm::vec3>> calcSurfaceSegments(std::vector<glm::vec3> gridPoints, int stride, int divisions) {
-    std::vector<std::vector<glm::vec3>> segments;
+std::vector<BezierCurve> calcSurfaceSegments(std::vector<glm::vec3> gridPoints, int stride) {
+    std::vector<BezierCurve> curves;
     for (unsigned int i = 0; i < gridPoints.size() / stride; i++) {
         auto first = gridPoints.begin() + stride * i;
         auto last = gridPoints.begin() + stride * (i + 1);
-        std::vector<glm::vec3> controls(first, last);
-        segments.push_back(calcPointsOnBezierSegment(controls, divisions));
+        BezierCurve curve(std::vector<glm::vec3>(first, last));
+        curves.push_back(curve);
     }
-    return segments;
+    return curves;
 }
 
 std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> gridPoints, int stride, int uDivisions, int vDivisions) {
-    auto segments = calcSurfaceSegments(gridPoints, stride, vDivisions);
+    auto curves = calcSurfaceSegments(gridPoints, stride);
 
     std::vector<glm::vec3> surfacePoints;
     for (int i = 0; i < vDivisions; i++) {
-        std::vector<glm::vec3> controls;
-        for (unsigned int j = 0; j < gridPoints.size() / stride; j++) {
-            controls.push_back(segments[j][i]);
-        }
-        auto curvePoints = calcPointsOnBezierSegment(controls, uDivisions);
+        float t = i / (vDivisions - 1.0f);
+        std::vector<glm::vec3> controls = evaluateMultipleBezierCurves(curves, t);
+        auto curvePoints = BezierCurve(controls).getPositionSamples(uDivisions);
         surfacePoints.insert(surfacePoints.end(), curvePoints.begin(), curvePoints.end());
     }
     return surfacePoints;
