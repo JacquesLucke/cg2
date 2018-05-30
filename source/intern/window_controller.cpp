@@ -32,7 +32,7 @@ void WindowController::updateElapsedTime() {
 }
 
 float WindowController::getElapsedMilliseconds() {
-    return elapsedTime * 1000;
+    return (float)elapsedTime * 1000;
 }
 
 void WindowController::render() {
