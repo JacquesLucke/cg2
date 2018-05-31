@@ -96,15 +96,26 @@ LeastSquaresSolverFunction getLeastSquaresSolver(LeastSquaresSolver solverType) 
     }
 }
 
+std::pair<std::vector<glm::vec3>, std::vector<float>>
+getPointsAndWeightsToConsider(
+        glm::vec3 point, KDTreeVec3_2D *kdTree, float radius)
+{
+    auto pointsToConsider = kdTree->collectInRadius(point, radius);
+    auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, radius);
+    return std::make_pair(pointsToConsider, weights);
+}
+
 void setDataWithMovingLeastSquares_Part(
         std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
         int start, int end, KDTreeVec3_2D *kdTree, float radius,
         LeastSquaresSolver solverType)
 {
     for (int i = start; i < end; i++) {
-        std::vector<glm::vec3> pointsToConsider = kdTree->collectInRadius(points[i], radius);
+        auto data = getPointsAndWeightsToConsider(points[i], kdTree, radius);
+        std::vector<glm::vec3> &pointsToConsider = data.first;
+        std::vector<float> weights = data.second;
+
         if (pointsToConsider.size() > 0) {
-            auto weights = calcWeights(pointsToConsider, points[i], weightFunction_Wendland, radius);
             Coefficients coeffs = weightedLeastSquares(pointsToConsider, weights, getLeastSquaresSolver(solverType));
             points[i].z = coeffs.evaluate(points[i].x, points[i].y);
             normals[i] = coeffs.derivative(points[i].x, points[i].y);
