@@ -9,7 +9,6 @@
 #include "../resources.hpp"
 
 
-
 int main(int argc, char *argv[]) {
     Resources::init(argc, argv);
 
@@ -19,7 +18,7 @@ int main(int argc, char *argv[]) {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     Window* window = Window::TryCreateNew("My Test", 1200, 600);
     if (window == nullptr) {
@@ -29,6 +28,10 @@ int main(int argc, char *argv[]) {
     window->activateContext();
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
     // Call the application hook
     WindowController *controller = createApplication(window);
