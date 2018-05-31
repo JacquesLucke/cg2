@@ -145,7 +145,13 @@ void ParametricSurfaceViewer::onRenderUI() {
 
         recalc |= ImGui::SliderInt("U Divisions", &uDivisions, 2, 30);
         recalc |= ImGui::SliderInt("V Divisions", &vDivisions, 2, 30);
-        recalc |= ImGui::SliderFloat("Radius", &weightRadius, 0.01f, 1.0f);
+        recalc |= ImGui::RadioButton("Radius", (int*)&radiusSelectionInfo.mode, RadiusSelectionMode::Radius); ImGui::SameLine();
+        recalc |= ImGui::RadioButton("K Nearest", (int*)&radiusSelectionInfo.mode, RadiusSelectionMode::KNearest);
+        if (radiusSelectionInfo.mode == RadiusSelectionMode::Radius) {
+            recalc |= ImGui::SliderFloat("Radius", &radiusSelectionInfo.radius, 0.01f, boundingBox.maxsize());
+        } else if (radiusSelectionInfo.mode == RadiusSelectionMode::KNearest) {
+            recalc |= ImGui::SliderInt("Amount", &radiusSelectionInfo.k, 1, 100);
+        }
 
         recalc |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
         recalc |= ImGui::RadioButton("QR", (int*)&leastSquaresSolver, LeastSquaresSolver::QR); ImGui::SameLine();
@@ -233,8 +239,8 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
     std::vector<EdgeIndices> edges = calcGridEdges(xDiv, yDiv);
     std::vector<glm::vec3> normals(points.size());
 
-    setDataWithMovingLeastSquares(points, normals, kdTree, weightRadius,
-        leastSquaresSolver, parallelSurfaceGeneration);
+    setDataWithMovingLeastSquares(points, normals, kdTree,
+        radiusSelectionInfo, leastSquaresSolver, parallelSurfaceGeneration);
 
     resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
@@ -276,8 +282,8 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
     std::vector<glm::vec3> basePoints = calcXYGridPoints(xBaseDiv, yBaseDiv, boundingBox);
     std::vector<glm::vec3> dummy(basePoints.size());
 
-    setDataWithMovingLeastSquares(basePoints, dummy, kdTree, weightRadius,
-        leastSquaresSolver, parallelSurfaceGeneration);
+    setDataWithMovingLeastSquares(basePoints, dummy, kdTree,
+        radiusSelectionInfo, leastSquaresSolver, parallelSurfaceGeneration);
 
     int xDiv = subdivideToDivisions(xBaseDiv, subdivisionLevel);
     int yDiv = subdivideToDivisions(yBaseDiv, subdivisionLevel);

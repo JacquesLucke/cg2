@@ -98,20 +98,33 @@ LeastSquaresSolverFunction getLeastSquaresSolver(LeastSquaresSolver solverType) 
 
 std::pair<std::vector<glm::vec3>, std::vector<float>>
 getPointsAndWeightsToConsider(
-        glm::vec3 point, KDTreeVec3_2D *kdTree, float radius)
+        glm::vec3 point, KDTreeVec3_2D *kdTree, RadiusSelectionInfo radiusSelectionInfo)
 {
-    auto pointsToConsider = kdTree->collectInRadius(point, radius);
-    auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, radius);
-    return std::make_pair(pointsToConsider, weights);
+    if (radiusSelectionInfo.mode == RadiusSelectionMode::Radius){
+        auto pointsToConsider = kdTree->collectInRadius(point, radiusSelectionInfo.radius);
+        auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, radiusSelectionInfo.radius);
+        return std::make_pair(pointsToConsider, weights);
+    } else {
+        auto pointsToConsider = kdTree->collectKNearest(point, radiusSelectionInfo.k);
+        float maxDistance = 0;
+        for (unsigned int i = 0; i < pointsToConsider.size(); i++) {
+            float distance = distanceFunction(point, pointsToConsider[i]);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+            }
+        }
+        auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, maxDistance);
+        return std::make_pair(pointsToConsider, weights);
+    }
 }
 
 void setDataWithMovingLeastSquares_Part(
         std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
-        int start, int end, KDTreeVec3_2D *kdTree, float radius,
+        int start, int end, KDTreeVec3_2D *kdTree, RadiusSelectionInfo radiusSelectionInfo,
         LeastSquaresSolver solverType)
 {
     for (int i = start; i < end; i++) {
-        auto data = getPointsAndWeightsToConsider(points[i], kdTree, radius);
+        auto data = getPointsAndWeightsToConsider(points[i], kdTree, radiusSelectionInfo);
         std::vector<glm::vec3> &pointsToConsider = data.first;
         std::vector<float> weights = data.second;
 
@@ -127,7 +140,8 @@ void setDataWithMovingLeastSquares_Part(
 
 void setDataWithMovingLeastSquares(
         std::vector<glm::vec3> &points, std::vector<glm::vec3> &normals,
-        KDTreeVec3_2D *kdTree, float radius, LeastSquaresSolver solverType, bool parallel)
+        KDTreeVec3_2D *kdTree, RadiusSelectionInfo radiusSelectionInfo,
+        LeastSquaresSolver solverType, bool parallel)
 {
     assert(points.size() == normals.size());
 
@@ -141,7 +155,7 @@ void setDataWithMovingLeastSquares(
             threads.push_back(
                 std::thread(setDataWithMovingLeastSquares_Part,
                     std::ref(points), std::ref(normals),
-                    start, end, kdTree, radius, solverType)
+                    start, end, kdTree, radiusSelectionInfo, solverType)
             );
         }
         while (!threads.empty()) {
@@ -149,6 +163,8 @@ void setDataWithMovingLeastSquares(
             threads.pop_back();
         }
     } else {
-        setDataWithMovingLeastSquares_Part(points, normals, 0, points.size(), kdTree, radius, solverType);
+        setDataWithMovingLeastSquares_Part(
+            points, normals, 0, points.size(),
+            kdTree, radiusSelectionInfo, solverType);
     }
 }

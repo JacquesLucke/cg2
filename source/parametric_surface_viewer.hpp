@@ -62,12 +62,12 @@ private:
     BoundingBox<3> boundingBox;
 
     /* Surface Generation Settings Settings */
+    LeastSquaresSolver leastSquaresSolver = LeastSquaresSolver::SVD;
     bool parallelSurfaceGeneration = true;
-    float weightRadius = 0.1f;
     float normalsLength = 0.1f;
     int subdivisionLevel = 0;
     int subdivisionType = 0;
-    LeastSquaresSolver leastSquaresSolver = LeastSquaresSolver::SVD;
+    RadiusSelectionInfo radiusSelectionInfo;
 
     enum FinalSurfaceType {
         MLS,

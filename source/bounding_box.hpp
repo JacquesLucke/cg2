@@ -15,6 +15,14 @@ struct BoundingBox {
         return max[axis] - min[axis];
     }
 
+    float maxsize() {
+        float max = 0;
+        for (int i = 0; i < N; i++) {
+            if (size(i) > max) max = size(i);
+        }
+        return max;
+    }
+
     float mapBetween0And1(float value, int axis) {
         return (value - min[axis]) / size(axis);
     }
