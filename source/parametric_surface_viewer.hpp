@@ -68,6 +68,8 @@ private:
     int subdivisionLevel = 0;
     int subdivisionType = 0;
     RadiusSelectionInfo radiusSelectionInfo;
+    bool useRelativeK = false;
+    float relativeK = 0.1f;
 
     enum FinalSurfaceType {
         MLS,

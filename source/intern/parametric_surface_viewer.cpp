@@ -145,12 +145,21 @@ void ParametricSurfaceViewer::onRenderUI() {
 
         recalc |= ImGui::SliderInt("U Divisions", &uDivisions, 2, 30);
         recalc |= ImGui::SliderInt("V Divisions", &vDivisions, 2, 30);
+
         recalc |= ImGui::RadioButton("Radius", (int*)&radiusSelectionInfo.mode, RadiusSelectionMode::Radius); ImGui::SameLine();
         recalc |= ImGui::RadioButton("K Nearest", (int*)&radiusSelectionInfo.mode, RadiusSelectionMode::KNearest);
         if (radiusSelectionInfo.mode == RadiusSelectionMode::Radius) {
             recalc |= ImGui::SliderFloat("Radius", &radiusSelectionInfo.radius, 0.01f, boundingBox.maxsize());
         } else if (radiusSelectionInfo.mode == RadiusSelectionMode::KNearest) {
-            recalc |= ImGui::SliderInt("Amount", &radiusSelectionInfo.k, 1, 100);
+            ImGui::SameLine();
+            recalc |= ImGui::Checkbox("Use Relative K", &useRelativeK);
+            if (useRelativeK) {
+                recalc |= ImGui::SliderFloat("Relative K", &relativeK, 0.01f, 1.0f);
+                radiusSelectionInfo.k = (int)(sourcePoints.size() * relativeK);
+                ImGui::LabelText("", "K = %d", radiusSelectionInfo.k);
+            } else {
+                recalc |= ImGui::SliderInt("Amount", &radiusSelectionInfo.k, 1, 50);
+            }
         }
 
         recalc |= ImGui::RadioButton("SVD", (int*)&leastSquaresSolver, LeastSquaresSolver::SVD); ImGui::SameLine();
