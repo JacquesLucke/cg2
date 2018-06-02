@@ -110,9 +110,9 @@ public:
 
     void update() {
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        // ImGui_ImplGlfwGL3_NewFrame();
-        // ImGui::Text("Test App");
-        // ImGui::Render();
-        // ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplGlfwGL3_NewFrame();
+        ImGui::Text("Test App");
+        ImGui::Render();
+        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
     }
 };

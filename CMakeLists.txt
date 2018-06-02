@@ -7,7 +7,6 @@ endif()
 project(cg2)
 set(CMAKE_CXX_STANDARD 14)
 
-add_subdirectory(extern)
 add_subdirectory(source)
 
 SET(SRC
@@ -20,12 +19,14 @@ SET(SRC
 )
 
 set(INC
-    extern/glfw/include
+    extern
     extern/glad/include
     extern/imgui
 )
 
-set(LIB glfw)
+set(LIB glfw 
+	dl
+)
 
 find_package(OpenGL REQUIRED)
 list(APPEND LIB ${OPENGL_LIBRARIES})

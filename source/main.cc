@@ -19,6 +19,10 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     GLFWwindow *window = glfwCreateWindow(640, 480, "CG 2", NULL, NULL);
     if (window == nullptr)
     {
@@ -29,6 +33,10 @@ int main(void)
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
     App *app = new TestApp(window);
     app->setup();
