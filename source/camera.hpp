@@ -14,6 +14,8 @@ public:
     Camera(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
         : eye(eye), center(center), upDirection(up) {}
 
+    virtual ~Camera(){}
+
     glm::mat4 getViewMatrix() const;
     virtual glm::mat4 getProjectionMatrix() const = 0;
     glm::mat4 getViewProjectionMatrix() const;

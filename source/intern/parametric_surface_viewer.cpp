@@ -11,6 +11,7 @@
 #include "../mesh_utils.hpp"
 #include "../bezier_curve.hpp"
 #include "../timer.hpp"
+#include "../window_controller.hpp"
 
 glm::vec4 colorFromZ(float z, BoundingBox<3> &box) {
     float t = box.mapBetween0And1(z, 2);

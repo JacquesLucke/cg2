@@ -38,6 +38,6 @@ protected:
 private:
     void updateElapsedTime();
 
-    double lastUpdateTime;
-    double elapsedTime;
+    double lastUpdateTime = 0.0;
+    double elapsedTime = 0.0;
 };

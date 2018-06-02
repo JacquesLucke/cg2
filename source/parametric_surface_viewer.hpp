@@ -5,7 +5,7 @@
 
 #include "mesh.hpp"
 #include "camera.hpp"
-#include "shader.hpp"
+#include "shaders.hpp"
 #include "bounding_box.hpp"
 #include "window_controller.hpp"
 #include "parametric_surface_utils.hpp"

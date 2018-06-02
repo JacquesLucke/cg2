@@ -60,12 +60,12 @@ private:
         RADIUS, KNEAREST
     };
 
-    Mesh<VertexPN>* mesh;
-    FlatShader* flatShader;
-    SolidShader* solidShader;
-    CameraController* camera;
+    Mesh<VertexPN>* mesh = nullptr;
+    FlatShader* flatShader = nullptr;
+    SolidShader* solidShader = nullptr;
+    CameraController* camera = nullptr;
 
-    KDTreeVec3 *kdTree;
+    KDTreeVec3 *kdTree = nullptr;
     std::vector<glm::vec3> kdTreePoints;
 
     glm::vec3 queryCenter = glm::vec3(0, 0, 0);

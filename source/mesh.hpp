@@ -63,8 +63,8 @@ public:
     void bindBuffers(const Shader *shader);
 
 protected:
-    unsigned int ibo;
-    int indicesAmount;
+    unsigned int ibo = 0;
+    int indicesAmount = 0;
 };
 
 template<typename VertexType>
