@@ -40,7 +40,7 @@ template<typename VertexType>
 class Mesh {
 public:
     Mesh(const std::vector<VertexType> &vertices);
-    ~Mesh();
+    virtual ~Mesh();
 
     virtual void bindBuffers(const Shader *shader);
     void bindVertexBuffer(const Shader *shader);

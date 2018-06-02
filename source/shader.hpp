@@ -9,6 +9,7 @@ public:
     std::string source;
 
     GLShader(std::string source);
+    virtual ~GLShader();
 
     virtual void compile() = 0;
     virtual void deleteCompiledResult();

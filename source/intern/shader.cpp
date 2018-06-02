@@ -78,6 +78,8 @@ GLShader::GLShader(std::string source) {
     this->shaderID = 0;
 }
 
+GLShader::~GLShader() {}
+
 void GLShader::deleteCompiledResult() {
     glDeleteShader(shaderID);
     shaderID = 0;
