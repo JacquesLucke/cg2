@@ -1,1 +1,13 @@
 \section*{Aufgabe 2: }
+Sei eine Oberfläche durch ein bilineares Bernsteinpolynom in $[0,1]^2$ definiert, also
+\begin{align*}
+  q(u,v) &= \sum_{i=0}^1\sum_{j=0}^1b_{i,j}B^1_i(u)B^1_j(v)\text{, wobei $u, v\in [0,1]$}
+\end{align*}
+für vier Bézierpunkte $b_{i,j} \in \mathbb{R}^3$. Wegen $B^1_0(0) = B^1_1(1) = 1$ und $B^1_0(1) = B^1_1(0) = 0$ folgt für die Eckpunkte der Fläche:
+\begin{align*}
+  q(0,0) &= \sum_{i=0}^1\sum_{j=0}^1b_{i,j}B^1_i(0)B^1_j(0) = b_{0,0}\\
+  q(0,1) &= \sum_{i=0}^1\sum_{j=0}^1b_{i,j}B^1_i(0)B^1_j(1) = b_{0,1}\\
+  q(1,0) &= \sum_{i=0}^1\sum_{j=0}^1b_{i,j}B^1_i(1)B^1_j(0) = b_{1,0}\\
+  q(1,1) &= \sum_{i=0}^1\sum_{j=0}^1b_{i,j}B^1_i(1)B^1_j(1) = b_{1,1}\\
+\end{align*}
+Wählt man die Bézierpunkte nun so, dass sie nicht in einer Ebene liegen (z.B. \hbox{$b_{0,0} = (0,0,0)^T$}, \\\hbox{$b_{1,0} = (1,0,0)^T$}, \hbox{$b_{0,1} = (0, 1, 0)^T$} und \hbox{$b_{1,1} = (1, 1, 1)^T$}), kann die durch das Bernsteinpolynom definierte Fläche keine Ebene bilden.
