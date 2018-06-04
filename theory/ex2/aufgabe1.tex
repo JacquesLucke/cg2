@@ -1,0 +1,12 @@
+\section*{Aufgabe 1: }
+Sei $p(t) = \sum_{i=0}^nb_iB_i^n(t)$ mit $b_i \in \mathbb{R}^d$ eine Bezierkurve. Für die erste Ableitung von $p$ gilt dann:
+\begin{align*}
+  p'(t) &= n\sum_{i=0}^{n-1}(b_{i+1} - b_i)B_i^{n-1}(t) =n\left(\sum_{i=0}^{n-1}b_{i+1}B_i^{n-1}(t) - \sum_{i=0}^{n-1}b_iB_i^{n-1}(t)\right)\\
+          &= n\left(p_1(t) - p_2(t))
+\end{align*}
+Dabei sind $p_1$ und $p_2$ zwei weitere Bezierkurven, wobei $p_1$ durch die Punkte $b_1,\cdots,b_n$ und $p_2$ durch die Punkte $b_0, \cdots, b_{n-1}$ kontrolliert wird. Nach dem Casteljau-Algorithmus gilt $p(t) = b_0^n(t)$.\\
+$p_1$ und $p_2$ lassen sich daher mit $p_1(t) = b_1^{n-1}(t)$ und $p_2(t) = b_0^{n-1}(t)$ berechnen. Damit folgt für die Ableitung von $p$ weiter:
+\begin{align*}
+  p'(t) &= n\left(p_1(t) - p_2(t)\right) = n\left(b_1^{n-1}(t) - b_0^{n-1}(t)\right)
+\end{align*}
+Dies entspricht dem letzten Segment des Casteljau-Algorithmus.
