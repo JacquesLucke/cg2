@@ -145,14 +145,14 @@ std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
 LinesMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box) {
     std::vector<VertexP> vertices;
     for (float i = 0; i < xDiv; i++) {
-        float offset = i / (xDiv - 1) * (box.max[0] - box.min[0]) + box.min[0];
-        vertices.push_back(VertexP(glm::vec3(offset, box.min[0], 0)));
-        vertices.push_back(VertexP(glm::vec3(offset, box.max[0], 0)));
+        float offset = box.mapToBox(i / (xDiv - 1), 0);
+        vertices.push_back(VertexP(glm::vec3(offset, box.min[1], 0)));
+        vertices.push_back(VertexP(glm::vec3(offset, box.max[1], 0)));
     }
     for (float i = 0; i < yDiv; i++) {
-        float offset = i / (yDiv - 1) * (box.max[1] - box.min[1]) + box.min[1];
-        vertices.push_back(VertexP(glm::vec3(box.min[1], offset, 0)));
-        vertices.push_back(VertexP(glm::vec3(box.max[1], offset, 0)));
+        float offset = box.mapToBox(i / (yDiv - 1), 1);
+        vertices.push_back(VertexP(glm::vec3(box.min[0], offset, 0)));
+        vertices.push_back(VertexP(glm::vec3(box.max[0], offset, 0)));
     }
     return new LinesMesh<VertexP>(vertices);
 }
