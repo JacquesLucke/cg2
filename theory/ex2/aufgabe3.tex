@@ -1,2 +1,32 @@
 \section*{Aufgabe 3: }
-Gegeben seien die beiden Punkte $p_1 = 0$, $p_2 = 1$ und $p_3 = 3$ mit den korrenspondierenden Funktionswerten $f_1 = 1$, $f_2 = 2$ und $f_3 = 1$. Gesucht ist eine durch WLS ausgewählte, stetig differenzierbare Funktion $f$, für die gilt, dass $f(p_i) \approx f_i$. Die Tangenten dieser Funktion können lokal zum Beispiel durch konstante Funktionen approximiert werden, d.h. $f'(p_i) \approx 0$. Da $f_1 \neq f_2$, per Konstruktion also auch $f(p_1) \neq f(p_2)$, muss gelten, dass $f'(x) \neq 0$ für ein $x \in ]p_1; p_2[$. Folglich kann die lokale Approximation der Tangenten nicht für jeden Wert des Definitionsbereichs von $f$ den tatsächlichen Wert annehmen.\\\\
+Gegeben seien die beiden Punkte $p_1 = 0$, $p_2 = 1$ und $p_3 = 3$ mit den korrenspondierenden Funktionswerten $f_1 = 1$, $f_2 = 2$ und $f_3 = 1$. Gesucht ist eine durch WLS ausgewählte, stetig differenzierbare Funktion $f$, für die gilt, dass $f(p_i) \approx f_i$. Die Tangenten dieser Funktion können lokal zum Beispiel durch konstante Funktionen approximiert werden, d.h. $f'(p_i) \approx 0$. Da $f_1 \neq f_2$, per Konstruktion also auch $f(p_1) \neq f(p_2)$, muss gelten, dass $f'(x) \neq 0$ für ein $x \in ]p_1; p_2[$. Folglich kann die lokale Approximation der Tangenten nicht für jeden Wert des Definitionsbereichs von $f$ den tatsächlichen Wert annehmen.
+\subsection*{Herleitung der Tangenten für eine WLS-Approximation}
+Seien $p_1,\cdots,p_n \in \mathbb{R}^d$ als eine Menge von Punkten mit den korrespondierenden Funktionswerten $f_1,\cdots,f_n \in \mathbb{R}$, $\bm{F}$ mit $|\bm{F}| = m$ als Menge von Basisfunktionen und $\Theta:\mathbb{R}\rightarrow\mathbb{R}$ als Gewichtungsfunktion gegeben. Gesucht ist eine lokal gewählte Funktion $f:\mathbb{R}^d\rightarrow\mathbb{R}$, die folgendes Kriterium minimiert:
+\begin{align*}
+  \min_{f_x \in \bm{F}}\sum_{i=1}^n\Theta(|p_i - x|)|f(p_i)-f_i|^2 \label{minCriteria}
+\end{align*}
+Da die Funktion $f$ lokal gewählt wird, kann sie folgendermaßen definiert werden:
+\begin{align*}
+  f(x) = f_x(x) = \sum_{i=1}^mc_i(x)F_i(x) = \bm{c}(x)\bm{F}
+\end{align*}
+Dabei ist $\bm{c}$ der minimierte Gewichtskoeffizient. Dieser lässt sich berechnen, indem man die Definition von $f(x)$ in Gleichung \ref{minCriteria} einsetzt. Es folgt:
+\begin{align*}
+  \min_{\bm{c}(x)}\sum_{i=1}^n\Theta(|p_i - x|)\left(\sum_{j=1}^mc_j(x)F_j(p_i) - f_i\right)^2
+\end{align*}
+Durch das Nullsetzen der partiellen Ableitungen nach $c_j$ erhält man folgendes Gleichungssystem:
+\begin{align*}
+  \forall k \in \{1,\cdots, m\} \sum_{i=1}^n2\Theta(|p_i - x|)F_k(p_i)\left(\sum_{j=1}^mc_j(x)F_j(p_i) - f_i)\right) = 0
+\end{align*}
+Dies ist ein lineares Gleichungssystem mit den Unbekannten $c_j(x)$, also der Form $\bm{A}(x)\bm{c}(x) = \bm{b}(x)$, wobei
+\begin{align*}
+  \bm{A}(x) = \{a_{jk}(x)\} \in \mathbb{R}^{m\times m}, & a_{jk}(x) = \sum_{i=1}^n2\Theta(|p_i - x|)F_j(p_i)F_k(p_i)\text{ und}\\
+  \bm{b}(x) = (b_1(x),\cdots,b_m(x)), & b_j(x) = \sum_{i=1}^n2\Theta(|p_i - x|)F_j(p_i)f_i
+\end{align*}
+Damit gilt nun $\bm{c}(x) = \bm{A}^{-1}(x)\bm{b}(x)$, weshalb sich $f_x$ als $f_x(x) = \bm{A}^{-1}(x)\bm{b}(x)\bm{F}(x)$ darstellen lässt. Dieser Term lässt sich folgendermaßen ableiten:
+\begin{align*}
+  \frac{\partial f_x(x)}{\partial x} &= \frac{\partial \bm{A}^{-1}(x)}{\partial x}\bm{b}(x)\bm{F}(x) + \bm{A}^{-1}(x)\frac{\partial \bm{b}(x)}{\partial x}\bm{F}(x) + \bm{A}^{-1}(x)\bm{b}(x)\frac{\partial \bm{F}(x)}{\partial x}\\
+                                     &= -\bm{A}^{-1}\frac{\partial A(x)}{\partial x}\bm{A}^{-1}\bm{b}(x)\bm{F}(x) + \bm{A}^{-1}(x)\frac{\partial \bm{b}(x)}{\partial x}\bm{F}(x) + \bm{A}^{-1}(x)\bm{b}(x)\frac{\partial \bm{F}(x)}{\partial x}\text{, }\\\text{wobei}\\
+  \frac{\partial \bm{A}(x)}{\partial x} &= \left\{\frac{\partial a_{jk}(x)}{\partial x}\right\}, \frac{\partial a_{jk}(x)}{\partial x} = \sum_{i = 1}^n2\frac{p_i - x}{|p_i - x|}\Theta'(|p_i - x|)F_j(p_i)F_k(p_i)\text{,}\\
+  \frac{\partial\bm{b}(x)}{\partial x} &= \left(\frac{\partial b_1(x)}{\partial x}, \cdots, \frac{\partial b_m(x)}{\partial x}\right), \frac{\partial b_j(x)}{\partial x} = \sum_{i = 1}^n2\frac{p_i - x}{|p_i - x|}\Theta'(|p_i - x|)F_j(p_i)f_i\text{ und}\\
+  \frac{\partial F(x)}{\partial x} &= \left(\frac{\partial F_1(x)}{\partial x},\cdots,\frac{\partial F_m(x)}{\partial x}\right)
+\end{align*}
