@@ -63,3 +63,31 @@ void SolidShader::setBrightness(float brightness) {
 ShadelessColorShader::ShadelessColorShader() {
     shader = loadShader("shadeless_color.shader");
 }
+
+BlinnPhongShader::BlinnPhongShader() {
+    shader = loadShader("blinnphong.shader");
+}
+
+void BlinnPhongShader::setAmbientColor(float r, float g, float b) {
+    shader->setUniform3f("ambientColor", r, g, b);
+}
+
+void BlinnPhongShader::setSpecularColor(float r, float g, float b) {
+    shader->setUniform3f("specularColor", r, g, b);
+}
+
+void BlinnPhongShader::setDiffuseColor(float r, float g, float b) {
+    shader->setUniform3f("diffuseColor", r, g, b);
+}
+
+void BlinnPhongShader::setCameraPosition(const glm::vec3 &pos) {
+    shader->setUniform3f("cameraPosition", pos);
+}
+
+void BlinnPhongShader::setLightPosition(const glm::vec3 &pos) {
+    shader->setUniform3f("lightPosition", pos);
+}
+
+void BlinnPhongShader::setMagnitude(float value) {
+    shader->setUniform1f("magnitude", value);
+}

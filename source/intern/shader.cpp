@@ -40,6 +40,14 @@ void GLProgram::setUniform1f(const std::string& name, float value) {
     glUniform1f(getUniformLocation(name), value);
 }
 
+void GLProgram::setUniform3f(const std::string& name, float v1, float v2, float v3) {
+    glUniform3f(getUniformLocation(name), v1, v2, v3);
+}
+
+void GLProgram::setUniform3f(const std::string& name, const glm::vec3 &value) {
+    glUniform3f(getUniformLocation(name), value.x, value.y, value.z);
+}
+
 void GLProgram::setUniform4f(const std::string& name, float v1, float v2, float v3, float v4) {
     glUniform4f(getUniformLocation(name), v1, v2, v3, v4);
 }

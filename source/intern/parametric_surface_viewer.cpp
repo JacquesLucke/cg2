@@ -31,6 +31,7 @@ PointCloudMesh<VertexPC> *coloredPointCloud(std::vector<glm::vec3> &positions, B
 bool ParametricSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     colorShader = new ShadelessColorShader();
+    lightShader = new BlinnPhongShader();
 
     OffFileData *offData = loadRelOffResource("franke5.off");
     assert(offData != nullptr);
@@ -110,10 +111,19 @@ void ParametricSurfaceViewer::drawSurface() {
 	resultingSurfaceWireframe->bindBuffers(flatShader);
 	resultingSurfaceWireframe->draw();
     } else {
-	flatShader->bind();
-	flatShader->setModelMatrix(changeYandZMatrix);
-	flatShader->setColor(1,1,0);
-	resultingSurfaceTriangle->bindBuffers(flatShader);
+	lightShader->bind();
+	
+	lightShader->setModelMatrix(changeYandZMatrix);
+	lightShader->setAmbientColor(0,0,0);
+	lightShader->setDiffuseColor(0.8f, 0.8f, 0.2f);
+	lightShader->setSpecularColor(1,1,1);
+	auto lightPos = glm::vec3(2.0f, 2.0f, 2.0f);
+	lightShader->setLightPosition(lightPos);
+	lightShader->setCameraPosition(camera->camera->eye);
+	lightShader->setMagnitude(1.0f);
+
+	
+	resultingSurfaceTriangle->bindBuffers(lightShader);
 	resultingSurfaceTriangle->draw();
     }
 }
@@ -265,7 +275,7 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
     if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
 	resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(points), calcGridEdges(xDiv, yDiv));
     else
-	resultingSurfaceTriangle = new TriangleMesh<VertexP>(createVertexPVector(points), calcGridTriangleIndices(xDiv, yDiv));
+	resultingSurfaceTriangle = new TriangleMesh<VertexPN>(createVertexPNVector(points, normals), calcGridTriangleIndices(xDiv, yDiv));
     
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
 }
@@ -339,7 +349,7 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
     if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
 	resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridEdges(xDiv, yDiv));
     else
-	resultingSurfaceTriangle = new TriangleMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridTriangleIndices(xDiv, yDiv));
+	resultingSurfaceTriangle = new TriangleMesh<VertexPN>(createVertexPNVector(surfaceData.positions, surfaceData.normals), calcGridTriangleIndices(xDiv, yDiv));
 
     surfaceNormalLines = createLineSegmentsMesh(surfaceData.positions, surfaceData.normals, normalsLength);
 

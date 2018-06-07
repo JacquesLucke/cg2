@@ -44,6 +44,7 @@ private:
     KDTreeVec3_2D* kdTree = nullptr;
     FlatShader* flatShader = nullptr;
     ShadelessColorShader* colorShader = nullptr;
+    BlinnPhongShader* lightShader = nullptr;
     std::vector<glm::vec3> sourcePoints;
 
     /* Display Settings */
@@ -90,7 +91,7 @@ private:
     LinesMesh<VertexP>* gridLinesMesh = nullptr;
     PointCloudMesh<VertexPC>* sourcePointsCloud = nullptr;
     WireframeMesh<VertexP>* resultingSurfaceWireframe = nullptr;
-    TriangleMesh<VertexP>* resultingSurfaceTriangle = nullptr;
+    TriangleMesh<VertexPN>* resultingSurfaceTriangle = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
     WireframeMesh<VertexP>* bezierBaseSurface = nullptr;
 };

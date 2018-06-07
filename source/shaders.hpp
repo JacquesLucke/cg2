@@ -35,3 +35,16 @@ class ShadelessColorShader : public Shader {
 public:
     ShadelessColorShader();
 };
+
+class BlinnPhongShader : public Shader {
+public:
+    BlinnPhongShader();
+
+    void setAmbientColor(float r, float g, float b);
+    void setSpecularColor(float r, float g, float b);
+    void setDiffuseColor(float r, float g, float b);
+    void setCameraPosition(const glm::vec3 &pos);
+    void setLightPosition(const glm::vec3 &pos);
+
+    void setMagnitude(float value);
+};
