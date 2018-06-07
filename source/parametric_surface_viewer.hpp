@@ -54,6 +54,13 @@ private:
     bool displayBezierBase = false;
     int sourcePointSize = 1;
     bool useDepthTest = false;
+ 
+    enum SurfaceRenderMode {
+	WIREFRAME,
+	SOLID
+    };
+
+    SurfaceRenderMode surfaceRenderMode = SurfaceRenderMode::WIREFRAME;
 
     /* Base Grid Settings */
     int uDivisions = 10;
@@ -76,12 +83,14 @@ private:
         Bezier
     };
 
+
     FinalSurfaceType finalSurfaceType = FinalSurfaceType::MLS;
 
     /* Meshes */
     LinesMesh<VertexP>* gridLinesMesh = nullptr;
     PointCloudMesh<VertexPC>* sourcePointsCloud = nullptr;
-    WireframeMesh<VertexP>* resultingSurface = nullptr;
+    WireframeMesh<VertexP>* resultingSurfaceWireframe = nullptr;
+    TriangleMesh<VertexP>* resultingSurfaceTriangle = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
     WireframeMesh<VertexP>* bezierBaseSurface = nullptr;
 };

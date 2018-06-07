@@ -103,11 +103,19 @@ void ParametricSurfaceViewer::drawSourcePoints() {
 }
 
 void ParametricSurfaceViewer::drawSurface() {
-    flatShader->bind();
-    flatShader->setModelMatrix(changeYandZMatrix);
-    flatShader->setColor(1, 1, 0);
-    resultingSurface->bindBuffers(flatShader);
-    resultingSurface->draw();
+    if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode) {
+	flatShader->bind();
+	flatShader->setModelMatrix(changeYandZMatrix);
+	flatShader->setColor(1, 1, 0);
+	resultingSurfaceWireframe->bindBuffers(flatShader);
+	resultingSurfaceWireframe->draw();
+    } else {
+	flatShader->bind();
+	flatShader->setModelMatrix(changeYandZMatrix);
+	flatShader->setColor(1,1,0);
+	resultingSurfaceTriangle->bindBuffers(flatShader);
+	resultingSurfaceTriangle->draw();
+    }
 }
 
 void ParametricSurfaceViewer::drawSurfaceNormals() {
@@ -186,6 +194,11 @@ void ParametricSurfaceViewer::onRenderUI() {
     recalc |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.3f);
     ImGui::Checkbox("Depth Test", &useDepthTest);
 
+    ImGui::Text("Surface rendermode: ");
+    recalc |= ImGui::RadioButton("Wireframe", (int*)&surfaceRenderMode, SurfaceRenderMode::WIREFRAME);
+    ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Solid", (int*)&surfaceRenderMode, SurfaceRenderMode::SOLID);
+
     if (recalc) {
         updateGeneratedData();
     }
@@ -204,22 +217,20 @@ void ParametricSurfaceViewer::updateGeneratedData() {
 }
 
 void ParametricSurfaceViewer::deleteGeneratedData() {
-    if (gridLinesMesh != nullptr) {
-        delete gridLinesMesh;
-        gridLinesMesh = nullptr;
-    }
-    if (resultingSurface != nullptr) {
-        delete resultingSurface;
-        resultingSurface = nullptr;
-    }
-    if (surfaceNormalLines != nullptr) {
-        delete surfaceNormalLines;
-        surfaceNormalLines = nullptr;
-    }
-    if (bezierBaseSurface != nullptr) {
-        delete bezierBaseSurface;
-        bezierBaseSurface = nullptr;
-    }
+    delete gridLinesMesh;
+    gridLinesMesh = nullptr;
+    
+    delete resultingSurfaceWireframe;
+    resultingSurfaceWireframe = nullptr;
+
+    delete resultingSurfaceTriangle;
+    resultingSurfaceTriangle = nullptr;
+    
+    delete surfaceNormalLines;
+    surfaceNormalLines = nullptr;
+	
+    delete bezierBaseSurface;
+    bezierBaseSurface = nullptr;
 }
 
 void ParametricSurfaceViewer::createGrid() {
@@ -246,13 +257,16 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
     int yDiv = subdivideToDivisions(vDivisions, subdivisionLevel);
 
     std::vector<glm::vec3> points = calcXYGridPoints(xDiv, yDiv, boundingBox);
-    std::vector<EdgeIndices> edges = calcGridEdges(xDiv, yDiv);
     std::vector<glm::vec3> normals(points.size());
 
     setDataWithMovingLeastSquares(points, normals, kdTree,
         radiusSelectionInfo, leastSquaresSolver, parallelSurfaceGeneration);
 
-    resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(points), edges);
+    if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
+	resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(points), calcGridEdges(xDiv, yDiv));
+    else
+	resultingSurfaceTriangle = new TriangleMesh<VertexP>(createVertexPVector(points), calcGridTriangleIndices(xDiv, yDiv));
+    
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
 }
 
@@ -321,8 +335,11 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
     int yDiv = subdivideToDivisions(yBaseDiv, subdivisionLevel);
 
     auto surfaceData = calcBezierSurface(basePoints, yBaseDiv, xDiv, yDiv);
-    auto edges = calcGridEdges(xDiv, yDiv);
-    resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(surfaceData.positions), edges);
+
+    if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
+	resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridEdges(xDiv, yDiv));
+    else
+	resultingSurfaceTriangle = new TriangleMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridTriangleIndices(xDiv, yDiv));
 
     surfaceNormalLines = createLineSegmentsMesh(surfaceData.positions, surfaceData.normals, normalsLength);
 
