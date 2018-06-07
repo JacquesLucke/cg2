@@ -27,15 +27,15 @@ void BezierCurve::evaluate(float t, glm::vec3* outPosition, glm::vec3* outTangen
     evaluateDeCasteljau(controls, t, outPosition, outTangent);
 }
 
-std::vector<glm::vec3> BezierCurve::getPositionSamples(int amount) {
-    std::vector<glm::vec3> positions;
+std::vector<PositionAndTangent> BezierCurve::getSamples(int amount) {
+    std::vector<PositionAndTangent> points;
     for (int i = 0; i < amount; i++) {
         float t = i / (amount - 1.0f);
-        glm::vec3 position;
-        evaluate(t, &position);
-        positions.push_back(position);
+        PositionAndTangent point;
+        evaluate(t, &point.position, &point.tangent);
+        points.push_back(point);
     }
-    return positions;
+    return points;
 }
 
 std::vector<glm::vec3> evaluateMultipleBezierCurves(std::vector<BezierCurve> &curves, float t) {
@@ -48,13 +48,13 @@ std::vector<glm::vec3> evaluateMultipleBezierCurves(std::vector<BezierCurve> &cu
     return positions;
 }
 
-std::vector<glm::vec3> gridFromBezierCurves(std::vector<BezierCurve> &curves, int uDivisions, int vDivisions) {
-    std::vector<glm::vec3> positions;
+std::vector<PositionAndTangent> gridFromBezierCurves(std::vector<BezierCurve> &curves, int uDivisions, int vDivisions) {
+    std::vector<PositionAndTangent> points;
     for (int i = 0; i < uDivisions; i++) {
         float t = i / (uDivisions - 1.0f);
         std::vector<glm::vec3> controls = evaluateMultipleBezierCurves(curves, t);
-        auto curvePoints = BezierCurve(controls).getPositionSamples(vDivisions);
-        positions.insert(positions.end(), curvePoints.begin(), curvePoints.end());
+        auto curvePoints = BezierCurve(controls).getSamples(vDivisions);
+        points.insert(points.end(), curvePoints.begin(), curvePoints.end());
     }
-    return positions;
+    return points;
 }

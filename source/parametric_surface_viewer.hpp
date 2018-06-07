@@ -84,5 +84,4 @@ private:
     WireframeMesh<VertexP>* resultingSurface = nullptr;
     LinesMesh<VertexP>* surfaceNormalLines = nullptr;
     WireframeMesh<VertexP>* bezierBaseSurface = nullptr;
-
 };

@@ -7,6 +7,7 @@
 #include "shaders.hpp"
 
 struct VertexP {
+    VertexP() {}
     VertexP(glm::vec3 position)
 	    : position(position) {}
 
@@ -14,6 +15,7 @@ struct VertexP {
 };
 
 struct VertexPN {
+    VertexPN() {}
     VertexPN(glm::vec3 position, glm::vec3 normal)
         : position(position), normal(normal) {}
 
@@ -22,6 +24,7 @@ struct VertexPN {
 };
 
 struct VertexPC {
+    VertexPC() {}
     VertexPC(glm::vec3 position, glm::vec4 color)
         : position(position), color(color) {}
 

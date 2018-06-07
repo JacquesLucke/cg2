@@ -66,7 +66,7 @@ void ParametricSurfaceViewer::onRender() {
     if (displayGrid) drawGrid();
     if (displaySourcePoints) drawSourcePoints();
     if (displaySurface) drawSurface();
-    if (displayNormals && finalSurfaceType == FinalSurfaceType::MLS) drawSurfaceNormals();
+    if (displayNormals) drawSurfaceNormals();
     if (displayBezierBase && finalSurfaceType == FinalSurfaceType::Bezier) drawBezierBase();
 
     if (useDepthTest) glDisable(GL_DEPTH_TEST);
@@ -270,19 +270,41 @@ std::vector<BezierCurve> bezierCurvesFromGrid_Rows(std::vector<glm::vec3> &gridP
 
 std::vector<BezierCurve> bezierCurvesFromGrid_Columns(std::vector<glm::vec3> &gridPoints, int stride) {
     std::vector<BezierCurve> curves;
-    for (unsigned int i = 0; i < gridPoints.size() / stride; i++) {
+    for (int i = 0; i < stride; i++) {
         std::vector<glm::vec3> controls;
-        for (int j = 0; j < stride; j++) {
-            controls.push_back(gridPoints[i * stride + j]);
+        for (unsigned int j = 0; j < gridPoints.size() / stride; j++) {
+            controls.push_back(gridPoints[j * stride + i]);
         }
         curves.push_back(BezierCurve(controls));
     }
     return curves;
 }
 
-std::vector<glm::vec3> calcBezierSurface(std::vector<glm::vec3> &gridPoints, int stride, int uDivisions, int vDivisions) {
-    auto curves = bezierCurvesFromGrid_Columns(gridPoints, stride);
-    return gridFromBezierCurves(curves, vDivisions, uDivisions);
+struct PositionsAndNormals {
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+};
+
+PositionsAndNormals calcBezierSurface(std::vector<glm::vec3> &gridPoints, int stride, int uDivisions, int vDivisions) {
+    auto curves1 = bezierCurvesFromGrid_Columns(gridPoints, stride);
+    auto points1 = gridFromBezierCurves(curves1, uDivisions, vDivisions);
+
+    auto curves2 = bezierCurvesFromGrid_Rows(gridPoints, stride);
+    auto points2 = gridFromBezierCurves(curves2, vDivisions, uDivisions);
+
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    for (int u = 0; u < uDivisions; u++) {
+        for (int v = 0; v < vDivisions; v++) {
+            int index1 = u * vDivisions + v;
+            int index2 = v * uDivisions + u;
+            positions.push_back(points1[index1].position);
+            normals.push_back(glm::normalize(glm::cross(points2[index2].tangent, points1[index1].tangent)));
+        }
+    }
+
+    PositionsAndNormals result = {positions, normals};
+    return result;
 }
 
 void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
@@ -298,9 +320,11 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
     int xDiv = subdivideToDivisions(xBaseDiv, subdivisionLevel);
     int yDiv = subdivideToDivisions(yBaseDiv, subdivisionLevel);
 
-    auto surfacePoints = calcBezierSurface(basePoints, yBaseDiv, xDiv, yDiv);
-    auto edges = calcGridEdges(yDiv, xDiv);
-    resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(surfacePoints), edges);
+    auto surfaceData = calcBezierSurface(basePoints, yBaseDiv, xDiv, yDiv);
+    auto edges = calcGridEdges(xDiv, yDiv);
+    resultingSurface = new WireframeMesh<VertexP>(createVertexPVector(surfaceData.positions), edges);
+
+    surfaceNormalLines = createLineSegmentsMesh(surfaceData.positions, surfaceData.normals, normalsLength);
 
     auto baseSurfaceEdges = calcGridEdges(xBaseDiv, yBaseDiv);
     bezierBaseSurface = new WireframeMesh<VertexP>(createVertexPVector(basePoints), baseSurfaceEdges);
