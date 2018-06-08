@@ -84,6 +84,8 @@ void ParametricSurfaceViewer::setViewProjMatrixInShaders() {
     flatShader->setViewProj(matViewProj);
     colorShader->bind();
     colorShader->setViewProj(matViewProj);
+    lightShader->bind();
+    lightShader->setViewProj(matViewProj);
 }
 
 void ParametricSurfaceViewer::drawGrid() {

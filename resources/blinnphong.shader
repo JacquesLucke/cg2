@@ -1,8 +1,8 @@
 // Vertex Shader
 #version 330 core
 
-in vec3 position;
-in vec3 normal;
+attribute vec3 position;
+attribute vec3 normal;
 
 uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
@@ -38,6 +38,7 @@ in vec3 v_Position;
 out vec4 color;
 
 void main() {
+
     vec3 normal = normalize(v_Normal);
     vec3 lightDir = lightPosition - v_Position;
     float distance = length(lightDir);
@@ -57,5 +58,4 @@ void main() {
     color = vec4(ambientColor +
     		 diffuseColor * magnitude * lambert / distance +
 		 specularColor * magnitude * specular / distance, 1.0);
-    color = vec4(1.0,1.0,1.0,1.0);
 }
