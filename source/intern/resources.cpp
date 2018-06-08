@@ -14,7 +14,7 @@ namespace Resources
         std::string::size_type found = arg.find_last_of("/\\");
 
         subPath = (std::string::npos == found ? "" : arg.substr(0, found));
-        subPath.append("resources/");
+        subPath.append("/resources/");
     }
 
     std::string getPath(const std::string& path) {

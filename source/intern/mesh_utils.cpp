@@ -149,11 +149,11 @@ std::vector<unsigned int> calcGridTriangleIndices(int div1, int div2) {
         for (int j=0; j < div2 - 1; j++) {
             indices.push_back(i * div2 + j);
             indices.push_back(i * div2 + j + 1);
-            indices.push_back(i * div2 + j + 1 + div1);
+            indices.push_back(i * div2 + j + 1 + div2);
 
             indices.push_back(i * div2 + j);
-            indices.push_back(i * div2 + j + 1 + div1);
-            indices.push_back(i * div2 + j + div1);
+            indices.push_back(i * div2 + j + 1 + div2);
+            indices.push_back(i * div2 + j + div2);
         }
     }
 
