@@ -11,10 +11,11 @@ namespace Resources
 
     void init(int argc, char *argv[]) {
         std::string arg(argv[0]);
+        std::cout << "arg: " << arg << std::endl;
         std::string::size_type found = arg.find_last_of("/\\");
 
-        subPath = (std::string::npos == found ? "" : arg.substr(0, found));
-        subPath.append("/resources/");
+        subPath = (std::string::npos == found ? "" : arg.substr(0, found+1));
+        subPath.append("resources/");
     }
 
     std::string getPath(const std::string& path) {
