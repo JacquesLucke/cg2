@@ -144,17 +144,17 @@ std::vector<EdgeIndices> calcGridEdges(int div1, int div2) {
 
 std::vector<unsigned int> calcGridTriangleIndices(int div1, int div2) {
     std::vector<unsigned int> indices;
-    
-    for (int i=0; i < div1 - 1; i++) {
-	for (int j=0; j < div2 - 1; j++) {
-	    indices.push_back(i * div2 + j);
-	    indices.push_back(i * div2 + j + 1);
-	    indices.push_back(i * div2 + j + 1 + div1);
 
-	    indices.push_back(i * div2 + j);
-	    indices.push_back(i * div2 + j + 1 + div1);
-	    indices.push_back(i * div2 + j + div1);
-	}
+    for (int i=0; i < div1 - 1; i++) {
+        for (int j=0; j < div2 - 1; j++) {
+            indices.push_back(i * div2 + j);
+            indices.push_back(i * div2 + j + 1);
+            indices.push_back(i * div2 + j + 1 + div1);
+
+            indices.push_back(i * div2 + j);
+            indices.push_back(i * div2 + j + 1 + div1);
+            indices.push_back(i * div2 + j + div1);
+        }
     }
 
     return indices;

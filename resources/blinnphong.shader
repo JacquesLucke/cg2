@@ -25,7 +25,7 @@ uniform float magnitude;
 uniform vec3 specularColor;
 uniform vec3 ambientColor;
 uniform vec3 diffuseColor;
-     
+
 uniform vec3 lightPosition;
 
 uniform vec3 cameraPosition;
@@ -51,11 +51,11 @@ void main() {
     if(lambert > 0.0)
     {
         vec3 viewDir = normalize(cameraPosition - v_Position);
-	vec3 halfVec = normalize(lightDir + viewDir);
-	specular = pow(max(dot(halfVec, normal), 0.0), blinnPhongExp);
+        vec3 halfVec = normalize(lightDir + viewDir);
+        specular = pow(max(dot(halfVec, normal), 0.0), blinnPhongExp);
     }
 
     color = vec4(ambientColor +
-    		 diffuseColor * magnitude * lambert / distance +
-		 specularColor * magnitude * specular / distance, 1.0);
+                 diffuseColor * magnitude * lambert / distance +
+                 specularColor * magnitude * specular / distance, 1.0);
 }

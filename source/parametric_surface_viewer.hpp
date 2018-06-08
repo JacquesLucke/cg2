@@ -55,10 +55,10 @@ private:
     bool displayBezierBase = false;
     int sourcePointSize = 1;
     bool useDepthTest = false;
- 
+
     enum SurfaceRenderMode {
-	WIREFRAME,
-	SOLID
+        WIREFRAME,
+        SOLID
     };
 
     SurfaceRenderMode surfaceRenderMode = SurfaceRenderMode::WIREFRAME;

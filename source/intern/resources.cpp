@@ -10,10 +10,10 @@ namespace Resources
     static std::string subPath("");
 
     void init(int argc, char *argv[]) {
-        //std::string arg(argv[0]);
-        //std::string::size_type found = arg.find_last_of("/\\");
+        std::string arg(argv[0]);
+        std::string::size_type found = arg.find_last_of("/\\");
 
-        //subPath = (std::string::npos == found ? "" : arg.substr(0, found));
+        subPath = (std::string::npos == found ? "" : arg.substr(0, found));
         subPath.append("resources/");
     }
 
