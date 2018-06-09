@@ -10,7 +10,6 @@
 #include "window_controller.hpp"
 #include "parametric_surface_utils.hpp"
 
-
 class ImplicitSurfaceViewer : public WindowController {
 public:
     ImplicitSurfaceViewer(Window* window)
@@ -20,10 +19,17 @@ public:
 
 protected:
     bool onSetup() final override;
-    //void onUpdate() final override;
-    //void onRender() final override;
-    //void onRenderUI() final override;
+    void onUpdate() final override;
+    void onRender() final override;
+    void onRenderUI() final override;
 
 private:
-    CameraController* camera;
+    void prepareDrawDimensions();
+    void setViewProjMatrixInShaders();
+    void drawSurface();
+
+    CameraController* camera = nullptr;
+    TriangleMesh<VertexP>* surface = nullptr;
+    FlatShader* flatShader = nullptr;
+    float radius = 1;
 };
