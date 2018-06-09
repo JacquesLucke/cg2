@@ -10,7 +10,13 @@ typedef float (*ImplicitSurfaceFunction)(glm::vec3 &position);
 
 class ImplicitCurve {
 public:
-    virtual float evaluate(glm::vec2 &position) = 0;
+    virtual float evaluate(glm::vec2 &position) {
+        return evaluate(position.x, position.y);
+    }
+
+    virtual float evaluate(float x, float y) {
+        return evaluate(glm::vec2(x, y));
+    }
 };
 
 class ImplicitCircleCurve : public ImplicitCurve {
@@ -26,10 +32,27 @@ public:
 };
 
 class ImplicitSinCosCurve : public ImplicitCurve {
-    float evaluate(glm::vec2 &position) final override {
-        float x = position.x;
-        float y = position.y;
+public:
+    float evaluate(float x, float y) final override {
         return std::sin(x + y) - std::cos(x * y) + 1;
+    }
+};
+
+class CassiniCurves : public ImplicitCurve {
+public:
+    float a, c;
+
+    CassiniCurves(float a = 1, float c = 1)
+        : a(a), c(c) {}
+
+    float evaluate(float x, float y) final override {
+        float x2 = x * x;
+        float y2 = y * y;
+        float c2 = c * c;
+        float c4 = c2 * c2;
+        float a4 = a * a * a * a;
+
+        return (x2 + y2) * (x2 + y2) - 2 * c2 * (x2 - y2) - (a4 - c4);
     }
 };
 
@@ -81,39 +104,60 @@ float center(float a, float b) {
     return (a + b) / 2.0f;
 }
 
+inline bool haveSameSign(float a, float b) {
+    return a*b >= 0.0f;
+}
+
+float edgeVertexPosition(float pos1, float pos2, float value1, float value2) {
+    if (haveSameSign(value1, value2)) {
+        return (pos1 + pos2) / 2;
+    }
+
+    value1 = std::abs(value1);
+    value2 = std::abs(value2);
+    return (pos1 * value2 + pos2 * value1) / (value1 + value2);
+}
+
 LinesMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> box, int resolution) {
     std::vector<glm::vec3> positions;
+    float fResolution = (float)resolution;
 
     for (int x = 0; x < resolution; x++) {
+        float x0 = box.mapToBox((x + 0) / fResolution, 0);
+        float x1 = box.mapToBox((x + 1) / fResolution, 0);
+
         for (int y = 0; y < resolution; y++) {
-            float x0 = box.mapToBox(x / (float)resolution, 0);
-            float x1 = box.mapToBox((x+1) / (float)resolution, 0);
-            float y0 = box.mapToBox(y / (float)resolution, 1);
-            float y1 = box.mapToBox((y+1) / (float)resolution, 1);
+            float y0 = box.mapToBox((y + 0) / fResolution, 1);
+            float y1 = box.mapToBox((y + 1) / fResolution, 1);
 
-            float centerX = center(x0, x1);
-            float centerY = center(y0, y1);
-
-            glm::vec2 edgePoints[4] = {
-                glm::vec2(centerX, y0),
-                glm::vec2(x1, centerY),
-                glm::vec2(centerX, y1),
-                glm::vec2(x0, centerY)
+            float gridValues[4] = {
+                curve.evaluate(x0, y0),
+                curve.evaluate(x1, y0),
+                curve.evaluate(x1, y1),
+                curve.evaluate(x0, y1)
             };
 
-            char lookupIndex = (
-                ((curve.evaluate(glm::vec2(x0, y0)) < 0) << 0) |
-                ((curve.evaluate(glm::vec2(x1, y0)) < 0) << 1) |
-                ((curve.evaluate(glm::vec2(x1, y1)) < 0) << 2) |
-                ((curve.evaluate(glm::vec2(x0, y1)) < 0) << 3)
-            );
+            glm::vec2 edgePoints[4] = {
+                glm::vec2(edgeVertexPosition(x0, x1, gridValues[0], gridValues[1]), y0),
+                glm::vec2(x1, edgeVertexPosition(y0, y1, gridValues[1], gridValues[2])),
+                glm::vec2(edgeVertexPosition(x0, x1, gridValues[3], gridValues[2]), y1),
+                glm::vec2(x0, edgeVertexPosition(y0, y1, gridValues[0], gridValues[3]))
+            };
+
+            char lookupIndex = 0;
+            for (int i = 0; i < 4; i++) {
+                lookupIndex |= (gridValues[i] < 0) << i;
+            }
+
+            char *lines = lineTable[lookupIndex];
 
             for (int i = 0; i < 2; i++) {
-                char edge = lineTable[lookupIndex][i];
-                if (edge == -1) break;
+                char line = lines[i];
+                if (line == -1) break;
 
+                char *edgeIndices = edgeTable[line];
                 for (int j = 0; j < 2; j++){
-                    positions.push_back(glm::vec3(edgePoints[edgeTable[edge][j]], 0));
+                    positions.push_back(glm::vec3(edgePoints[edgeIndices[j]], 0));
                 }
             }
         }
@@ -182,6 +226,9 @@ void ImplicitSurfaceViewer::onRenderUI() {
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
 
+    recalc |= ImGui::SliderFloat("a", &a, 0.1f, 2.0f);
+    recalc |= ImGui::SliderFloat("c", &c, 0.1f, 2.0f);
+
     if (recalc) {
         updateGeneratedData();
     }
@@ -197,5 +244,5 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     box.max[0] =  boundingBoxSize;
     box.max[1] =  boundingBoxSize;
 
-    curve = linesFromImplicitCurve(ImplicitSinCosCurve(), box, resolution);
+    curve = linesFromImplicitCurve(CassiniCurves(a, c), box, resolution);
 }

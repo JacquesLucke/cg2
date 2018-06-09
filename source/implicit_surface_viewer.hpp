@@ -37,4 +37,6 @@ private:
     float radius = 1;
     float boundingBoxSize = 2;
     int resolution = 50;
+
+    float a = 1, c = 1;
 };
