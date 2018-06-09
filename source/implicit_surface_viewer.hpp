@@ -27,9 +27,14 @@ private:
     void prepareDrawDimensions();
     void setViewProjMatrixInShaders();
     void drawSurface();
+    void drawCurve();
+    void updateGeneratedData();
 
     CameraController* camera = nullptr;
     TriangleMesh<VertexP>* surface = nullptr;
+    LinesMesh<VertexP>* curve = nullptr;
     FlatShader* flatShader = nullptr;
     float radius = 1;
+    float boundingBoxSize = 2;
+    int resolution = 50;
 };
