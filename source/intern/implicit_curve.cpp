@@ -75,15 +75,16 @@ LinesMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> 
                 lookupIndex |= (gridValues[i] < 0) << i;
             }
 
-            char *lines = lineTable[lookupIndex];
+            char *lines = lineTable[(unsigned int)lookupIndex];
 
             for (int i = 0; i < 2; i++) {
                 char line = lines[i];
                 if (line == -1) break;
 
-                char *edgeIndices = edgeTable[line];
+                char *edgeIndices = edgeTable[(unsigned int)line];
                 for (int j = 0; j < 2; j++){
-                    positions.push_back(glm::vec3(edgePoints[edgeIndices[j]], 0));
+                    positions.push_back(
+                    	glm::vec3(edgePoints[(unsigned int)edgeIndices[j]], 0));
                 }
             }
         }

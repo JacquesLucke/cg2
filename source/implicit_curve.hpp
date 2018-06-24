@@ -7,13 +7,13 @@
 
 class ImplicitCurve {
 public:
-    virtual float evaluate(glm::vec2 &position) {
-        return evaluate(position.x, position.y);
-    }
+	virtual ~ImplicitCurve(){}
 
-    virtual float evaluate(float x, float y) {
-        return evaluate(glm::vec2(x, y));
-    }
+	virtual float evaluate(glm::vec2 &position) {
+		return evaluate(position.x, position.y);
+	}
+
+	virtual float evaluate(float x, float y) {return 0.0;}
 };
 
 LinesMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> box, int resolution);

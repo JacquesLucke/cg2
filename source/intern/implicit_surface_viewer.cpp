@@ -121,5 +121,6 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     box.max[0] =  boundingBoxSize;
     box.max[1] =  boundingBoxSize;
 
-    curve = linesFromImplicitCurve(CassiniCurves(a, c), box, resolution);
+    ImplicitCurve CassCurve = CassiniCurves(a, c);
+    curve = linesFromImplicitCurve( CassCurve, box, resolution);
 }
