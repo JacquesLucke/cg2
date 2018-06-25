@@ -27,6 +27,7 @@ public:
     void moveUp(float step);
     void moveDown(float step);
     void move(glm::vec3 offset);
+    void zoom(float factor);
 
     void rotateHorizontal(float angle);
     void rotateVertical(float angle);

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cmath>
+#include <imgui.h>
+#include <imgui_impl_glfw_gl3.h>
 
 #include "../window.hpp"
 #include "../camera.hpp"
@@ -42,6 +44,11 @@ void Camera::moveRight(float step) { move(right() * step); }
 void Camera::moveLeft(float step) { moveRight(-step); }
 void Camera::moveUp(float step) { move(up() * step); }
 void Camera::moveDown(float step) { moveUp(-step); }
+
+void Camera::zoom(float factor) {
+    glm::vec3 direction = center - eye;
+    eye = center - direction * factor;
+}
 
 static glm::vec3 rotateVector(glm::vec3 vector, glm::vec3 axis, float angle) {
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, axis);
@@ -113,11 +120,9 @@ void CameraController::update(float elapsedMilliseconds) {
         camera->rotateHorizontalAroundCenter(-mouseDiff.x * rotateSpeed);
         camera->rotateVerticalAroundCenter(-mouseDiff.y * rotateSpeed);
     }
-    if (isMouseDown(GLFW_MOUSE_BUTTON_RIGHT)) {
-        float moveSpeed = 0.01f;
-        camera->moveLeft(mouseDiff.x * moveSpeed);
-        camera->moveUp(mouseDiff.y * moveSpeed);
-    }
+
+    float factor = -ImGui::GetIO().MouseWheel / 20.0f + 1;
+    camera->zoom(factor);
 }
 
 bool CameraController::isKeyDown(int key) {

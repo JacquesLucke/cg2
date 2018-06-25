@@ -87,7 +87,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     normalShader = new NormalShader();
 
-    NOffFileData *offData = loadRelNOffResource("rhino.off");
+    NOffFileData *offData = loadRelNOffResource("horse.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
