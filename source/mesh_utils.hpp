@@ -4,8 +4,17 @@
 #include "resources.hpp"
 #include "bounding_box.hpp"
 
-std::vector<glm::vec3> calculateFaceNormals(const std::vector<glm::vec3> &points, const std::vector<unsigned int> &indices);
-std::vector<glm::vec3> calculateVertexNormals(const std::vector<glm::vec3> &points, const std::vector<unsigned int> &indices, const std::vector<glm::vec3> &faceNormals);
+std::vector<glm::vec3> calculateFaceNormals(
+    const std::vector<glm::vec3> &points,
+    const std::vector<unsigned int> &indices);
+
+std::vector<glm::vec3> calculateVertexNormals(
+    const std::vector<glm::vec3> &points,
+    const std::vector<unsigned int> &indices,
+    const std::vector<glm::vec3> &faceNormals);
+
+std::vector<glm::vec3> calculateTriangleVertexNormals(
+    const std::vector<glm::vec3> &points);
 
 std::vector<VertexP> createVertexPVector(std::vector<glm::vec3> &positions);
 std::vector<VertexPN> createVertexPNVector(std::vector<glm::vec3> &positions, std::vector<glm::vec3> &normals);

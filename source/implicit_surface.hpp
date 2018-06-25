@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "mesh.hpp"
 #include "bounding_box.hpp"
@@ -18,6 +19,6 @@ public:
     }
 };
 
-TriangleMesh<VertexP> *trianglesFromImplicitSurface(
+std::vector<glm::vec3> trianglesFromImplicitSurface(
     ImplicitSurface &surface, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ);

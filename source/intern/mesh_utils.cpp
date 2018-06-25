@@ -1,7 +1,10 @@
 #include <glm/gtx/normal.hpp>
 #include "../mesh_utils.hpp"
 
-std::vector<glm::vec3> calculateFaceNormals(const std::vector<glm::vec3> &points, const std::vector<unsigned int> &indices) {
+std::vector<glm::vec3> calculateFaceNormals(
+        const std::vector<glm::vec3> &points,
+        const std::vector<unsigned int> &indices)
+{
     std::vector<glm::vec3> normals;
     for (unsigned int i = 0; i < indices.size(); i += 3) {
         normals.push_back(glm::triangleNormal(
@@ -12,7 +15,11 @@ std::vector<glm::vec3> calculateFaceNormals(const std::vector<glm::vec3> &points
     return normals;
 }
 
-std::vector<glm::vec3> calculateVertexNormals(const std::vector<glm::vec3> &points, const std::vector<unsigned int> &indices, const std::vector<glm::vec3> &faceNormals) {
+std::vector<glm::vec3> calculateVertexNormals(
+        const std::vector<glm::vec3> &points,
+        const std::vector<unsigned int> &indices,
+        const std::vector<glm::vec3> &faceNormals)
+{
     std::vector<glm::vec3> normals;
 
     for (unsigned int i = 0; i < points.size(); i++) {
@@ -30,6 +37,20 @@ std::vector<glm::vec3> calculateVertexNormals(const std::vector<glm::vec3> &poin
         normals[i] = glm::normalize(normals[i]);
     }
 
+    return normals;
+}
+
+std::vector<glm::vec3> calculateTriangleVertexNormals(
+        const std::vector<glm::vec3> &points)
+{
+    assert(points.size() % 3 == 0);
+    std::vector<glm::vec3> normals;
+    for (unsigned int i = 0; i < points.size(); i += 3) {
+        glm::vec3 normal = glm::triangleNormal(points[i + 0], points[i + 1], points[i + 2]);
+        normals.push_back(normal);
+        normals.push_back(normal);
+        normals.push_back(normal);
+    }
     return normals;
 }
 

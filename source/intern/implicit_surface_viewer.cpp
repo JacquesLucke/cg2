@@ -76,6 +76,7 @@ public:
 
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
+    solidShader = new SolidShader();
     updateGeneratedData();
     return true;
 }
@@ -105,15 +106,19 @@ void ImplicitSurfaceViewer::setViewProjMatrixInShaders() {
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
     flatShader->bind();
     flatShader->setViewProj(matViewProj);
+    solidShader->bind();
+    solidShader->setViewProj(matViewProj);
 }
 
 void ImplicitSurfaceViewer::drawSurface() {
-    flatShader->bind();
-    flatShader->resetModelMatrix();
-    flatShader->setColor(1, 0, 0);
-    surface->bindBuffers(flatShader);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
+    solidShader->bind();
+    solidShader->resetModelMatrix();
+    solidShader->setBrightness(1);
+    surface->bindBuffers(solidShader);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     surface->draw();
+    glDisable(GL_DEPTH_TEST);
 }
 
 void ImplicitSurfaceViewer::drawCurve() {
@@ -170,6 +175,15 @@ void ImplicitSurfaceViewer::createImplicitSurface() {
     box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
 
     ImplicitSphere sphere = ImplicitSphere(1);
-    surface = trianglesFromImplicitSurface(sphere, box,
-        resolution, resolution, resolution);
+    std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
+        sphere, box, resolution, resolution, resolution);
+
+    std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
+
+    std::vector<unsigned int> indices;
+    for (unsigned int i = 0; i < positions.size(); i++) {
+        indices.push_back(i);
+    }
+
+    surface = new TriangleMesh<VertexPN>(createVertexPNVector(positions, normals), indices);
 }

@@ -1,5 +1,3 @@
-#include <vector>
-
 #include "../mesh_utils.hpp"
 #include "../implicit_surface.hpp"
 
@@ -367,7 +365,7 @@ void evaluateCell(ImplicitSurface &surface,
     }
 }
 
-TriangleMesh<VertexP> *trianglesFromImplicitSurface(
+std::vector<glm::vec3> trianglesFromImplicitSurface(
         ImplicitSurface &surface, BoundingBox<3> box,
         int resolutionX, int resolutionY, int resolutionZ)
 {
@@ -394,10 +392,5 @@ TriangleMesh<VertexP> *trianglesFromImplicitSurface(
         }
     }
 
-    std::vector<unsigned int> indices;
-    for (unsigned int i = 0; i < positions.size(); i++) {
-        indices.push_back(i);
-    }
-
-    return new TriangleMesh<VertexP>(createVertexPVector(positions), indices);
+    return positions;
 }
