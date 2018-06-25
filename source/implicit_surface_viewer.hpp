@@ -29,6 +29,8 @@ private:
     void drawSurface();
     void drawCurve();
     void updateGeneratedData();
+    void createImplicitCurve();
+    void createImplicitSurface();
 
     CameraController* camera = nullptr;
     TriangleMesh<VertexP>* surface = nullptr;
@@ -36,7 +38,7 @@ private:
     FlatShader* flatShader = nullptr;
     float radius = 1;
     float boundingBoxSize = 2;
-    int resolution = 50;
+    int resolution = 10;
 
     float a = 1, c = 1;
 };

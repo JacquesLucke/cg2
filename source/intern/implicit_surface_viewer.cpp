@@ -6,6 +6,7 @@
 #include "../implicit_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
 #include "../implicit_curve.hpp"
+#include "../implicit_surface.hpp"
 
 
 
@@ -46,6 +47,31 @@ public:
     }
 };
 
+class ImplicitSurfaceCut : public ImplicitCurve {
+public:
+    float zValue;
+    ImplicitSurface* surface;
+
+    ImplicitSurfaceCut(ImplicitSurface* surface, float zValue)
+        : zValue(zValue), surface(surface) {}
+
+    float evaluate(float x, float y) {
+        return surface->evaluate(x, y, zValue);
+    }
+};
+
+class ImplicitSphere : public ImplicitSurface {
+public:
+    float radius;
+
+    ImplicitSphere(float radius = 1)
+        : radius(radius) {}
+
+    float evaluate(glm::vec3 &position) {
+        return glm::length(position) - radius;
+    }
+};
+
 
 
 bool ImplicitSurfaceViewer::onSetup() {
@@ -66,8 +92,8 @@ void ImplicitSurfaceViewer::onUpdate() {
 void ImplicitSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
-    // drawSurface();
-    drawCurve();
+    drawSurface();
+    //drawCurve();
 }
 
 void ImplicitSurfaceViewer::prepareDrawDimensions() {
@@ -120,6 +146,14 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     delete curve;
     curve = nullptr;
 
+    delete surface;
+    surface = nullptr;
+
+    //createImplicitCurve();
+    createImplicitSurface();
+}
+
+void ImplicitSurfaceViewer::createImplicitCurve() {
     BoundingBox<2> box;
     box.min[0] = -boundingBoxSize;
     box.min[1] = -boundingBoxSize;
@@ -128,4 +162,14 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
 
     CassiniCurve cassiniCurve = CassiniCurve(a, c);
     curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
+}
+
+void ImplicitSurfaceViewer::createImplicitSurface() {
+    BoundingBox<3> box;
+    box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
+    box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
+
+    ImplicitSphere sphere = ImplicitSphere(1);
+    surface = trianglesFromImplicitSurface(sphere, box,
+        resolution, resolution, resolution);
 }
