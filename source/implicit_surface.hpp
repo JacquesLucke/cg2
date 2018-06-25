@@ -15,7 +15,8 @@ public:
     }
 
     virtual float evaluate(float x, float y, float z) {
-        return evaluate(glm::vec3(x, y, z));
+        auto v = glm::vec3(x, y, z);
+        return evaluate(v);
     }
 };
 

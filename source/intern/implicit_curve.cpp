@@ -35,7 +35,7 @@ char lineTable[16][2] = {
     {-1, -1}
 };
 
-char edgeTable[6][2] = {
+static char edgeTable[6][2] = {
     {0, 1},
     {1, 2},
     {2, 3},
