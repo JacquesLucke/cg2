@@ -10,9 +10,6 @@ public:
     glm::vec3 eye;
     glm::vec3 center;
     glm::vec3 upDirection;
-    /* rotation */
-    float deltaX = 0.0;
-    float deltaY = 0.0;
 
     Camera(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
         : eye(eye), center(center), upDirection(up) {}
@@ -22,8 +19,6 @@ public:
     glm::mat4 getViewMatrix() const;
     virtual glm::mat4 getProjectionMatrix() const = 0;
     glm::mat4 getViewProjectionMatrix() const;
-
-    void moveCam(void);
 
     void moveForward(float step);
     void moveBackward(float step);
@@ -35,6 +30,9 @@ public:
 
     void rotateHorizontal(float angle);
     void rotateVertical(float angle);
+
+    void rotateHorizontalAroundCenter(float angle);
+    void rotateVerticalAroundCenter(float angle);
 
     glm::vec3 direction() const;
     glm::vec3 right() const;
@@ -76,22 +74,17 @@ public:
 
 class CameraController {
 public:
-    enum Mode { FIXED, FLY };
-
     Camera* camera;
     Window* window;
-    Mode mode;
-    float speed = 1.0f;
 
     CameraController(Camera* camera, Window* window)
-        : camera(camera), window(window), mode(FIXED) {}
+        : camera(camera), window(window) {}
 
-    void initCB();
-    void update(int triggerKey, float elapsedMilliseconds);
+    void update(float elapsedMilliseconds);
 
 private:
     bool isKeyDown(int key);
-    int getMouseButton(void);
+    bool isMouseDown(int key);
     glm::vec2 getMousePosition();
 
     glm::vec2 lastMousePosition;

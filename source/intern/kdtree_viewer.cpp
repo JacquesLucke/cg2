@@ -47,7 +47,7 @@ void KDTreeViewer::runKDTreePerformanceTest() {
 }
 
 void KDTreeViewer::onUpdate() {
-    camera->update(GLFW_KEY_F, getElapsedMilliseconds());
+    camera->update(getElapsedMilliseconds());
     performSelection();
 }
 
@@ -177,12 +177,9 @@ void KDTreeViewer::performSelection() {
 }
 
 void KDTreeViewer::onRenderUI() {
+    ImGui::Begin("CG2");
 
     bool queryChanged = false;
-    ImGui::Begin("cg2");
-    ImGui::Text("Close App by ESC");
-    ImGui::Text("Zoom with mouse wheel");
-    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     queryChanged |= ImGui::RadioButton("Radius", (int*)&collectMode, RADIUS); ImGui::SameLine();
     queryChanged |= ImGui::RadioButton("K Nearest", (int*)&collectMode, KNEAREST);
 

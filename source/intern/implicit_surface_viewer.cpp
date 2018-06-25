@@ -55,7 +55,12 @@ bool ImplicitSurfaceViewer::onSetup() {
 }
 
 void ImplicitSurfaceViewer::onUpdate() {
-    camera->update(GLFW_KEY_F, getElapsedMilliseconds());
+    if (isKeyDown(GLFW_KEY_ESCAPE)) {
+        exit (0);
+    }
+    if (!ImGui::GetIO().WantCaptureMouse) {
+        camera->update(getElapsedMilliseconds());
+    }
 }
 
 void ImplicitSurfaceViewer::onRender() {
@@ -94,11 +99,9 @@ void ImplicitSurfaceViewer::drawCurve() {
 }
 
 void ImplicitSurfaceViewer::onRenderUI() {
+    ImGui::Begin("CG2");
+
     bool recalc = false;
-    ImGui::Begin("cg2");
-    ImGui::Text("Close App by ESC");
-    ImGui::Text("Zoom with mouse wheel");
-    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     recalc |= ImGui::SliderFloat("Radius", &radius, 0.0, 2.0);
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);

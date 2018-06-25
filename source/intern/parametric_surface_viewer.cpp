@@ -48,7 +48,9 @@ bool ParametricSurfaceViewer::onSetup() {
 }
 
 void ParametricSurfaceViewer::onUpdate() {
-    camera->update(GLFW_KEY_F, getElapsedMilliseconds());
+    if (!ImGui::GetIO().WantCaptureMouse) {
+        camera->update(getElapsedMilliseconds());
+    }
 }
 
 glm::mat4 changeYandZMatrix(
@@ -147,12 +149,9 @@ void ParametricSurfaceViewer::drawBezierBase() {
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
+    ImGui::Begin("CG2");
 
     bool recalc = false;
-    ImGui::Begin("cg2");
-    ImGui::Text("Close App by ESC");
-    ImGui::Text("Zoom with mouse wheel");
-    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displaySurface);
