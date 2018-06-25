@@ -25,9 +25,9 @@ public:
     void setColor(float r, float g, float b, float a = 1.0f);
 };
 
-class SolidShader : public Shader {
+class NormalShader : public Shader {
 public:
-    SolidShader();
+    NormalShader();
     void setBrightness(float brightness);
 };
 

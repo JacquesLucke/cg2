@@ -76,7 +76,7 @@ public:
 
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
-    solidShader = new SolidShader();
+    normalShader = new NormalShader();
     updateGeneratedData();
     return true;
 }
@@ -106,16 +106,16 @@ void ImplicitSurfaceViewer::setViewProjMatrixInShaders() {
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
     flatShader->bind();
     flatShader->setViewProj(matViewProj);
-    solidShader->bind();
-    solidShader->setViewProj(matViewProj);
+    normalShader->bind();
+    normalShader->setViewProj(matViewProj);
 }
 
 void ImplicitSurfaceViewer::drawSurface() {
     glEnable(GL_DEPTH_TEST);
-    solidShader->bind();
-    solidShader->resetModelMatrix();
-    solidShader->setBrightness(1);
-    surface->bindBuffers(solidShader);
+    normalShader->bind();
+    normalShader->resetModelMatrix();
+    normalShader->setBrightness(1);
+    surface->bindBuffers(normalShader);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     surface->draw();
     glDisable(GL_DEPTH_TEST);

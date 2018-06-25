@@ -62,7 +62,7 @@ private:
 
     Mesh<VertexPN>* mesh = nullptr;
     FlatShader* flatShader = nullptr;
-    SolidShader* solidShader = nullptr;
+    NormalShader* normalShader = nullptr;
     CameraController* camera = nullptr;
 
     KDTreeVec3 *kdTree = nullptr;

@@ -51,11 +51,11 @@ void FlatShader::setColor(float r, float g, float b, float a) {
 }
 
 
-SolidShader::SolidShader() {
-    shader = loadShader("solid.shader");
+NormalShader::NormalShader() {
+    shader = loadShader("normal.shader");
 }
 
-void SolidShader::setBrightness(float brightness) {
+void NormalShader::setBrightness(float brightness) {
     shader->setUniform1f("u_Brightness", brightness);
 }
 

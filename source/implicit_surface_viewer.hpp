@@ -36,7 +36,7 @@ private:
     TriangleMesh<VertexPN>* surface = nullptr;
     LinesMesh<VertexP>* curve = nullptr;
     FlatShader* flatShader = nullptr;
-    SolidShader* solidShader = nullptr;
+    NormalShader* normalShader = nullptr;
     float radius = 1;
     float boundingBoxSize = 2;
     int resolution = 10;

@@ -23,7 +23,7 @@ bool KDTreeViewer::onSetup() {
     delete offData;
 
     flatShader = new FlatShader();
-    solidShader = new SolidShader();
+    normalShader = new NormalShader();
 
     //runKDTreePerformanceTest();
 
@@ -56,9 +56,9 @@ void KDTreeViewer::onRender() {
     ((PerspectiveCamera*)camera->camera)->aspect = window()->aspect();
 
     glm::mat4 matViewProj = camera->camera->getViewProjectionMatrix();
-    solidShader->bind();
-    solidShader->setViewProj(matViewProj);
-    solidShader->resetModelMatrix();
+    normalShader->bind();
+    normalShader->setViewProj(matViewProj);
+    normalShader->resetModelMatrix();
     flatShader->bind();
     flatShader->setViewProj(matViewProj);
     flatShader->resetModelMatrix();
@@ -77,9 +77,9 @@ void KDTreeViewer::drawMesh() {
     glEnable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, meshDrawMode);
     glPointSize(2);
-    solidShader->bind();
-    solidShader->setBrightness(meshBrightness);
-    mesh->bindBuffers(solidShader);
+    normalShader->bind();
+    normalShader->setBrightness(meshBrightness);
+    mesh->bindBuffers(normalShader);
     mesh->draw();
     glDisable(GL_DEPTH_TEST);
 }
