@@ -42,4 +42,11 @@ private:
     int resolution = 10;
 
     float a = 1, c = 1;
+
+    enum SurfaceSource {
+        Sphere,
+        Genus2
+    };
+
+    SurfaceSource surfaceSource = SurfaceSource::Sphere;
 };

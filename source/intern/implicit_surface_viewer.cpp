@@ -125,7 +125,6 @@ void ImplicitSurfaceViewer::drawSurface() {
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     surface->bindBuffers(normalShader);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     surface->draw();
     glDisable(GL_DEPTH_TEST);
 }
@@ -142,12 +141,11 @@ void ImplicitSurfaceViewer::onRenderUI() {
     ImGui::Begin("CG2");
 
     bool recalc = false;
-    recalc |= ImGui::SliderFloat("Radius", &radius, 0.0, 2.0);
+    recalc |= ImGui::RadioButton("Sphere", (int*)&surfaceSource, SurfaceSource::Sphere); ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Genus 2", (int*)&surfaceSource, SurfaceSource::Genus2);
+
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
-
-    recalc |= ImGui::SliderFloat("a", &a, 0.1f, 2.0f);
-    recalc |= ImGui::SliderFloat("c", &c, 0.1f, 2.0f);
 
     if (recalc) {
         updateGeneratedData();
@@ -168,14 +166,14 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
 }
 
 void ImplicitSurfaceViewer::createImplicitCurve() {
-    BoundingBox<2> box;
-    box.min[0] = -boundingBoxSize;
-    box.min[1] = -boundingBoxSize;
-    box.max[0] =  boundingBoxSize;
-    box.max[1] =  boundingBoxSize;
+    // BoundingBox<2> box;
+    // box.min[0] = -boundingBoxSize;
+    // box.min[1] = -boundingBoxSize;
+    // box.max[0] =  boundingBoxSize;
+    // box.max[1] =  boundingBoxSize;
 
-    CassiniCurve cassiniCurve = CassiniCurve(a, c);
-    curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
+    // CassiniCurve cassiniCurve = CassiniCurve(a, c);
+    // curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
 }
 
 void ImplicitSurfaceViewer::createImplicitSurface() {
@@ -183,12 +181,18 @@ void ImplicitSurfaceViewer::createImplicitSurface() {
     box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
     box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
 
-    ImplicitSphere sphere = ImplicitSphere(1);
-    ImplicitGenus2Surface genus2Surface;
+    ImplicitSurface *source;
+
+    if (surfaceSource == SurfaceSource::Sphere) {
+        source = new ImplicitSphere(1);
+    } else if (surfaceSource == SurfaceSource::Genus2) {
+        source = new ImplicitGenus2Surface();
+    }
 
     std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
-        genus2Surface, box, resolution, resolution, resolution);
-    std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
+        *source, box, resolution, resolution, resolution);
+    delete source;
 
+    std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
     surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
 }
