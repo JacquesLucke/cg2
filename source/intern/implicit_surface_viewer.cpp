@@ -72,6 +72,15 @@ public:
     }
 };
 
+class ImplicitGenus2Surface : public ImplicitSurface {
+public:
+    float evaluate(float x, float y, float z) {
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = z * z;
+        return 2*y*(y2-3*x2)*(1-z2)+(x2+y2)*(x2+y2)-(9*z2-1)*(1-z2);
+    }
+};
 
 
 bool ImplicitSurfaceViewer::onSetup() {
@@ -175,8 +184,10 @@ void ImplicitSurfaceViewer::createImplicitSurface() {
     box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
 
     ImplicitSphere sphere = ImplicitSphere(1);
+    ImplicitGenus2Surface genus2Surface;
+
     std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
-        sphere, box, resolution, resolution, resolution);
+        genus2Surface, box, resolution, resolution, resolution);
 
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
 
