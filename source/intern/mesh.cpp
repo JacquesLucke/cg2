@@ -113,6 +113,15 @@ void WireframeMesh<VertexType>::draw() {
 
 
 
+/* Triangle Array Mesh
+***************************************/
+
+template<typename VertexType>
+void TriangleArrayMesh<VertexType>::draw() {
+    glDrawArrays(GL_TRIANGLES, 0, this->verticesAmount);
+}
+
+
 /* Point Cloud
 ***************************************/
 
@@ -141,11 +150,13 @@ template class IndexedMesh<VertexP>;
 template class TriangleMesh<VertexP>;
 template class PointCloudMesh<VertexP>;
 template class WireframeMesh<VertexP>;
+template class TriangleArrayMesh<VertexP>;
 template class LinesMesh<VertexP>;
 
 template class Mesh<VertexPN>;
 template class IndexedMesh<VertexPN>;
 template class TriangleMesh<VertexPN>;
+template class TriangleArrayMesh<VertexPN>;
 
 template class Mesh<VertexPC>;
 template class IndexedMesh<VertexPC>;

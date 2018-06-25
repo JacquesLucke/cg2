@@ -33,7 +33,7 @@ private:
     void createImplicitSurface();
 
     CameraController* camera = nullptr;
-    TriangleMesh<VertexPN>* surface = nullptr;
+    TriangleArrayMesh<VertexPN>* surface = nullptr;
     LinesMesh<VertexP>* curve = nullptr;
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;

@@ -89,6 +89,15 @@ public:
 };
 
 template<typename VertexType>
+class TriangleArrayMesh : public Mesh<VertexType> {
+public:
+    TriangleArrayMesh(const std::vector<VertexType> &vertices)
+        : Mesh<VertexType>(vertices) {}
+
+    void draw();
+};
+
+template<typename VertexType>
 class PointCloudMesh : public Mesh<VertexType> {
 public:
     PointCloudMesh(const std::vector<VertexType> &vertices)

@@ -188,13 +188,7 @@ void ImplicitSurfaceViewer::createImplicitSurface() {
 
     std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
         genus2Surface, box, resolution, resolution, resolution);
-
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
 
-    std::vector<unsigned int> indices;
-    for (unsigned int i = 0; i < positions.size(); i++) {
-        indices.push_back(i);
-    }
-
-    surface = new TriangleMesh<VertexPN>(createVertexPNVector(positions, normals), indices);
+    surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
 }
