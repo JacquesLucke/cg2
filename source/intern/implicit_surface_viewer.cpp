@@ -86,6 +86,13 @@ public:
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     normalShader = new NormalShader();
+
+    NOffFileData *offData = loadRelNOffResource("rhino.off");
+    sourcePositions = offData->positions;
+    sourceNormals = offData->normals;
+
+    sourcePositionsMesh = new PointCloudMesh<VertexPN>(createVertexPNVector(sourcePositions, sourceNormals));
+
     updateGeneratedData();
     return true;
 }
@@ -102,7 +109,8 @@ void ImplicitSurfaceViewer::onUpdate() {
 void ImplicitSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
-    drawSurface();
+    drawSourcePoints();
+    //drawSurface();
     //drawCurve();
 }
 
@@ -126,6 +134,16 @@ void ImplicitSurfaceViewer::drawSurface() {
     normalShader->setBrightness(1);
     surface->bindBuffers(normalShader);
     surface->draw();
+    glDisable(GL_DEPTH_TEST);
+}
+
+void ImplicitSurfaceViewer::drawSourcePoints() {
+    glEnable(GL_DEPTH_TEST);
+    normalShader->bind();
+    normalShader->resetModelMatrix();
+    normalShader->setBrightness(1);
+    sourcePositionsMesh->bindBuffers(normalShader);
+    sourcePositionsMesh->draw();
     glDisable(GL_DEPTH_TEST);
 }
 

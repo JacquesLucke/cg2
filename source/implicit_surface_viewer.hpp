@@ -27,16 +27,22 @@ private:
     void prepareDrawDimensions();
     void setViewProjMatrixInShaders();
     void drawSurface();
+    void drawSourcePoints();
     void drawCurve();
     void updateGeneratedData();
     void createImplicitCurve();
     void createImplicitSurface();
 
     CameraController* camera = nullptr;
+
     TriangleArrayMesh<VertexPN>* surface = nullptr;
     LinesMesh<VertexP>* curve = nullptr;
+    PointCloudMesh<VertexPN>* sourcePositionsMesh = nullptr;
+
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;
+    std::vector<glm::vec3> sourcePositions;
+    std::vector<glm::vec3> sourceNormals;
     float radius = 1;
     float boundingBoxSize = 2;
     int resolution = 10;

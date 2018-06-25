@@ -34,6 +34,10 @@ OffFileData *loadRelOffResource(const std::string& path) {
     return loadOffResource(Resources::getPath(path));
 }
 
+NOffFileData *loadRelNOffResource(const std::string& path) {
+    return loadNOffResource(Resources::getPath(path));
+}
+
 GLProgram *loadRelShaderResource(const std::string& path) {
     return loadShaderResource(Resources::getPath(path));
 }
@@ -49,35 +53,39 @@ std::string loadTextResource(const std::string& path) {
     return buffer.str();
 }
 
-bool loadPosition(const std::string &line, OffFileData *data)
-{
-    static float x,y,z;
-
-    int split1 = line.find(" ");
-    int split2 = line.find(" ", split1 + 1);
-
-    x = std::stof(line.c_str() + 0);
-    y = std::stof(line.c_str() + split1);
-    z = std::stof(line.c_str() + split2);
-
-    data->positions.push_back(glm::vec3(x, y, z));
-
+bool loadPosition(const std::string &line, OffFileData *data) {
+    glm::vec3 p;
+    if (sscanf(line.c_str(), "%f %f %f", &p.x, &p.y, &p.z) != 3) {
+        return false;
+    }
+    data->positions.push_back(p);
     return true;
 }
 
-bool loadIndices(const std::string &line, OffFileData *data)
-{
-    if(std::stoi(line) != 3) {
+bool loadPositionAndNormal(const std::string& line, NOffFileData *data) {
+    glm::vec3 p, n;
+    if (sscanf(line.c_str(), "%f %f %f %f %f %f", &p.x, &p.y, &p.z, &n.x, &n.y, &n.z) != 6) {
+        return false;
+    }
+    data->positions.push_back(p);
+    data->normals.push_back(n);
+    return true;
+}
+
+bool loadIndices(const std::string &line, std::vector<unsigned int> &indices) {
+    int amount, v1, v2, v3;
+    if (sscanf(line.c_str(), "%d %d %d %d", &amount, &v1, &v2, &v3) != 4) {
+        return false;
+    }
+
+    if (amount != 3) {
         std::cerr << "could not read indices because index count was unequal 3" << std::endl;
         return false;
     }
 
-    int cur = 0;
-    for(int i = 0; i < 3 /* index count per triangle */; i++) {
-        cur = line.find(" ", cur+1);
-        data->indices.push_back(std::stoi(line.c_str() + cur));
-    }
-
+    indices.push_back(v1);
+    indices.push_back(v2);
+    indices.push_back(v3);
     return true;
 }
 
@@ -115,7 +123,52 @@ OffFileData *loadOffResource(const std::string& path) {
     // Load indices
     for (int i = 0; i < indexCount; i++) {
         getline(fs, line);
-        if (!loadIndices(line, data)) {
+        if (!loadIndices(line, data->indices)) {
+            delete data;
+            return nullptr;
+        }
+    }
+
+    fs.close();
+
+    return data;
+}
+
+NOffFileData *loadNOffResource(const std::string& path) {
+    std::ifstream fs(path);
+    if (!fs.good()) {
+        std::cerr << "could not open file: " << path << std::endl;
+        return nullptr;
+    }
+
+    std::string line;
+    getline(fs, line);
+    if (line != "NOFF") {
+        std::cerr << "file does not start with 'NOFF" << std::endl;
+        return nullptr;
+    }
+
+    NOffFileData *data = new NOffFileData();
+
+    // Get vertex and index count
+    getline(fs, line);
+    int vertexCount = std::stoi(line);
+    int split = line.find(" ");
+    int indexCount = std::stoi(line.c_str() + split);
+
+    // Load positions and normals
+    for (int i = 0; i < vertexCount; i++) {
+        getline(fs, line);
+        if (!loadPositionAndNormal(line, data)) {
+            delete data;
+            return nullptr;
+        }
+    }
+
+    // Load indices
+    for (int i = 0; i < indexCount; i++) {
+        getline(fs, line);
+        if (!loadIndices(line, data->indices)) {
             delete data;
             return nullptr;
         }

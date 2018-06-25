@@ -157,6 +157,7 @@ template class Mesh<VertexPN>;
 template class IndexedMesh<VertexPN>;
 template class TriangleMesh<VertexPN>;
 template class TriangleArrayMesh<VertexPN>;
+template class PointCloudMesh<VertexPN>;
 
 template class Mesh<VertexPC>;
 template class IndexedMesh<VertexPC>;
