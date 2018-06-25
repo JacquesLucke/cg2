@@ -48,10 +48,7 @@ void KDTreeViewer::runKDTreePerformanceTest() {
 
 void KDTreeViewer::onUpdate() {
     camera->update(GLFW_KEY_F, getElapsedMilliseconds());
-
-    if (!camera->isFlying() && !ImGui::GetIO().WantCaptureMouse) {
-        performSelection();
-    }
+    performSelection();
 }
 
 void KDTreeViewer::onRender() {
@@ -72,9 +69,8 @@ void KDTreeViewer::onRender() {
     drawCollectedPoints();
     if (shouldDrawBoxes && collectMode == RADIUS) drawConsideredBoxes();
 
-    if (!camera->isFlying() && !ImGui::GetIO().WantCaptureMouse) {
-        drawPreSelectionPoint();
-    }
+    drawPreSelectionPoint();
+
 }
 
 void KDTreeViewer::drawMesh() {
@@ -180,21 +176,13 @@ void KDTreeViewer::performSelection() {
     }
 }
 
-static void drawFlyCameraControls() {
-    ImGui::LabelText("", "ESC: stop fly mode");
-    ImGui::LabelText("", "WASDQE : move camera");
-    ImGui::LabelText("", "mouse: rotate camera");
-    ImGui::LabelText("", "scroll wheel: change speed");
-}
-
 void KDTreeViewer::onRenderUI() {
-    if (camera->isFlying()) {
-        drawFlyCameraControls();
-        return;
-    }
 
     bool queryChanged = false;
-
+    ImGui::Begin("cg2");
+    ImGui::Text("Close App by ESC");
+    ImGui::Text("Zoom with mouse wheel");
+    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     queryChanged |= ImGui::RadioButton("Radius", (int*)&collectMode, RADIUS); ImGui::SameLine();
     queryChanged |= ImGui::RadioButton("K Nearest", (int*)&collectMode, KNEAREST);
 
@@ -221,6 +209,8 @@ void KDTreeViewer::onRenderUI() {
     if (queryChanged) {
         resetQueryResults();
     }
+
+    ImGui::End();
 }
 
 void KDTreeViewer::resetQueryResults() {

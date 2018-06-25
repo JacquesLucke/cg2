@@ -60,3 +60,4 @@ glm::vec2 WindowController::getMousePos() {
 bool WindowController::isKeyDown(int key) {
     return glfwGetKey(window()->handle(), key) == GLFW_PRESS;
 }
+

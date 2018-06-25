@@ -147,12 +147,12 @@ void ParametricSurfaceViewer::drawBezierBase() {
 }
 
 void ParametricSurfaceViewer::onRenderUI() {
-    if (camera->isFlying()) {
-        ImGui::Text("Disable fly mode with ESC");
-        return;
-    }
 
     bool recalc = false;
+    ImGui::Begin("cg2");
+    ImGui::Text("Close App by ESC");
+    ImGui::Text("Zoom with mouse wheel");
+    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displaySurface);
@@ -212,6 +212,8 @@ void ParametricSurfaceViewer::onRenderUI() {
     if (recalc) {
         updateGeneratedData();
     }
+
+    ImGui::End();
 }
 
 void ParametricSurfaceViewer::updateGeneratedData() {

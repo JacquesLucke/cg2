@@ -7,14 +7,27 @@
 
 /* Base Camera
 **************************************/
+float zoomZ = 0.0;
+float tmp = 0.0;
+
+void Camera::moveCam(void) {
+	if (zoomZ != tmp )
+		eye += glm::vec3( zoomZ, zoomZ, zoomZ);
+
+	tmp = zoomZ;
+}
 
 glm::mat4 Camera::getViewProjectionMatrix() const {
-    return getProjectionMatrix() * getViewMatrix();
+    //return getProjectionMatrix() * getViewMatrix();
+	glm::mat4 RotationX = glm::rotate(glm::mat4(1.0f), deltaX, up());// glm::vec3(0,1,0));
+	glm::mat4 RotationY = glm::rotate(glm::mat4(1.0f), deltaY, right());// glm::vec3(1,0,0));
+	return getProjectionMatrix() * getViewMatrix() * RotationX * RotationY;
 }
 
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(eye, center, up());
 }
+
 
 void Camera::move(glm::vec3 offset) {
     eye += offset;
@@ -91,63 +104,102 @@ glm::mat4 PerspectiveCamera::getProjectionMatrix() const {
 /* Camera Controller
 *******************************************/
 
-// have to store these values globally to make the callback work
-CameraController* flyingCamera;
-GLFWscrollfun oldScrollCallback;
-
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-    if (yOffset < 0) {
-        flyingCamera->speed *= (float)pow(0.9f, abs(yOffset));
+	tmp = 0.0;
+
+	if (yOffset < 0) {
+		zoomZ = 0.1;
     } else {
-        flyingCamera->speed *= (float)pow(1.1f, yOffset);
+    	zoomZ = -0.1;
     }
 }
 
-void CameraController::enableFlyMode() {
-    glfwSetInputMode(window->handle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    oldScrollCallback = glfwSetScrollCallback(window->handle(), scrollCallback);
-    lastMousePosition = getMousePosition();
-    flyingCamera = this;
-    mode = FLY;
-}
-
-void CameraController::disableFlyMode() {
-    mode = FIXED;
-    glfwSetInputMode(window->handle(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    glfwSetScrollCallback(window->handle(), oldScrollCallback);
-    flyingCamera = NULL;
+void CameraController::initCB() {
+    glfwSetScrollCallback(window->handle(), scrollCallback);
 }
 
 void CameraController::update(int triggerKey, float elapsedMilliseconds) {
-    if (mode != FLY) {
-        if (isKeyDown(triggerKey)) enableFlyMode();
-        else return;
-    }
+	static int initScrollCB = 0;
+	if (initScrollCB == 0)
+	{
+		initCB();
+		initScrollCB = 1;
+	}
+
     if (isKeyDown(GLFW_KEY_ESCAPE)) {
-        disableFlyMode();
-        return;
+    	// end program
+        exit (0);
     }
 
-    float step = 0.001f * speed * elapsedMilliseconds;
-    if (isKeyDown(GLFW_KEY_W)) camera->moveForward(step);
-    if (isKeyDown(GLFW_KEY_S)) camera->moveBackward(step);
-    if (isKeyDown(GLFW_KEY_A)) camera->moveLeft(step);
-    if (isKeyDown(GLFW_KEY_D)) camera->moveRight(step);
-    if (isKeyDown(GLFW_KEY_Q)) camera->moveDown(step * 3);
-    if (isKeyDown(GLFW_KEY_E)) camera->moveUp(step * 3);
+    CameraController::camera->moveCam();
 
     glm::vec2 mousePos = getMousePosition();
     glm::vec2 angleDiff = (mousePos - lastMousePosition) * 0.001f;
     lastMousePosition = mousePos;
 
-    float angleStep = 0.001f * elapsedMilliseconds;
-    if (isKeyDown(GLFW_KEY_LEFT)) angleDiff.x -= angleStep;
-    if (isKeyDown(GLFW_KEY_RIGHT)) angleDiff.x += angleStep;
-    if (isKeyDown(GLFW_KEY_UP)) angleDiff.y -= angleStep;
-    if (isKeyDown(GLFW_KEY_DOWN)) angleDiff.y += angleStep;
+    if (isKeyDown(GLFW_KEY_LEFT_CONTROL) && CameraController::getMouseButton()==1)
+    {
+    	CameraController::camera->deltaX += 2*angleDiff.x;
+    	CameraController::camera->deltaY += 2*angleDiff.y;
+    }
 
-    camera->rotateHorizontal(-angleDiff[0]);
-    camera->rotateVertical(-angleDiff[1]);
+	#if 0
+		float step = 0.001f * speed * elapsedMilliseconds;
+		if (isKeyDown(GLFW_KEY_W)) camera->moveForward(step);
+		if (isKeyDown(GLFW_KEY_S)) camera->moveBackward(step);
+		if (isKeyDown(GLFW_KEY_A)) camera->moveLeft(step);
+		if (isKeyDown(GLFW_KEY_D)) camera->moveRight(step);
+		if (isKeyDown(GLFW_KEY_Q)) camera->moveDown(step * 3);
+		if (isKeyDown(GLFW_KEY_E)) camera->moveUp(step * 3);
+
+
+		if (isKeyDown(GLFW_KEY_LEFT))
+		{
+			printf(" Left mouse down\n");
+		}
+
+		if (lastMousePosition.x != 0 || lastMousePosition.y != 0)
+			printf("lastMousePosition x: %.2f  y: %.2f\n",angleDiff.x, angleDiff.y );
+
+
+		int button = CameraController::getMouseButton();
+		if (button != 0)
+		{
+			/* left Mouse button == 1
+			 * right Mouse button == 2
+			 * middle mouse button == 4
+			 */
+			printf("Mouse button: %d\n",button);
+		}
+
+
+		if (isKeyDown(GLFW_KEY_RIGHT_CONTROL))
+		{
+			CameraController::camera->deltaY += 0.01;
+			printf(" Right Ctrl Key down\n");
+		}
+
+		if ( isKeyDown(GLFW_KEY_LEFT) && isKeyDown(GLFW_KEY_LEFT_CONTROL) )
+		{
+			printf(" Left Mouse & Left Ctrl Key down\n");
+		}
+
+		if ( isKeyDown(GLFW_KEY_LEFT) && isKeyDown(GLFW_KEY_RIGHT_CONTROL) )
+		{
+			printf(" Left Mouse & Right Ctrl Key down\n");
+		}
+
+
+
+		float angleStep = 0.001f * elapsedMilliseconds;
+		if (isKeyDown(GLFW_KEY_LEFT)) angleDiff.x -= angleStep;
+		if (isKeyDown(GLFW_KEY_RIGHT)) angleDiff.x += angleStep;
+		if (isKeyDown(GLFW_KEY_UP)) angleDiff.y -= angleStep;
+		if (isKeyDown(GLFW_KEY_DOWN)) angleDiff.y += angleStep;
+
+		camera->rotateHorizontal(-angleDiff[0]);
+		camera->rotateVertical(-angleDiff[1]);
+	#endif
 }
 
 bool CameraController::isKeyDown(int key) {
@@ -159,3 +211,27 @@ glm::vec2 CameraController::getMousePosition() {
     glfwGetCursorPos(window->handle(), &x, &y);
     return glm::vec2(x, y);
 }
+
+int CameraController::getMouseButton( void )
+{
+	/* left Mouse button == 1
+	 * right Mouse button == 2
+	 * middle mouse button == 4 */
+
+	/* check only for mouse left mouse button (index 0) */
+	return glfwGetMouseButton(window->handle(), 0);
+
+	/* optional, poll for all mouse buttons in loop and code results */
+	#if 0
+		int ret = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			if (glfwGetMouseButton(window->handle(), i) != 0)
+				ret = 1 << i;
+		}
+		return ret;
+	#endif
+}
+
+
+

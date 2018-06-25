@@ -94,11 +94,11 @@ void ImplicitSurfaceViewer::drawCurve() {
 }
 
 void ImplicitSurfaceViewer::onRenderUI() {
-    if (camera->isFlying()) {
-        ImGui::Text("Disable fly mode with ESC");
-        return;
-    }
     bool recalc = false;
+    ImGui::Begin("cg2");
+    ImGui::Text("Close App by ESC");
+    ImGui::Text("Zoom with mouse wheel");
+    ImGui::Text("Rotate by holding left Ctrl + left mouse button");
     recalc |= ImGui::SliderFloat("Radius", &radius, 0.0, 2.0);
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
@@ -109,6 +109,8 @@ void ImplicitSurfaceViewer::onRenderUI() {
     if (recalc) {
         updateGeneratedData();
     }
+
+    ImGui::End();
 }
 
 void ImplicitSurfaceViewer::updateGeneratedData() {
