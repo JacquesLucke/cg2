@@ -15,6 +15,8 @@
 #include <string>
 #include <limits>
 
+#include <glm/glm.hpp>
+
 #include "bounding_box.hpp"
 #include "timer.hpp"
 #include "random.hpp"
@@ -46,6 +48,9 @@ public:
         this->bucketSize = bucketSize;
         this->threadDepth = (int)std::log2(getCpuCoreCount()) + 1;
     }
+
+    KDTree(std::vector<Point> &points, int buckedSize)
+        : KDTree(points.data(), points.size(), buckedSize) {}
 
     void balance() {
         TIMEIT("balance")
@@ -389,3 +394,17 @@ private:
     }
 
 };
+
+
+inline float getVec3DistanceSquared(glm::vec3 &a, glm::vec3 &b) {
+    float xDiff = a.x - b.x;
+    float yDiff = a.y - b.y;
+    float zDiff = a.z - b.z;
+    return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
+}
+
+inline float getVec3Distance(glm::vec3 &a, glm::vec3 &b) {
+    return sqrt(getVec3DistanceSquared(a, b));
+}
+
+using KDTreeVec3 = KDTree<glm::vec3, 3, getVec3Distance>;

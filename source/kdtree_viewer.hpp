@@ -11,19 +11,6 @@
 #include "ray.hpp"
 #include "shaders.hpp"
 
-inline float getVec3DistanceSquared(glm::vec3 &a, glm::vec3 &b) {
-    float xDiff = a.x - b.x;
-    float yDiff = a.y - b.y;
-    float zDiff = a.z - b.z;
-    return xDiff * xDiff + yDiff * yDiff + zDiff * zDiff;
-}
-
-inline float getVec3Distance(glm::vec3 &a, glm::vec3 &b) {
-    return sqrt(getVec3DistanceSquared(a, b));
-}
-
-using KDTreeVec3 = KDTree<glm::vec3, 3, getVec3Distance>;
-
 class KDTreeViewer : public WindowController {
 public:
     KDTreeViewer(Window* window)
