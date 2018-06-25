@@ -28,11 +28,11 @@ public:
     }
 };
 
-class CassiniCurves : public ImplicitCurve {
+class CassiniCurve : public ImplicitCurve {
 public:
     float a, c;
 
-    CassiniCurves(float a = 1, float c = 1)
+    CassiniCurve(float a = 1, float c = 1)
         : a(a), c(c) {}
 
     float evaluate(float x, float y) final override {
@@ -123,6 +123,6 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     box.max[0] =  boundingBoxSize;
     box.max[1] =  boundingBoxSize;
 
-    ImplicitCurve CassCurve = CassiniCurves(a, c);
-    curve = linesFromImplicitCurve( CassCurve, box, resolution);
+    CassiniCurve cassiniCurve = CassiniCurve(a, c);
+    curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
 }
