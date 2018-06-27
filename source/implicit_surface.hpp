@@ -23,3 +23,8 @@ public:
 std::vector<glm::vec3> trianglesFromImplicitSurface(
     ImplicitSurface &surface, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ);
+
+PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
+    ImplicitSurface &surface, BoundingBox<3> box,
+    int resolutionX, int resolutionY, int resolutionZ,
+    glm::vec4 innerColor, glm::vec4 outerColor);

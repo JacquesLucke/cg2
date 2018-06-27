@@ -356,6 +356,42 @@ void evaluateCell(ImplicitSurface &surface,
     }
 }
 
+PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
+        ImplicitSurface &surface, BoundingBox<3> box,
+        int resolutionX, int resolutionY, int resolutionZ,
+        glm::vec4 innerColor, glm::vec4 outerColor)
+{
+    std::vector<VertexPC> vertices;
+    vertices.reserve(resolutionX * resolutionY * resolutionZ);
+
+    float fResX = (float)resolutionX - 1.0f;
+    float fResY = (float)resolutionY - 1.0f;
+    float fResZ = (float)resolutionZ - 1.0f;
+
+    for (int x = 0; x < resolutionX; x++) {
+        float _x = box.mapToBox(x / fResX, 0);
+
+        for (int y = 0; y < resolutionY; y++) {
+            float _y = box.mapToBox(y / fResY, 1);
+
+            for (int z = 0; z < resolutionZ; z++) {
+                float _z = box.mapToBox(z / fResZ, 2);
+
+                float value = surface.evaluate(_x, _y, _z);
+
+                VertexPC vertex;
+                vertex.position = glm::vec3(_x, _y, _z);
+                if (value < 0) vertex.color = innerColor;
+                else           vertex.color = outerColor;
+
+                vertices.push_back(vertex);
+            }
+        }
+    }
+
+    return new PointCloudMesh<VertexPC>(vertices);
+}
+
 std::vector<glm::vec3> trianglesFromImplicitSurface(
         ImplicitSurface &surface, BoundingBox<3> box,
         int resolutionX, int resolutionY, int resolutionZ)

@@ -5,8 +5,6 @@
 
 #include "../implicit_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
-#include "../implicit_curve.hpp"
-#include "../implicit_surface.hpp"
 
 
 
@@ -86,6 +84,7 @@ public:
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     normalShader = new NormalShader();
+    shadelessColorShader = new ShadelessColorShader();
 
     NOffFileData *offData = loadRelNOffResource("horse.off");
     sourcePositions = offData->positions;
@@ -109,9 +108,12 @@ void ImplicitSurfaceViewer::onUpdate() {
 void ImplicitSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
+    glEnable(GL_DEPTH_TEST);
     //drawSourcePoints();
-    drawSurface();
+    //drawSurface();
+    drawPointVisualization();
     //drawCurve();
+    glDisable(GL_DEPTH_TEST);
 }
 
 void ImplicitSurfaceViewer::prepareDrawDimensions() {
@@ -125,26 +127,34 @@ void ImplicitSurfaceViewer::setViewProjMatrixInShaders() {
     flatShader->setViewProj(matViewProj);
     normalShader->bind();
     normalShader->setViewProj(matViewProj);
+    shadelessColorShader->bind();
+    shadelessColorShader->setViewProj(matViewProj);
 }
 
 void ImplicitSurfaceViewer::drawSurface() {
-    glEnable(GL_DEPTH_TEST);
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     surface->bindBuffers(normalShader);
     surface->draw();
-    glDisable(GL_DEPTH_TEST);
+}
+
+void ImplicitSurfaceViewer::drawPointVisualization() {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    shadelessColorShader->bind();
+    shadelessColorShader->resetModelMatrix();
+    implicitSurfacePoints->bindBuffers(shadelessColorShader);
+    implicitSurfacePoints->draw();
+    glDisable(GL_BLEND);
 }
 
 void ImplicitSurfaceViewer::drawSourcePoints() {
-    glEnable(GL_DEPTH_TEST);
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     sourcePositionsMesh->bindBuffers(normalShader);
     sourcePositionsMesh->draw();
-    glDisable(GL_DEPTH_TEST);
 }
 
 void ImplicitSurfaceViewer::drawCurve() {
@@ -165,6 +175,12 @@ void ImplicitSurfaceViewer::onRenderUI() {
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
 
+    recalc |= ImGui::Checkbox("Display Outer Points", &displayOuterPoints);
+
+    if (surfaceSource == SurfaceSource::Sphere) {
+        recalc |= ImGui::SliderFloat("Radius", &sphereData.radius, 0.0f, 2.0f);
+    }
+
     if (recalc) {
         updateGeneratedData();
     }
@@ -179,8 +195,20 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     delete surface;
     surface = nullptr;
 
+    delete implicitSurfacePoints;
+    implicitSurfacePoints = nullptr;
+
+    ImplicitSurface *implicitSurface = getImplicitSurface();
+
+    BoundingBox<3> box;
+    box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
+    box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
+
     //createImplicitCurve();
-    createImplicitSurface();
+    createImplicitSurfaceMesh(*implicitSurface, box);
+    createImplicitSurfaceVisualization(*implicitSurface, box);
+
+    delete implicitSurface;
 }
 
 void ImplicitSurfaceViewer::createImplicitCurve() {
@@ -194,23 +222,29 @@ void ImplicitSurfaceViewer::createImplicitCurve() {
     // curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
 }
 
-void ImplicitSurfaceViewer::createImplicitSurface() {
-    BoundingBox<3> box;
-    box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
-    box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
-
-    ImplicitSurface *source;
-
-    if (surfaceSource == SurfaceSource::Sphere) {
-        source = new ImplicitSphere(1);
-    } else if (surfaceSource == SurfaceSource::Genus2) {
-        source = new ImplicitGenus2Surface();
-    }
-
+void ImplicitSurfaceViewer::createImplicitSurfaceMesh(ImplicitSurface &source, BoundingBox<3> &box) {
     std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
-        *source, box, resolution, resolution, resolution);
-    delete source;
+        source, box, resolution, resolution, resolution);
 
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
     surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
+}
+
+void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box) {
+    glm::vec4 innerColor(0.9f, 0.9f, 0.3f, 1.0f);
+    glm::vec4 outerColor(0.3f, 0.3f, 0.9f, displayOuterPoints ? 1.0f : 0.0f);
+
+    implicitSurfacePoints = generateImplicitSurfaceVisualization(
+        source, box, resolution, resolution, resolution,
+        innerColor, outerColor);
+}
+
+ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
+    if (surfaceSource == SurfaceSource::Sphere) {
+        return new ImplicitSphere(sphereData.radius);
+    } else if (surfaceSource == SurfaceSource::Genus2) {
+        return new ImplicitGenus2Surface();
+    }
+    assert(false);
+    return nullptr;
 }

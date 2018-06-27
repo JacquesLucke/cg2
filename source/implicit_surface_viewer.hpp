@@ -7,6 +7,8 @@
 #include "camera.hpp"
 #include "shaders.hpp"
 #include "bounding_box.hpp"
+#include "implicit_curve.hpp"
+#include "implicit_surface.hpp"
 #include "window_controller.hpp"
 #include "parametric_surface_utils.hpp"
 
@@ -29,18 +31,24 @@ private:
     void drawSurface();
     void drawSourcePoints();
     void drawCurve();
+    void drawPointVisualization();
     void updateGeneratedData();
     void createImplicitCurve();
-    void createImplicitSurface();
+    void createImplicitSurfaceMesh(ImplicitSurface &source, BoundingBox<3> &box);
+    void createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box);
+    ImplicitSurface *getImplicitSurface();
 
     CameraController* camera = nullptr;
 
     TriangleArrayMesh<VertexPN>* surface = nullptr;
     LinesMesh<VertexP>* curve = nullptr;
     PointCloudMesh<VertexPN>* sourcePositionsMesh = nullptr;
+    PointCloudMesh<VertexPC>* implicitSurfacePoints = nullptr;
 
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;
+    ShadelessColorShader *shadelessColorShader = nullptr;
+
     std::vector<glm::vec3> sourcePositions;
     std::vector<glm::vec3> sourceNormals;
     float radius = 1;
@@ -55,4 +63,9 @@ private:
     };
 
     SurfaceSource surfaceSource = SurfaceSource::Sphere;
+    bool displayOuterPoints = true;
+
+    struct {
+        float radius = 1.0f;
+    } sphereData;
 };
