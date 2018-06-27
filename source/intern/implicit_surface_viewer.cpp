@@ -157,7 +157,7 @@ public:
         for (KDTreeEntry entry : entries) {
             float distance = glm::distance(position, entry.position);
             float weight = maxDistance - distance;
-            sum += glm::dot(entry.normal, position - entry.position) * weight;
+            sum += glm::dot(entry.normal, position - entry.position) / distance;
         }
         return sum;
     }
