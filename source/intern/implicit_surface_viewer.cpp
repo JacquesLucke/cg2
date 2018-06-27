@@ -150,8 +150,11 @@ public:
     }
 
     float evaluate(glm::vec3 &position) {
-        KDTreeEntry entry = kdTree->getClosestPoint(KDTreeEntry(position));
-        return entry.value;
+        float sum = 0.0f;
+        for (KDTreeEntry entry : kdTree->collectKNearest(KDTreeEntry(position), 5)) {
+            sum += entry.value;
+        }
+        return sum;
     }
 };
 
@@ -185,7 +188,7 @@ void ImplicitSurfaceViewer::onRender() {
     glEnable(GL_DEPTH_TEST);
     if (displaySourcePoints) drawSourcePoints();
     if (displayGeneratedMesh) drawSurface();
-    drawPointVisualization();
+    if (displayVisualizationPoints) drawPointVisualization();
     //drawCurve();
     glDisable(GL_DEPTH_TEST);
 }
@@ -243,6 +246,10 @@ void ImplicitSurfaceViewer::onRenderUI() {
     ImGui::Begin("CG2");
 
     bool recalc = false;
+    ImGui::Checkbox("Display Visualization Points", &displayVisualizationPoints);
+    if (displayVisualizationPoints) {
+        recalc |= ImGui::Checkbox("Display Outer Points", &displayOuterPoints);
+    }
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
 
@@ -256,7 +263,6 @@ void ImplicitSurfaceViewer::onRenderUI() {
     }
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
 
-    recalc |= ImGui::Checkbox("Display Outer Points", &displayOuterPoints);
 
     if (surfaceSource == SurfaceSource::Sphere) {
         recalc |= ImGui::SliderFloat("Radius", &sphereData.radius, 0.0f, 2.0f);
@@ -344,7 +350,7 @@ BoundingBox<3> ImplicitSurfaceViewer::getBoundingBox() {
     BoundingBox<3> box;
     if (surfaceSource == SurfaceSource::Points) {
         box = findBoundingBox<glm::vec3, 3>(sourcePositions);
-        box.scale(1.1f);
+        box.scale(1.05f);
     } else {
         box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
         box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;

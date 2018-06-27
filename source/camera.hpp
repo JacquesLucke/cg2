@@ -64,7 +64,7 @@ public:
     float zFar;
 
     PerspectiveCamera(glm::vec3 eye, glm::vec3 center, float fov, float aspect)
-        : Camera(eye, center, glm::vec3(0, 1, 0)), fov(fov), aspect(aspect), zNear(0.1f), zFar(1000.0f) {}
+        : Camera(eye, center, glm::vec3(0, 1, 0)), fov(fov), aspect(aspect), zNear(0.1f), zFar(10000.0f) {}
 
     PerspectiveCamera(glm::vec3 eye, glm::vec3 center, glm::vec3 up,
                       float fov, float aspect, float zNear, float zFar)
