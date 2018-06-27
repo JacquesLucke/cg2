@@ -6,7 +6,7 @@
 #include "../implicit_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
 #include "../timer.hpp"
-
+#include "../utils.hpp"
 
 
 class ImplicitCircleCurve : public ImplicitCurve {
@@ -144,17 +144,35 @@ public:
             data.push_back(KDTreeEntry(positions[i], glm::normalize(normals[i])));
         }
 
-        kdTree = new CustomKDTree(data, 5);
+        kdTree = new CustomKDTree(data, 10);
         kdTree->balance();
     }
 
     float evaluate(glm::vec3 &position) {
         float sum = 0.0;
-        for (KDTreeEntry entry : kdTree->collectKNearest(KDTreeEntry(position), 10)) {
+
+        auto entries = kdTree->collectKNearest(KDTreeEntry(position), 11);
+        float maxDistance = getMaxDistance(position, entries);
+
+        for (KDTreeEntry entry : entries) {
             float distance = glm::distance(position, entry.position);
-            sum += glm::dot(entry.normal, position - entry.position) / distance;
+            float weight = maxDistance - distance;
+            sum += glm::dot(entry.normal, position - entry.position) * weight;
         }
         return sum;
+    }
+
+private:
+    float getMaxDistance(glm::vec3 origin, std::vector<KDTreeEntry> points) {
+        assert(points.size() > 0);
+
+        float maxDistance = glm::distance(origin, points[0].position);
+        for (unsigned int i = 1; i < points.size(); i++) {
+            float distance = glm::distance(origin, points[i].position);
+            if (distance > maxDistance) maxDistance = distance;
+        }
+
+        return maxDistance;
     }
 };
 
