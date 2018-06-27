@@ -1,3 +1,5 @@
+#include <array>
+
 #include "../mesh_utils.hpp"
 #include "../implicit_surface.hpp"
 
@@ -315,19 +317,8 @@ glm::vec3 interpolate(glm::vec3 pos1, glm::vec3 pos2, float value1, float value2
 
 void evaluateCell(ImplicitSurface &surface,
         float x0, float x1, float y0, float y1, float z0, float z1,
-        std::vector<glm::vec3> &positions)
+        std::array<float, 8> values, std::vector<glm::vec3> &positions)
 {
-    float values[8] = {
-        surface.evaluate(V0),
-        surface.evaluate(V1),
-        surface.evaluate(V2),
-        surface.evaluate(V3),
-        surface.evaluate(V4),
-        surface.evaluate(V5),
-        surface.evaluate(V6),
-        surface.evaluate(V7)
-    };
-
     unsigned char cubeIndex = (
           ((values[0] < 0) << 0)
         | ((values[1] < 0) << 1)
@@ -387,7 +378,18 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
                 float z0 = box.mapToBox((z + 0) / fResZ, 2);
                 float z1 = box.mapToBox((z + 1) / fResZ, 2);
 
-                evaluateCell(surface, x0, x1, y0, y1, z0, z1, positions);
+                std::array<float, 8> values = {
+                    surface.evaluate(V0),
+                    surface.evaluate(V1),
+                    surface.evaluate(V2),
+                    surface.evaluate(V3),
+                    surface.evaluate(V4),
+                    surface.evaluate(V5),
+                    surface.evaluate(V6),
+                    surface.evaluate(V7)
+                };
+
+                evaluateCell(surface, x0, x1, y0, y1, z0, z1, values, positions);
             }
         }
     }

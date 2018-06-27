@@ -109,8 +109,8 @@ void ImplicitSurfaceViewer::onUpdate() {
 void ImplicitSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
-    drawSourcePoints();
-    //drawSurface();
+    //drawSourcePoints();
+    drawSurface();
     //drawCurve();
 }
 
