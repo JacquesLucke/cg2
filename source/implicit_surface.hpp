@@ -20,11 +20,19 @@ public:
     }
 };
 
+std::vector<float> evaluateImplicitSurface(
+    ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
+    int resolutionX, int resolutionY, int resolutionZ);
+
 std::vector<glm::vec3> trianglesFromImplicitSurface(
     ImplicitSurface &surface, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ);
 
-PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
-    ImplicitSurface &surface, BoundingBox<3> box,
+std::vector<glm::vec3> trianglesFromEvaluatedImplicitSurface(
+    std::vector<float> &evaluatedValues, BoundingBox<3> box,
+    int resolutionX, int resolutionY, int resolutionZ);
+
+PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
+    std::vector<float> &evaluatedValues, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ,
     glm::vec4 innerColor, glm::vec4 outerColor);

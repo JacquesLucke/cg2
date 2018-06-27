@@ -34,8 +34,8 @@ private:
     void drawPointVisualization();
     void updateGeneratedData();
     void createImplicitCurve();
-    void createImplicitSurfaceMesh(ImplicitSurface &source, BoundingBox<3> &box);
-    void createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box);
+    void createImplicitSurfaceMesh(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
+    void createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
     ImplicitSurface *getImplicitSurface();
     BoundingBox<3> getBoundingBox();
 
@@ -55,8 +55,7 @@ private:
     float radius = 1;
     float boundingBoxSize = 2;
     int resolution = 10;
-
-    float a = 1, c = 1;
+    bool flipInAndOutside = false;
 
     enum SurfaceSource {
         Sphere,
@@ -69,6 +68,8 @@ private:
     bool displayVisualizationPoints = false;
     bool displaySourcePoints = false;
     bool displayGeneratedMesh = true;
+
+    bool displayAsWireframe = false;
 
     struct {
         float radius = 1.0f;

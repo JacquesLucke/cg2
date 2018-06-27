@@ -315,7 +315,7 @@ glm::vec3 interpolate(glm::vec3 pos1, glm::vec3 pos2, float value1, float value2
     return pos1 + factor * (pos2 - pos1);
 }
 
-void evaluateCell(ImplicitSurface &surface,
+void evaluateCell(
         float x0, float x1, float y0, float y1, float z0, float z1,
         std::array<float, 8> values, std::vector<glm::vec3> &positions)
 {
@@ -356,13 +356,12 @@ void evaluateCell(ImplicitSurface &surface,
     }
 }
 
-PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
-        ImplicitSurface &surface, BoundingBox<3> box,
-        int resolutionX, int resolutionY, int resolutionZ,
-        glm::vec4 innerColor, glm::vec4 outerColor)
+std::vector<float> evaluateImplicitSurface(
+        ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
+        int resolutionX, int resolutionY, int resolutionZ)
 {
-    std::vector<VertexPC> vertices;
-    vertices.reserve(resolutionX * resolutionY * resolutionZ);
+    std::vector<float> values;
+    values.reserve(resolutionX * resolutionY * resolutionZ);
 
     float fResX = (float)resolutionX - 1.0f;
     float fResY = (float)resolutionY - 1.0f;
@@ -379,6 +378,41 @@ PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
                 float _z = box.mapToBox(z / fResZ, 2);
 
                 float value = surface.evaluate(_x, _y, _z);
+                if (flipInAndOutside) value = -value;
+                values.push_back(value);
+            }
+        }
+    }
+
+    std::cout << std::endl;
+    return values;
+}
+
+PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
+        std::vector<float> &evaluatedValues, BoundingBox<3> box,
+        int resolutionX, int resolutionY, int resolutionZ,
+        glm::vec4 innerColor, glm::vec4 outerColor)
+{
+    std::vector<VertexPC> vertices;
+    vertices.reserve(resolutionX * resolutionY * resolutionZ);
+
+    float fResX = (float)resolutionX - 1.0f;
+    float fResY = (float)resolutionY - 1.0f;
+    float fResZ = (float)resolutionZ - 1.0f;
+
+    for (int x = 0; x < resolutionX; x++) {
+        float _x = box.mapToBox(x / fResX, 0);
+
+        for (int y = 0; y < resolutionY; y++) {
+            float _y = box.mapToBox(y / fResY, 1);
+
+            for (int z = 0; z < resolutionZ; z++) {
+                float _z = box.mapToBox(z / fResZ, 2);
+
+                int xOffset = resolutionY * resolutionZ;
+                int yOffset = resolutionZ;
+
+                float value = evaluatedValues[x * xOffset + y * yOffset + z];
 
                 VertexPC vertex;
                 vertex.position = glm::vec3(_x, _y, _z);
@@ -389,8 +423,6 @@ PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
             }
         }
     }
-
-    std::cout << std::endl;
 
     return new PointCloudMesh<VertexPC>(vertices);
 }
@@ -448,18 +480,20 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
                 float z0 = box.mapToBox((z + 0) / fResZ, 2);
                 float z1 = box.mapToBox((z + 1) / fResZ, 2);
 
+                int yOffset = resolutionZ;
+
                 std::array<float, 8> values = {
-                    lastValues[(y + 0) * resolutionZ + (z + 0)],
-                    nextValues[(y + 0) * resolutionZ + (z + 0)],
-                    nextValues[(y + 1) * resolutionZ + (z + 0)],
-                    lastValues[(y + 1) * resolutionZ + (z + 0)],
-                    lastValues[(y + 0) * resolutionZ + (z + 1)],
-                    nextValues[(y + 0) * resolutionZ + (z + 1)],
-                    nextValues[(y + 1) * resolutionZ + (z + 1)],
-                    lastValues[(y + 1) * resolutionZ + (z + 1)]
+                    lastValues[(y + 0) * yOffset + (z + 0)],
+                    nextValues[(y + 0) * yOffset + (z + 0)],
+                    nextValues[(y + 1) * yOffset + (z + 0)],
+                    lastValues[(y + 1) * yOffset + (z + 0)],
+                    lastValues[(y + 0) * yOffset + (z + 1)],
+                    nextValues[(y + 0) * yOffset + (z + 1)],
+                    nextValues[(y + 1) * yOffset + (z + 1)],
+                    lastValues[(y + 1) * yOffset + (z + 1)]
                 };
 
-                evaluateCell(surface, x0, x1, y0, y1, z0, z1, values, positions);
+                evaluateCell(x0, x1, y0, y1, z0, z1, values, positions);
             }
         }
 
@@ -467,6 +501,50 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
     }
 
     std::cout << std::endl;
+
+    return positions;
+}
+
+std::vector<glm::vec3> trianglesFromEvaluatedImplicitSurface(
+        std::vector<float> &evaluatedValues, BoundingBox<3> box,
+        int resolutionX, int resolutionY, int resolutionZ)
+{
+    std::vector<glm::vec3> positions;
+
+    float fResX = (float)resolutionX - 1;
+    float fResY = (float)resolutionY - 1;
+    float fResZ = (float)resolutionZ - 1;
+
+    for (int x = 0; x < resolutionX - 1; x++) {
+        float x0 = box.mapToBox((x + 0) / fResX, 0);
+        float x1 = box.mapToBox((x + 1) / fResX, 0);
+
+        for (int y = 0; y < resolutionY - 1; y++) {
+            float y0 = box.mapToBox((y + 0) / fResY, 1);
+            float y1 = box.mapToBox((y + 1) / fResY, 1);
+
+            for (int z = 0; z < resolutionZ - 1; z++) {
+                float z0 = box.mapToBox((z + 0) / fResZ, 2);
+                float z1 = box.mapToBox((z + 1) / fResZ, 2);
+
+                int xOffset = resolutionY * resolutionZ;
+                int yOffset = resolutionZ;
+
+                std::array<float, 8> values = {
+                    evaluatedValues[(x + 0) * xOffset + (y + 0) * yOffset + (z + 0)],
+                    evaluatedValues[(x + 1) * xOffset + (y + 0) * yOffset + (z + 0)],
+                    evaluatedValues[(x + 1) * xOffset + (y + 1) * yOffset + (z + 0)],
+                    evaluatedValues[(x + 0) * xOffset + (y + 1) * yOffset + (z + 0)],
+                    evaluatedValues[(x + 0) * xOffset + (y + 0) * yOffset + (z + 1)],
+                    evaluatedValues[(x + 1) * xOffset + (y + 0) * yOffset + (z + 1)],
+                    evaluatedValues[(x + 1) * xOffset + (y + 1) * yOffset + (z + 1)],
+                    evaluatedValues[(x + 0) * xOffset + (y + 1) * yOffset + (z + 1)]
+                };
+
+                evaluateCell(x0, x1, y0, y1, z0, z1, values, positions);
+            }
+        }
+    }
 
     return positions;
 }

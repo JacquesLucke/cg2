@@ -5,6 +5,7 @@
 
 #include "../implicit_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
+#include "../timer.hpp"
 
 
 
@@ -208,11 +209,15 @@ void ImplicitSurfaceViewer::setViewProjMatrixInShaders() {
 }
 
 void ImplicitSurfaceViewer::drawSurface() {
+    if (displayAsWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     surface->bindBuffers(normalShader);
     surface->draw();
+
+    if (displayAsWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void ImplicitSurfaceViewer::drawPointVisualization() {
@@ -248,6 +253,9 @@ void ImplicitSurfaceViewer::onRenderUI() {
     ImGui::Checkbox("Display Visualization Points", &displayVisualizationPoints);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
+    if (displayGeneratedMesh) {
+        ImGui::Checkbox("Display as Wireframe", &displayAsWireframe);
+    }
 
     recalc |= ImGui::RadioButton("Sphere", (int*)&surfaceSource, SurfaceSource::Sphere); ImGui::SameLine();
     recalc |= ImGui::RadioButton("Genus 2", (int*)&surfaceSource, SurfaceSource::Genus2); ImGui::SameLine();
@@ -269,6 +277,8 @@ void ImplicitSurfaceViewer::onRenderUI() {
         recalc |= ImGui::SliderFloat("Blob 2 Radius", &blobData.radius2, 0.0f, 2.0f);
     }
 
+    recalc |= ImGui::Checkbox("Flip In- and Outside", &flipInAndOutside);
+
     if (recalc) {
         updateGeneratedData();
     }
@@ -277,6 +287,8 @@ void ImplicitSurfaceViewer::onRenderUI() {
 }
 
 void ImplicitSurfaceViewer::updateGeneratedData() {
+    TIMEIT("update generated data");
+
     delete curve;
     curve = nullptr;
 
@@ -286,14 +298,18 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     delete implicitSurfacePoints;
     implicitSurfacePoints = nullptr;
 
-    ImplicitSurface *implicitSurface = getImplicitSurface();
     BoundingBox<3> box = getBoundingBox();
+    ImplicitSurface *implicitSurface = getImplicitSurface();
 
-    //createImplicitCurve();
-    createImplicitSurfaceMesh(*implicitSurface, box);
-    createImplicitSurfaceVisualization(*implicitSurface, box);
+    std::vector<float> evaluatedValues = evaluateImplicitSurface(
+        *implicitSurface, box, flipInAndOutside, resolution, resolution, resolution);
 
     delete implicitSurface;
+
+    //createImplicitCurve();
+    createImplicitSurfaceMesh(evaluatedValues, box);
+    createImplicitSurfaceVisualization(evaluatedValues, box);
+
 }
 
 void ImplicitSurfaceViewer::createImplicitCurve() {
@@ -307,20 +323,20 @@ void ImplicitSurfaceViewer::createImplicitCurve() {
     // curve = linesFromImplicitCurve(cassiniCurve, box, resolution);
 }
 
-void ImplicitSurfaceViewer::createImplicitSurfaceMesh(ImplicitSurface &source, BoundingBox<3> &box) {
-    std::vector<glm::vec3> positions = trianglesFromImplicitSurface(
-        source, box, resolution, resolution, resolution);
+void ImplicitSurfaceViewer::createImplicitSurfaceMesh(std::vector<float> &evaluatedValues, BoundingBox<3> &box) {
+    std::vector<glm::vec3> positions = trianglesFromEvaluatedImplicitSurface(
+        evaluatedValues, box, resolution, resolution, resolution);
 
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
     surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
 }
 
-void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box) {
+void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues, BoundingBox<3> &box) {
     glm::vec4 innerColor(0.9f, 0.9f, 0.3f, 1.0f);
     glm::vec4 outerColor(0.3f, 0.3f, 0.9f, 1.0f);
 
-    implicitSurfacePoints = generateImplicitSurfaceVisualization(
-        source, box, resolution, resolution, resolution,
+    implicitSurfacePoints = coloredPointsFromEvaluatedImplicitSurface(
+        evaluatedValues, box, resolution, resolution, resolution,
         innerColor, outerColor);
 }
 
