@@ -1,7 +1,9 @@
 #include <array>
+#include <thread>
 
 #include "../mesh_utils.hpp"
 #include "../implicit_surface.hpp"
+#include "../utils.hpp"
 
 static int edgeTable[256] = {
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -356,18 +358,18 @@ void evaluateCell(
     }
 }
 
-std::vector<float> evaluateImplicitSurface(
+void evaluateImplicitSurface_Partial(
         ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
-        int resolutionX, int resolutionY, int resolutionZ)
+        int resolutionX, int resolutionY, int resolutionZ,
+        int startX, int xMaxAmount, std::vector<float> &destination)
 {
-    std::vector<float> values;
-    values.reserve(resolutionX * resolutionY * resolutionZ);
-
     float fResX = (float)resolutionX - 1.0f;
     float fResY = (float)resolutionY - 1.0f;
     float fResZ = (float)resolutionZ - 1.0f;
 
-    for (int x = 0; x < resolutionX; x++) {
+    int endX = std::min(startX + xMaxAmount, resolutionX);
+
+    for (int x = startX; x < endX; x++) {
         float _x = box.mapToBox(x / fResX, 0);
         std::cout << x << " ";
 
@@ -379,9 +381,39 @@ std::vector<float> evaluateImplicitSurface(
 
                 float value = surface.evaluate(_x, _y, _z);
                 if (flipInAndOutside) value = -value;
-                values.push_back(value);
+
+                int xOffset = resolutionY * resolutionZ;
+                int yOffset = resolutionZ;
+                destination[x * xOffset + y * yOffset + z] = value;
             }
         }
+    }
+}
+
+std::vector<float> evaluateImplicitSurface(
+        ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
+        int resolutionX, int resolutionY, int resolutionZ)
+{
+    std::vector<float> values;
+    values.resize(resolutionX * resolutionY * resolutionZ);
+
+    int threadCount = getCpuCoreCount() + 1;
+    int chunkSize = (int)ceil((float)resolutionX / threadCount);
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < threadCount; i++) {
+        int startX = i * chunkSize;
+        threads.push_back(
+            std::thread(evaluateImplicitSurface_Partial,
+                std::ref(surface), box, flipInAndOutside,
+                resolutionX, resolutionY, resolutionZ,
+                startX, chunkSize, std::ref(values))
+        );
+    }
+
+    while (!threads.empty()) {
+        threads.back().join();
+        threads.pop_back();
     }
 
     std::cout << std::endl;
