@@ -106,13 +106,61 @@ public:
     }
 };
 
+class ImplicitSurfaceFromPoints : public ImplicitSurface {
+
+    struct KDTreeEntry {
+        glm::vec3 position;
+        float value;
+
+        KDTreeEntry(glm::vec3 position = glm::vec3(0), float value = 0)
+            : position(position), value(value) {}
+
+        float& operator[](const int index) {
+            return position[index];
+        }
+
+        static float distance(KDTreeEntry &a, KDTreeEntry &b) {
+            return glm::distance(a.position, b.position);
+        }
+    };
+
+    using CustomKDTree = KDTree<KDTreeEntry, 3, KDTreeEntry::distance>;
+
+    CustomKDTree* kdTree;
+    std::vector<KDTreeEntry> data;
+
+public:
+    ImplicitSurfaceFromPoints(
+            std::vector<glm::vec3> &positions,
+            std::vector<glm::vec3> &normals,
+            float alpha = 0.01f)
+    {
+        assert(positions.size() == normals.size());
+
+        for (unsigned int i = 0; i < positions.size(); i++) {
+            glm::vec3 position = positions[i];
+            glm::vec3 offset = glm::normalize(normals[i]) * alpha;
+            //data.push_back(KDTreeEntry(position, 0.0f));
+            data.push_back(KDTreeEntry(position + offset, -1.0f));
+            data.push_back(KDTreeEntry(position - offset, 1.0f));
+        }
+
+        kdTree = new CustomKDTree(data, 5);
+        kdTree->balance();
+    }
+
+    float evaluate(glm::vec3 &position) {
+        KDTreeEntry entry = kdTree->getClosestPoint(KDTreeEntry(position));
+        return entry.value;
+    }
+};
 
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     normalShader = new NormalShader();
     shadelessColorShader = new ShadelessColorShader();
 
-    NOffFileData *offData = loadRelNOffResource("horse.off");
+    NOffFileData *offData = loadRelNOffResource("rhino.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
@@ -135,8 +183,8 @@ void ImplicitSurfaceViewer::onRender() {
     prepareDrawDimensions();
     setViewProjMatrixInShaders();
     glEnable(GL_DEPTH_TEST);
-    //drawSourcePoints();
-    drawSurface();
+    if (displaySourcePoints) drawSourcePoints();
+    if (displayGeneratedMesh) drawSurface();
     drawPointVisualization();
     //drawCurve();
     glDisable(GL_DEPTH_TEST);
@@ -195,11 +243,17 @@ void ImplicitSurfaceViewer::onRenderUI() {
     ImGui::Begin("CG2");
 
     bool recalc = false;
+    ImGui::Checkbox("Display Source Points", &displaySourcePoints);
+    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
+
     recalc |= ImGui::RadioButton("Sphere", (int*)&surfaceSource, SurfaceSource::Sphere); ImGui::SameLine();
     recalc |= ImGui::RadioButton("Genus 2", (int*)&surfaceSource, SurfaceSource::Genus2); ImGui::SameLine();
-    recalc |= ImGui::RadioButton("Blobs", (int*)&surfaceSource, SurfaceSource::Blobs);
+    recalc |= ImGui::RadioButton("Blobs", (int*)&surfaceSource, SurfaceSource::Blobs); ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Points", (int*)&surfaceSource, SurfaceSource::Points);
 
-    recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
+    if (surfaceSource != SurfaceSource::Points){
+        recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
+    }
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
 
     recalc |= ImGui::Checkbox("Display Outer Points", &displayOuterPoints);
@@ -231,10 +285,7 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     implicitSurfacePoints = nullptr;
 
     ImplicitSurface *implicitSurface = getImplicitSurface();
-
-    BoundingBox<3> box;
-    box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
-    box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
+    BoundingBox<3> box = getBoundingBox();
 
     //createImplicitCurve();
     createImplicitSurfaceMesh(*implicitSurface, box);
@@ -281,8 +332,22 @@ ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
         unionSurface->addSurface(new ImplicitSphere(blobData.radius1, blobData.position1));
         unionSurface->addSurface(new ImplicitSphere(blobData.radius2, blobData.position2));
         return unionSurface;
+    } else if (surfaceSource == SurfaceSource::Points) {
+        return new ImplicitSurfaceFromPoints(sourcePositions, sourceNormals);
     }
 
     assert(false);
     return nullptr;
+}
+
+BoundingBox<3> ImplicitSurfaceViewer::getBoundingBox() {
+    BoundingBox<3> box;
+    if (surfaceSource == SurfaceSource::Points) {
+        box = findBoundingBox<glm::vec3, 3>(sourcePositions);
+        box.scale(1.1f);
+    } else {
+        box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
+        box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
+    }
+    return box;
 }

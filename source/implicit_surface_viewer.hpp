@@ -37,6 +37,7 @@ private:
     void createImplicitSurfaceMesh(ImplicitSurface &source, BoundingBox<3> &box);
     void createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box);
     ImplicitSurface *getImplicitSurface();
+    BoundingBox<3> getBoundingBox();
 
     CameraController* camera = nullptr;
 
@@ -60,11 +61,14 @@ private:
     enum SurfaceSource {
         Sphere,
         Genus2,
-        Blobs
+        Blobs,
+        Points
     };
 
     SurfaceSource surfaceSource = SurfaceSource::Sphere;
     bool displayOuterPoints = true;
+    bool displaySourcePoints = true;
+    bool displayGeneratedMesh = true;
 
     struct {
         float radius = 1.0f;

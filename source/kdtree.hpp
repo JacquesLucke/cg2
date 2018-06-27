@@ -57,6 +57,10 @@ public:
         sort(0, length - 1, 0);
     }
 
+    Point getClosestPoint(Point &origin) {
+        return collectKNearest(origin, 1)[0];
+    }
+
     std::vector<Point> collectInRadius(Point &origin, float radius) {
         InRadiusCollector collector(origin, radius);
         collectInRadius(0, length - 1, 0, collector);

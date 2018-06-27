@@ -31,6 +31,15 @@ struct BoundingBox {
         return value * size(axis) + min[axis];
     }
 
+    void scale(float factor) {
+        for (int i = 0; i < N; i++) {
+            float newSizeHalf = size(i) * factor / 2.0f;
+            float center = mapToBox(0.5f, i);
+            min[i] = center - newSizeHalf;
+            max[i] = center + newSizeHalf;
+        }
+    }
+
     friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
         stream << "[";
         for (size_t i = 0; i < N; i++) {
