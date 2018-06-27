@@ -110,10 +110,10 @@ class ImplicitSurfaceFromPoints : public ImplicitSurface {
 
     struct KDTreeEntry {
         glm::vec3 position;
-        float value;
+        glm::vec3 normal;
 
-        KDTreeEntry(glm::vec3 position = glm::vec3(0), float value = 0)
-            : position(position), value(value) {}
+        KDTreeEntry(glm::vec3 position = glm::vec3(0), glm::vec3 normal = glm::vec3(0))
+            : position(position), normal(normal) {}
 
         float& operator[](const int index) {
             return position[index];
@@ -128,6 +128,7 @@ class ImplicitSurfaceFromPoints : public ImplicitSurface {
 
     CustomKDTree* kdTree;
     std::vector<KDTreeEntry> data;
+    float alpha;
 
 public:
     ImplicitSurfaceFromPoints(
@@ -136,13 +137,10 @@ public:
             float alpha = 0.01f)
     {
         assert(positions.size() == normals.size());
+        this->alpha = alpha;
 
         for (unsigned int i = 0; i < positions.size(); i++) {
-            glm::vec3 position = positions[i];
-            glm::vec3 offset = glm::normalize(normals[i]) * alpha;
-            //data.push_back(KDTreeEntry(position, 0.0f));
-            data.push_back(KDTreeEntry(position + offset, -1.0f));
-            data.push_back(KDTreeEntry(position - offset, 1.0f));
+            data.push_back(KDTreeEntry(positions[i], glm::normalize(normals[i])));
         }
 
         kdTree = new CustomKDTree(data, 5);
@@ -150,9 +148,10 @@ public:
     }
 
     float evaluate(glm::vec3 &position) {
-        float sum = 0.0f;
-        for (KDTreeEntry entry : kdTree->collectKNearest(KDTreeEntry(position), 5)) {
-            sum += entry.value;
+        float sum = 0.0;
+        for (KDTreeEntry entry : kdTree->collectKNearest(KDTreeEntry(position), 10)) {
+            float distance = glm::distance(position, entry.position);
+            sum += glm::dot(entry.normal, position - entry.position) / distance;
         }
         return sum;
     }
@@ -163,7 +162,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     normalShader = new NormalShader();
     shadelessColorShader = new ShadelessColorShader();
 
-    NOffFileData *offData = loadRelNOffResource("rhino.off");
+    NOffFileData *offData = loadRelNOffResource("horse.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
@@ -350,7 +349,7 @@ BoundingBox<3> ImplicitSurfaceViewer::getBoundingBox() {
     BoundingBox<3> box;
     if (surfaceSource == SurfaceSource::Points) {
         box = findBoundingBox<glm::vec3, 3>(sourcePositions);
-        box.scale(1.05f);
+        box.scale(1.1f);
     } else {
         box.min[0] = box.min[1] = box.min[2] = -boundingBoxSize;
         box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
