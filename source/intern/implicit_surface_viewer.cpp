@@ -61,12 +61,13 @@ public:
 class ImplicitSphere : public ImplicitSurface {
 public:
     float radius;
+    glm::vec3 position;
 
-    ImplicitSphere(float radius = 1)
-        : radius(radius) {}
+    ImplicitSphere(float radius = 1, glm::vec3 position = glm::vec3(0, 0, 0))
+        : radius(radius), position(position) {}
 
     float evaluate(glm::vec3 &position) {
-        return glm::length(position) - radius;
+        return glm::length(position - this->position) - radius;
     }
 };
 
@@ -77,6 +78,31 @@ public:
         float y2 = y * y;
         float z2 = z * z;
         return 2*y*(y2-3*x2)*(1-z2)+(x2+y2)*(x2+y2)-(9*z2-1)*(1-z2);
+    }
+};
+
+class ImplicitUnionSurface : public ImplicitSurface {
+    std::vector<ImplicitSurface*> surfaces;
+
+public:
+    ~ImplicitUnionSurface() {
+        for (auto surface : surfaces) {
+            delete surface;
+        }
+    }
+
+    void addSurface(ImplicitSurface* surface) {
+        surfaces.push_back(surface);
+    }
+
+    float evaluate(glm::vec3 &position) {
+        if (surfaces.size() == 0) return 1.0f;
+        float finalValue = surfaces[0]->evaluate(position);
+        for (unsigned int i = 1; i < surfaces.size(); i++) {
+            float value = surfaces[i]->evaluate(position);
+            if (value < finalValue) finalValue = value;
+        }
+        return finalValue;
     }
 };
 
@@ -110,7 +136,7 @@ void ImplicitSurfaceViewer::onRender() {
     setViewProjMatrixInShaders();
     glEnable(GL_DEPTH_TEST);
     //drawSourcePoints();
-    //drawSurface();
+    drawSurface();
     drawPointVisualization();
     //drawCurve();
     glDisable(GL_DEPTH_TEST);
@@ -170,7 +196,8 @@ void ImplicitSurfaceViewer::onRenderUI() {
 
     bool recalc = false;
     recalc |= ImGui::RadioButton("Sphere", (int*)&surfaceSource, SurfaceSource::Sphere); ImGui::SameLine();
-    recalc |= ImGui::RadioButton("Genus 2", (int*)&surfaceSource, SurfaceSource::Genus2);
+    recalc |= ImGui::RadioButton("Genus 2", (int*)&surfaceSource, SurfaceSource::Genus2); ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Blobs", (int*)&surfaceSource, SurfaceSource::Blobs);
 
     recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
@@ -179,6 +206,11 @@ void ImplicitSurfaceViewer::onRenderUI() {
 
     if (surfaceSource == SurfaceSource::Sphere) {
         recalc |= ImGui::SliderFloat("Radius", &sphereData.radius, 0.0f, 2.0f);
+    } else if (surfaceSource == SurfaceSource::Blobs) {
+        recalc |= ImGui::SliderFloat3("Blob 1 Position", (float*)&blobData.position1, -2.0f, 2.0f);
+        recalc |= ImGui::SliderFloat("Blob 1 Radius", &blobData.radius1, 0.0f, 2.0f);
+        recalc |= ImGui::SliderFloat3("Blob 2 Position", (float*)&blobData.position2, -2.0f, 2.0f);
+        recalc |= ImGui::SliderFloat("Blob 2 Radius", &blobData.radius2, 0.0f, 2.0f);
     }
 
     if (recalc) {
@@ -244,7 +276,13 @@ ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
         return new ImplicitSphere(sphereData.radius);
     } else if (surfaceSource == SurfaceSource::Genus2) {
         return new ImplicitGenus2Surface();
+    } else if (surfaceSource == SurfaceSource::Blobs) {
+        ImplicitUnionSurface* unionSurface = new ImplicitUnionSurface();
+        unionSurface->addSurface(new ImplicitSphere(blobData.radius1, blobData.position1));
+        unionSurface->addSurface(new ImplicitSphere(blobData.radius2, blobData.position2));
+        return unionSurface;
     }
+
     assert(false);
     return nullptr;
 }

@@ -59,7 +59,8 @@ private:
 
     enum SurfaceSource {
         Sphere,
-        Genus2
+        Genus2,
+        Blobs
     };
 
     SurfaceSource surfaceSource = SurfaceSource::Sphere;
@@ -68,4 +69,10 @@ private:
     struct {
         float radius = 1.0f;
     } sphereData;
+
+    struct {
+        glm::vec3 position1 = glm::vec3(-0.5, 0, 0);
+        glm::vec3 position2 = glm::vec3(0.5, 0, 0);
+        float radius1 = 0.6f, radius2 = 0.6f;
+    } blobData;
 };
