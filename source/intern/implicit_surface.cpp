@@ -370,6 +370,7 @@ PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
 
     for (int x = 0; x < resolutionX; x++) {
         float _x = box.mapToBox(x / fResX, 0);
+        std::cout << x << " ";
 
         for (int y = 0; y < resolutionY; y++) {
             float _y = box.mapToBox(y / fResY, 1);
@@ -389,7 +390,32 @@ PointCloudMesh<VertexPC> *generateImplicitSurfaceVisualization(
         }
     }
 
+    std::cout << std::endl;
+
     return new PointCloudMesh<VertexPC>(vertices);
+}
+
+std::vector<float> calculateValuesInXPlane(
+        ImplicitSurface &surface, BoundingBox<3> box,
+        float x, int resolutionY, int resolutionZ)
+{
+    std::vector<float> values;
+
+    float fResY = (float)resolutionY - 1.0f;
+    float fResZ = (float)resolutionZ - 1.0f;
+
+    for (int y = 0; y < resolutionY; y++) {
+        float _y = box.mapToBox(y / fResY, 1);
+
+        for (int z = 0; z < resolutionZ; z++) {
+            float _z = box.mapToBox(z / fResZ, 2);
+
+            float value = surface.evaluate(x, _y, _z);
+            values.push_back(value);
+        }
+    }
+
+    return values;
 }
 
 std::vector<glm::vec3> trianglesFromImplicitSurface(
@@ -398,13 +424,21 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
 {
     std::vector<glm::vec3> positions;
 
-    float fResX = (float)resolutionX;
-    float fResY = (float)resolutionY;
-    float fResZ = (float)resolutionZ;
+    float fResX = (float)resolutionX - 1;
+    float fResY = (float)resolutionY - 1;
+    float fResZ = (float)resolutionZ - 1;
+
+    std::vector<float> lastValues = calculateValuesInXPlane(
+        surface, box, box.min[0], resolutionY, resolutionZ);
 
     for (int x = 0; x < resolutionX - 1; x++) {
         float x0 = box.mapToBox((x + 0) / fResX, 0);
         float x1 = box.mapToBox((x + 1) / fResX, 0);
+
+        std::vector<float> nextValues = calculateValuesInXPlane(
+            surface, box, x1, resolutionY, resolutionZ);
+
+        std::cout << x << " ";
 
         for (int y = 0; y < resolutionY - 1; y++) {
             float y0 = box.mapToBox((y + 0) / fResY, 1);
@@ -415,20 +449,24 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
                 float z1 = box.mapToBox((z + 1) / fResZ, 2);
 
                 std::array<float, 8> values = {
-                    surface.evaluate(V0),
-                    surface.evaluate(V1),
-                    surface.evaluate(V2),
-                    surface.evaluate(V3),
-                    surface.evaluate(V4),
-                    surface.evaluate(V5),
-                    surface.evaluate(V6),
-                    surface.evaluate(V7)
+                    lastValues[(y + 0) * resolutionZ + (z + 0)],
+                    nextValues[(y + 0) * resolutionZ + (z + 0)],
+                    nextValues[(y + 1) * resolutionZ + (z + 0)],
+                    lastValues[(y + 1) * resolutionZ + (z + 0)],
+                    lastValues[(y + 0) * resolutionZ + (z + 1)],
+                    nextValues[(y + 0) * resolutionZ + (z + 1)],
+                    nextValues[(y + 1) * resolutionZ + (z + 1)],
+                    lastValues[(y + 1) * resolutionZ + (z + 1)]
                 };
 
                 evaluateCell(surface, x0, x1, y0, y1, z0, z1, values, positions);
             }
         }
+
+        lastValues = nextValues;
     }
+
+    std::cout << std::endl;
 
     return positions;
 }

@@ -66,9 +66,8 @@ private:
     };
 
     SurfaceSource surfaceSource = SurfaceSource::Sphere;
-    bool displayVisualizationPoints = true;
-    bool displayOuterPoints = true;
-    bool displaySourcePoints = true;
+    bool displayVisualizationPoints = false;
+    bool displaySourcePoints = false;
     bool displayGeneratedMesh = true;
 
     struct {

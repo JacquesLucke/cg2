@@ -246,9 +246,6 @@ void ImplicitSurfaceViewer::onRenderUI() {
 
     bool recalc = false;
     ImGui::Checkbox("Display Visualization Points", &displayVisualizationPoints);
-    if (displayVisualizationPoints) {
-        recalc |= ImGui::Checkbox("Display Outer Points", &displayOuterPoints);
-    }
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
 
@@ -260,7 +257,7 @@ void ImplicitSurfaceViewer::onRenderUI() {
     if (surfaceSource != SurfaceSource::Points){
         recalc |= ImGui::SliderFloat("Bounding Box Size", &boundingBoxSize, 0.0, 10.0);
     }
-    recalc |= ImGui::SliderInt("Resolution", &resolution, 5, 200);
+    recalc |= ImGui::SliderInt("Resolution", &resolution, 2, 200);
 
 
     if (surfaceSource == SurfaceSource::Sphere) {
@@ -320,7 +317,7 @@ void ImplicitSurfaceViewer::createImplicitSurfaceMesh(ImplicitSurface &source, B
 
 void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(ImplicitSurface &source, BoundingBox<3> &box) {
     glm::vec4 innerColor(0.9f, 0.9f, 0.3f, 1.0f);
-    glm::vec4 outerColor(0.3f, 0.3f, 0.9f, displayOuterPoints ? 1.0f : 0.0f);
+    glm::vec4 outerColor(0.3f, 0.3f, 0.9f, 1.0f);
 
     implicitSurfacePoints = generateImplicitSurfaceVisualization(
         source, box, resolution, resolution, resolution,
