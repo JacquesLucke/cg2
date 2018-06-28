@@ -30,19 +30,16 @@ private:
     void setViewProjMatrixInShaders();
     void drawSurface();
     void drawSourcePoints();
-    void drawCurve();
     void drawPointVisualization();
     void updateGeneratedData();
-    void createImplicitCurve();
     void createImplicitSurfaceMesh(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
     void createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
-    ImplicitSurface *getImplicitSurface();
+    ImplicitSurface *getImplicitSurface(BoundingBox<3> box);
     BoundingBox<3> getBoundingBox();
 
     CameraController* camera = nullptr;
 
     TriangleArrayMesh<VertexPN>* surface = nullptr;
-    LinesMesh<VertexP>* curve = nullptr;
     PointCloudMesh<VertexPN>* sourcePositionsMesh = nullptr;
     PointCloudMesh<VertexPC>* implicitSurfacePoints = nullptr;
 
@@ -80,4 +77,10 @@ private:
         glm::vec3 position2 = glm::vec3(0.5, 0, 0);
         float radius1 = 0.6f, radius2 = 0.6f;
     } blobData;
+
+    struct {
+        int minPointAmount = 10;
+        float minRelativeRadius = 0.0f;
+        float boundingBoxFactor = 1.1f;
+    } pointsData;
 };

@@ -405,7 +405,7 @@ std::vector<float> evaluateImplicitSurface(
     std::vector<float> values;
     values.resize(resolutionX * resolutionY * resolutionZ);
 
-    int threadCount = getCpuCoreCount() + 1;
+    int threadCount = 1 + getCpuCoreCount();
     std::vector<std::thread> threads;
 
     for (int i = 0; i < threadCount; i++) {
