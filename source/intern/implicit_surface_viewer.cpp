@@ -149,31 +149,15 @@ public:
     }
 
     float evaluate(glm::vec3 &position) {
-        float sum = 0.0;
-
         KDTreeEntry _position(position);
-        auto entries = kdTree->collectKNearest(_position, 11);
-        float maxDistance = getMaxDistance(position, entries);
+        auto entries = kdTree->collectKNearest(_position, 10);
 
+        float sum = 0.0;
         for (KDTreeEntry entry : entries) {
             float distance = glm::distance(position, entry.position);
-            float weight = maxDistance - distance;
             sum += glm::dot(entry.normal, position - entry.position) / distance;
         }
         return sum;
-    }
-
-private:
-    float getMaxDistance(glm::vec3 origin, std::vector<KDTreeEntry> points) {
-        assert(points.size() > 0);
-
-        float maxDistance = glm::distance(origin, points[0].position);
-        for (unsigned int i = 1; i < points.size(); i++) {
-            float distance = glm::distance(origin, points[i].position);
-            if (distance > maxDistance) maxDistance = distance;
-        }
-
-        return maxDistance;
     }
 };
 
