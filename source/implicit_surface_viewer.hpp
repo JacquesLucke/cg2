@@ -12,6 +12,13 @@
 #include "window_controller.hpp"
 #include "parametric_surface_utils.hpp"
 
+enum PointsToSurfaceMethod {
+    LocalDistanceFunctions,
+    ConstantMLS,
+    LinearMLS,
+    QuadraticMLS
+};
+
 class ImplicitSurfaceViewer : public WindowController {
 public:
     ImplicitSurfaceViewer(Window* window)
@@ -53,7 +60,7 @@ private:
     std::vector<glm::vec3> sourceNormals;
     float radius = 1;
     float boundingBoxSize = 2;
-    int resolution = 10;
+    int resolution = 20;
     bool flipInAndOutside = false;
     glm::vec3 relativeLightPosition = glm::vec3(2, 2, 2);
     glm::vec3 lightPosition;
@@ -85,7 +92,8 @@ private:
 
     struct {
         int minPointAmount = 10;
-        float minRelativeRadius = 0.0f;
         float boundingBoxFactor = 1.1f;
+        float relativeRadius = 0.05f;
+        PointsToSurfaceMethod method = PointsToSurfaceMethod::LocalDistanceFunctions;
     } pointsData;
 };

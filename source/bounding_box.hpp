@@ -40,6 +40,14 @@ struct BoundingBox {
         }
     }
 
+    float diagonal() {
+        float sum = 0.0f;
+        for (int i = 0; i < N; i++) {
+            sum += size(i) * size(i);
+        }
+        return std::sqrt(sum);
+    }
+
     friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& box) {
         stream << "[";
         for (size_t i = 0; i < N; i++) {

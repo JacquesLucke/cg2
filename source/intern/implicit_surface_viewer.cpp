@@ -231,13 +231,15 @@ class ImplicitSurfaceFromPoints : public ImplicitSurface {
     std::vector<KDTreeEntry> data;
     std::vector<glm::vec3> zeroPositions;
     float radius;
+    PointsToSurfaceMethod method;
 
 public:
     ImplicitSurfaceFromPoints(
             std::vector<glm::vec3> &positions,
             std::vector<glm::vec3> &normals,
-            float radius)
-            : radius(radius), zeroPositions(positions)
+            PointsToSurfaceMethod method,
+            float radius, float epsilon)
+            : method(method), radius(radius), zeroPositions(positions)
     {
         assert(positions.size() == normals.size());
 
@@ -282,7 +284,18 @@ public:
             return epsilonKDTree->getClosestPoint(_position).value;
         }
 
-        return evaluate_Constant(position, entryAmount, epsilonEntries);
+        if (method == PointsToSurfaceMethod::ConstantMLS) {
+            return evaluate_Constant(position, entryAmount, epsilonEntries);
+        }
+        if (method == PointsToSurfaceMethod::LinearMLS) {
+            return evaluate_Linear(position, entryAmount, zeroEntries, epsilonEntries);
+        }
+        if (method == PointsToSurfaceMethod::QuadraticMLS) {
+            return evaluate_Quadratic(position, entryAmount, zeroEntries, epsilonEntries);
+        }
+
+        assert(false);
+        return 0.0f;
     }
 
     float evaluate_Quadratic(
@@ -304,7 +317,7 @@ public:
                 value = 0;
             }
             float x = pos.x; float y = pos.y; float z = pos.z;
-            float weight = wendland(1 - glm::distance(position, pos) / radius);
+            float weight = wendland(glm::distance(position, pos) / radius);
 
             A(i, 0) = 1 * weight;
             A(i, 1) = x * weight;
@@ -351,7 +364,7 @@ public:
                 value = 0;
             }
             float x = pos.x; float y = pos.y; float z = pos.z;
-            float weight = wendland(1 - glm::distance(position, pos) / radius);
+            float weight = wendland(glm::distance(position, pos) / radius);
 
             A(i, 0) = 1 * weight;
             A(i, 1) = x * weight;
@@ -378,7 +391,7 @@ public:
         float sum = 0.0f;
 
         for (auto entry : epsilonEntries) {
-            float weight = wendland(1 - glm::distance(position, entry.position) / radius);
+            float weight = wendland(glm::distance(position, entry.position) / radius);
             sum += weight * entry.value;
         }
 
@@ -396,7 +409,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     shadelessColorShader = new ShadelessColorShader();
     phongShader = new BlinnPhongShader();
 
-    NOffFileData *offData = loadRelNOffResource("horse.off");
+    NOffFileData *offData = loadRelNOffResource("rhino.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
@@ -516,9 +529,18 @@ void ImplicitSurfaceViewer::onRenderUI() {
         recalc |= ImGui::SliderFloat3("Blob 2 Position", (float*)&blobData.position2, -2.0f, 2.0f);
         recalc |= ImGui::SliderFloat("Blob 2 Radius", &blobData.radius2, 0.0f, 2.0f);
     } else if (surfaceSource == SurfaceSource::Points) {
-        recalc |= ImGui::SliderInt("Min Point Amount", &pointsData.minPointAmount, 1, 50);
-        recalc |= ImGui::SliderFloat("Min Relative Radius", &pointsData.minRelativeRadius, 0.0f, 0.3f);
+        recalc |= ImGui::RadioButton("Local Distance Function", (int*)&pointsData.method, PointsToSurfaceMethod::LocalDistanceFunctions);
+        recalc |= ImGui::RadioButton("Constant MLS", (int*)&pointsData.method, PointsToSurfaceMethod::ConstantMLS);
+        recalc |= ImGui::RadioButton("Linear MLS", (int*)&pointsData.method, PointsToSurfaceMethod::LinearMLS);
+        recalc |= ImGui::RadioButton("Quadratic MLS", (int*)&pointsData.method, PointsToSurfaceMethod::QuadraticMLS);
+
         recalc |= ImGui::SliderFloat("Bounding Box Factor", &pointsData.boundingBoxFactor, 1.0f, 2.0f);
+        if (pointsData.method == PointsToSurfaceMethod::LocalDistanceFunctions) {
+            recalc |= ImGui::SliderFloat("Min Relative Radius", &pointsData.relativeRadius, 0.0f, 0.3f);
+            recalc |= ImGui::SliderInt("Min Point Amount", &pointsData.minPointAmount, 1, 50);
+        } else {
+            recalc |= ImGui::SliderFloat("Relative Radius", &pointsData.relativeRadius, 0.0f, 0.3f);
+        }
     }
 
     recalc |= ImGui::Checkbox("Flip In- and Outside", &flipInAndOutside);
@@ -576,19 +598,27 @@ void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(std::vector<float
 ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
     if (surfaceSource == SurfaceSource::Sphere) {
         return new ImplicitSphere(sphereData.radius);
-    } else if (surfaceSource == SurfaceSource::Genus2) {
+    }
+    if (surfaceSource == SurfaceSource::Genus2) {
         return new ImplicitGenus2Surface();
-    } else if (surfaceSource == SurfaceSource::Blobs) {
+    }
+    if (surfaceSource == SurfaceSource::Blobs) {
         ImplicitUnionSurface* unionSurface = new ImplicitUnionSurface();
         unionSurface->addSurface(new ImplicitSphere(blobData.radius1, blobData.position1));
         unionSurface->addSurface(new ImplicitSphere(blobData.radius2, blobData.position2));
         return unionSurface;
-    } else if (surfaceSource == SurfaceSource::Points) {
-        return new ImplicitSurfaceFromPoints(
-            sourcePositions, sourceNormals, boundingBox.size(0) / 50.0f);
-        // return new ImplicitSurfaceFromLocalDistanceFunctions(
-        //     sourcePositions, sourceNormals,
-        //     pointsData.minPointAmount, pointsData.minRelativeRadius * boundingBox.size(0));
+    }
+    if (surfaceSource == SurfaceSource::Points) {
+        if (pointsData.method == PointsToSurfaceMethod::LocalDistanceFunctions) {
+            return new ImplicitSurfaceFromLocalDistanceFunctions(
+                sourcePositions, sourceNormals,
+                pointsData.minPointAmount, pointsData.relativeRadius * boundingBox.diagonal());
+        } else {
+            return new ImplicitSurfaceFromPoints(
+                sourcePositions, sourceNormals, pointsData.method,
+                pointsData.relativeRadius * boundingBox.diagonal(),
+                0.01f * boundingBox.diagonal());
+        }
     }
 
     assert(false);
