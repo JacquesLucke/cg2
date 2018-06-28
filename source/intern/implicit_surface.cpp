@@ -371,7 +371,7 @@ void evaluateImplicitSurface_Partial(
 
     for (int x = startX; x < endX; x++) {
         float _x = box.mapToBox(x / fResX, 0);
-        std::cout << x << " ";
+        std::cout << x << " " << std::flush;
 
         for (int y = 0; y < resolutionY; y++) {
             float _y = box.mapToBox(y / fResY, 1);
@@ -502,7 +502,7 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
         std::vector<float> nextValues = calculateValuesInXPlane(
             surface, box, x1, resolutionY, resolutionZ);
 
-        std::cout << x << " ";
+        std::cout << x << " " << std::flush;
 
         for (int y = 0; y < resolutionY - 1; y++) {
             float y0 = box.mapToBox((y + 0) / fResY, 1);
