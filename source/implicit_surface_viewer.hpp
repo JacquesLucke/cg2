@@ -32,9 +32,10 @@ private:
     void drawSourcePoints();
     void drawPointVisualization();
     void updateGeneratedData();
-    void createImplicitSurfaceMesh(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
-    void createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues, BoundingBox<3> &box);
-    ImplicitSurface *getImplicitSurface(BoundingBox<3> box);
+    void createImplicitSurfaceMesh(std::vector<float> &evaluatedValues);
+    void createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues);
+    ImplicitSurface *getImplicitSurface();
+    void updateLightPosition();
     BoundingBox<3> getBoundingBox();
 
     CameraController* camera = nullptr;
@@ -45,7 +46,8 @@ private:
 
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;
-    ShadelessColorShader *shadelessColorShader = nullptr;
+    ShadelessColorShader* shadelessColorShader = nullptr;
+    BlinnPhongShader* phongShader = nullptr;
 
     std::vector<glm::vec3> sourcePositions;
     std::vector<glm::vec3> sourceNormals;
@@ -53,6 +55,9 @@ private:
     float boundingBoxSize = 2;
     int resolution = 10;
     bool flipInAndOutside = false;
+    glm::vec3 relativeLightPosition = glm::vec3(1, 1, 1);
+    glm::vec3 lightPosition;
+    BoundingBox<3> boundingBox;
 
     enum SurfaceSource {
         Sphere,

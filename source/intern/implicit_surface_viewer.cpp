@@ -331,6 +331,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
     normalShader = new NormalShader();
     shadelessColorShader = new ShadelessColorShader();
+    phongShader = new BlinnPhongShader();
 
     NOffFileData *offData = loadRelNOffResource("horse.off");
     sourcePositions = offData->positions;
@@ -374,6 +375,8 @@ void ImplicitSurfaceViewer::setViewProjMatrixInShaders() {
     normalShader->setViewProj(matViewProj);
     shadelessColorShader->bind();
     shadelessColorShader->setViewProj(matViewProj);
+    phongShader->bind();
+    phongShader->setViewProj(matViewProj);
 }
 
 void ImplicitSurfaceViewer::drawSurface() {
@@ -383,6 +386,18 @@ void ImplicitSurfaceViewer::drawSurface() {
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     surface->bindBuffers(normalShader);
+    surface->draw();
+
+    // phongShader->bind();
+    // phongShader->resetModelMatrix();
+    // phongShader->setAmbientColor(0.1f, 0.1f, 0.1f);
+    // phongShader->setDiffuseColor(0.9f, 0.7f, 0.3f);
+    // phongShader->setSpecularColor(1, 1, 1);
+    // phongShader->setMagnitude(4);
+    // phongShader->setLightPosition(lightPosition);
+    // phongShader->setCameraPosition(camera->camera->eye);
+
+    surface->bindBuffers(phongShader);
     surface->draw();
 
     if (displayAsWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -445,6 +460,11 @@ void ImplicitSurfaceViewer::onRenderUI() {
 
     recalc |= ImGui::Checkbox("Flip In- and Outside", &flipInAndOutside);
 
+    // ImGui::Separator();
+    // if (ImGui::SliderFloat3("Relative Light Position", (float*)&relativeLightPosition, -2, 3)) {
+    //     updateLightPosition();
+    // }
+
     if (recalc) {
         updateGeneratedData();
     }
@@ -461,37 +481,36 @@ void ImplicitSurfaceViewer::updateGeneratedData() {
     delete implicitSurfacePoints;
     implicitSurfacePoints = nullptr;
 
-    BoundingBox<3> box = getBoundingBox();
-    ImplicitSurface *implicitSurface = getImplicitSurface(box);
+    boundingBox = getBoundingBox();
+    ImplicitSurface *implicitSurface = getImplicitSurface();
 
     std::vector<float> evaluatedValues = evaluateImplicitSurface(
-        *implicitSurface, box, flipInAndOutside, resolution, resolution, resolution);
+        *implicitSurface, boundingBox, flipInAndOutside, resolution, resolution, resolution);
 
     delete implicitSurface;
 
-    createImplicitSurfaceMesh(evaluatedValues, box);
-    createImplicitSurfaceVisualization(evaluatedValues, box);
-
+    createImplicitSurfaceMesh(evaluatedValues);
+    createImplicitSurfaceVisualization(evaluatedValues);
 }
 
-void ImplicitSurfaceViewer::createImplicitSurfaceMesh(std::vector<float> &evaluatedValues, BoundingBox<3> &box) {
+void ImplicitSurfaceViewer::createImplicitSurfaceMesh(std::vector<float> &evaluatedValues) {
     std::vector<glm::vec3> positions = trianglesFromEvaluatedImplicitSurface(
-        evaluatedValues, box, resolution, resolution, resolution);
+        evaluatedValues, boundingBox, resolution, resolution, resolution);
 
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
     surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
 }
 
-void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues, BoundingBox<3> &box) {
+void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues) {
     glm::vec4 innerColor(0.9f, 0.9f, 0.3f, 1.0f);
     glm::vec4 outerColor(0.3f, 0.3f, 0.9f, 1.0f);
 
     implicitSurfacePoints = coloredPointsFromEvaluatedImplicitSurface(
-        evaluatedValues, box, resolution, resolution, resolution,
+        evaluatedValues, boundingBox, resolution, resolution, resolution,
         innerColor, outerColor);
 }
 
-ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface(BoundingBox<3> box) {
+ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
     if (surfaceSource == SurfaceSource::Sphere) {
         return new ImplicitSphere(sphereData.radius);
     } else if (surfaceSource == SurfaceSource::Genus2) {
@@ -504,7 +523,7 @@ ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface(BoundingBox<3> box) {
     } else if (surfaceSource == SurfaceSource::Points) {
         return new ImplicitSurfaceFromPoints(
             sourcePositions, sourceNormals,
-            pointsData.minPointAmount, pointsData.minRelativeRadius * box.size(0));
+            pointsData.minPointAmount, pointsData.minRelativeRadius * boundingBox.size(0));
     }
 
     assert(false);
@@ -521,4 +540,12 @@ BoundingBox<3> ImplicitSurfaceViewer::getBoundingBox() {
         box.max[0] = box.max[1] = box.max[2] =  boundingBoxSize;
     }
     return box;
+}
+
+void ImplicitSurfaceViewer::updateLightPosition() {
+    lightPosition = glm::vec3(
+        boundingBox.mapToBox(relativeLightPosition.x, 0),
+        boundingBox.mapToBox(relativeLightPosition.y, 1),
+        boundingBox.mapToBox(relativeLightPosition.z, 2)
+    );
 }
