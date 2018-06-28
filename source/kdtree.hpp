@@ -57,27 +57,27 @@ public:
         sort(0, length - 1, 0);
     }
 
-    Point getClosestPoint(Point &origin) {
+    Point getClosestPoint(Point origin) {
         return collectKNearest(origin, 1)[0];
     }
 
-    std::vector<Point> collectInRadius(Point &origin, float radius) {
+    std::vector<Point> collectInRadius(Point origin, float radius) {
         InRadiusCollector collector(origin, radius);
         collectInRadius(0, length - 1, 0, collector);
         return collector.getPoints();;
     }
 
-    std::vector<Point> collectKNearest(Point &origin, int k) {
+    std::vector<Point> collectKNearest(Point origin, int k) {
         KNearestCollector collector(origin, k);
         collectKNearest(0, length - 1, 0, collector);
         return collector.getPoints();
     }
 
-    std::vector<Point> collectInRadius_Naive(Point &origin, float radius) {
+    std::vector<Point> collectInRadius_Naive(Point origin, float radius) {
         return collectNaive(InRadiusCollector(origin, radius));
     }
 
-    std::vector<Point> collectKNearest_Naive(Point &origin, int k) {
+    std::vector<Point> collectKNearest_Naive(Point origin, int k) {
         return collectNaive(KNearestCollector(origin, k));
     }
 
