@@ -1,1 +1,9 @@
+\newpage
 \section*{Aufgabe 3: }
+Sei $f$ eine mit WLS konstruierte implizite Funktion und seien $P(x) = \{p_1, \cdots, p_n\} \subset \mathbb{R}^3$ die Punkte der zu Grunde liegenden Punktwolke.
+Mit der Verwendung von konstanten Polynomen zur Konstruktion von f gilt dann:
+\begin{align*}
+  f(x) &= \sum_{i=1}^n 0 \cdot \theta(|p_i - x|) + \alpha \cdot \theta(|p_i + \alpha n_i - x|) - \alpha \cdot \theta(|p_i - \alpha n_i - x|)\\
+  &= \sum_{i=1}^n \alpha (\theta(|p_i + \alpha n_i - x|) - \theta(|p_i - \alpha n_i - x|))
+\end{align*}
+Da der Wertebereich der Gewichtungsfunktion $\theta$ zwischen 0 und 1 liegt, liegt $\theta(|p_i + \alpha n_i - x|) - \theta(|p_i - \alpha n_i - x|)$ im Bereich zwischen $-1$ und $2$. Damit ist der Wertebereich von $f$ eine Teilmenge des Intervals $[-\alpha n; \alpha n]$.
