@@ -10,6 +10,9 @@
 #include "../utils.hpp"
 
 
+/* Specific Implicit Curves
+*********************************************/
+
 class ImplicitCircleCurve : public ImplicitCurve {
 public:
     float radius;
@@ -60,6 +63,10 @@ public:
     }
 };
 
+
+/* Specific Implicit Surfaces
+*********************************************/
+
 class ImplicitSphere : public ImplicitSurface {
 public:
     float radius;
@@ -107,6 +114,10 @@ public:
         return finalValue;
     }
 };
+
+
+/* Implicit Surfaces based on Points and Normals
+*****************************************************/
 
 float wendland(float d) {
     if (d > 1) return 0.0f;
@@ -311,6 +322,10 @@ public:
                 coeffs[7] * _x * _x + coeffs[8] * _y * _y + coeffs[9] * _z * _z);
     }
 };
+
+
+/* Start of actual Window Controller
+********************************************/
 
 bool ImplicitSurfaceViewer::onSetup() {
     flatShader = new FlatShader();
