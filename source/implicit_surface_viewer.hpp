@@ -55,7 +55,7 @@ private:
     float boundingBoxSize = 2;
     int resolution = 10;
     bool flipInAndOutside = false;
-    glm::vec3 relativeLightPosition = glm::vec3(1, 1, 1);
+    glm::vec3 relativeLightPosition = glm::vec3(2, 2, 2);
     glm::vec3 lightPosition;
     BoundingBox<3> boundingBox;
 
