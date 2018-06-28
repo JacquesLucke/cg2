@@ -358,6 +358,17 @@ void evaluateCell(
     }
 }
 
+inline int getValueIndex_XYZ(int x, int y, int z, int resolutionX, int resolutionY, int resolutionZ) {
+    int xOffset = resolutionY * resolutionZ;
+    int yOffset = resolutionZ;
+    return x * xOffset + y * yOffset + z;
+}
+
+inline int getValueIndex_YZ(int y, int z, int resolutionY, int resolutionZ) {
+    int yOffset = resolutionZ;
+    return y * yOffset + z;
+}
+
 void evaluateImplicitSurface_Partial(
         ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
         int resolutionX, int resolutionY, int resolutionZ,
@@ -380,9 +391,8 @@ void evaluateImplicitSurface_Partial(
                 float value = surface.evaluate(_x, _y, _z);
                 if (flipInAndOutside) value = -value;
 
-                int xOffset = resolutionY * resolutionZ;
-                int yOffset = resolutionZ;
-                destination[x * xOffset + y * yOffset + z] = value;
+                int index = getValueIndex_XYZ(x, y, z, resolutionX, resolutionY, resolutionZ);
+                destination[index] = value;
             }
         }
     }
@@ -443,7 +453,8 @@ PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
                 int xOffset = resolutionY * resolutionZ;
                 int yOffset = resolutionZ;
 
-                float value = evaluatedValues[x * xOffset + y * yOffset + z];
+                int index = getValueIndex_XYZ(x, y, z, resolutionX, resolutionY, resolutionZ);
+                float value = evaluatedValues[index];
 
                 VertexPC vertex;
                 vertex.position = glm::vec3(_x, _y, _z);
@@ -511,17 +522,15 @@ std::vector<glm::vec3> trianglesFromImplicitSurface(
                 float z0 = box.mapToBox((z + 0) / fResZ, 2);
                 float z1 = box.mapToBox((z + 1) / fResZ, 2);
 
-                int yOffset = resolutionZ;
-
                 std::array<float, 8> values = {
-                    lastValues[(y + 0) * yOffset + (z + 0)],
-                    nextValues[(y + 0) * yOffset + (z + 0)],
-                    nextValues[(y + 1) * yOffset + (z + 0)],
-                    lastValues[(y + 1) * yOffset + (z + 0)],
-                    lastValues[(y + 0) * yOffset + (z + 1)],
-                    nextValues[(y + 0) * yOffset + (z + 1)],
-                    nextValues[(y + 1) * yOffset + (z + 1)],
-                    lastValues[(y + 1) * yOffset + (z + 1)]
+                    lastValues[getValueIndex_YZ(y + 0, z + 0, resolutionY, resolutionZ)],
+                    nextValues[getValueIndex_YZ(y + 0, z + 0, resolutionY, resolutionZ)],
+                    nextValues[getValueIndex_YZ(y + 1, z + 0, resolutionY, resolutionZ)],
+                    lastValues[getValueIndex_YZ(y + 1, z + 0, resolutionY, resolutionZ)],
+                    lastValues[getValueIndex_YZ(y + 0, z + 1, resolutionY, resolutionZ)],
+                    nextValues[getValueIndex_YZ(y + 0, z + 1, resolutionY, resolutionZ)],
+                    nextValues[getValueIndex_YZ(y + 1, z + 1, resolutionY, resolutionZ)],
+                    lastValues[getValueIndex_YZ(y + 1, z + 1, resolutionY, resolutionZ)],
                 };
 
                 evaluateCell(x0, x1, y0, y1, z0, z1, values, positions);
