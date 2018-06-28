@@ -361,15 +361,13 @@ void evaluateCell(
 void evaluateImplicitSurface_Partial(
         ImplicitSurface &surface, BoundingBox<3> box, bool flipInAndOutside,
         int resolutionX, int resolutionY, int resolutionZ,
-        int startX, int xMaxAmount, std::vector<float> &destination)
+        int startX, int stepX, std::vector<float> &destination)
 {
     float fResX = (float)resolutionX - 1.0f;
     float fResY = (float)resolutionY - 1.0f;
     float fResZ = (float)resolutionZ - 1.0f;
 
-    int endX = std::min(startX + xMaxAmount, resolutionX);
-
-    for (int x = startX; x < endX; x++) {
+    for (int x = startX; x < resolutionX; x += stepX) {
         float _x = box.mapToBox(x / fResX, 0);
         std::cout << x << " " << std::flush;
 
@@ -398,16 +396,17 @@ std::vector<float> evaluateImplicitSurface(
     values.resize(resolutionX * resolutionY * resolutionZ);
 
     int threadCount = getCpuCoreCount() + 1;
-    int chunkSize = (int)ceil((float)resolutionX / threadCount);
     std::vector<std::thread> threads;
 
     for (int i = 0; i < threadCount; i++) {
-        int startX = i * chunkSize;
+        int startX = i;
+        int stepX = threadCount;
+
         threads.push_back(
             std::thread(evaluateImplicitSurface_Partial,
                 std::ref(surface), box, flipInAndOutside,
                 resolutionX, resolutionY, resolutionZ,
-                startX, chunkSize, std::ref(values))
+                startX, stepX, std::ref(values))
         );
     }
 
