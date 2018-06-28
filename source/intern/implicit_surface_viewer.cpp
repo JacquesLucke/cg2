@@ -151,7 +151,8 @@ public:
     float evaluate(glm::vec3 &position) {
         float sum = 0.0;
 
-        auto entries = kdTree->collectKNearest(KDTreeEntry(position), 11);
+        KDTreeEntry _position(position);
+        auto entries = kdTree->collectKNearest(_position, 11);
         float maxDistance = getMaxDistance(position, entries);
 
         for (KDTreeEntry entry : entries) {
