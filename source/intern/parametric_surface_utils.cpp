@@ -1,9 +1,7 @@
 #include <thread>
 #include <algorithm>
-#include <Eigen/Dense>
 #include "../parametric_surface_utils.hpp"
 #include "../timer.hpp"
-#include "../utils.hpp"
 
 #define COEFF_AMOUNT 6
 
@@ -31,8 +29,6 @@ std::ostream& operator<<(std::ostream &os, const Coefficients &c) {
     return os;
 }
 
-typedef float (*WeightFunction)(float distance);
-typedef Eigen::VectorXf (*LeastSquaresSolverFunction)(Eigen::MatrixXf &A, Eigen::VectorXf &b);
 
 Coefficients weightedLeastSquares(std::vector<glm::vec3> &points, std::vector<float> &weights, LeastSquaresSolverFunction solver) {
     assert(points.size() == weights.size());
@@ -70,39 +66,13 @@ std::vector<float> calcWeights(std::vector<glm::vec3> &points, glm::vec3 positio
     return weights;
 }
 
-float weightFunction_Wendland(float d) {
-    if (d > 1) return 0.0f;
-    return pow(1 - d, 4) * (4 * d + 1);
-}
-
-Eigen::VectorXf solveLeastSquares_SVD(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
-    return A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
-}
-
-Eigen::VectorXf solveLeastSquares_QR(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
-    return A.colPivHouseholderQr().solve(b);
-}
-
-Eigen::VectorXf solveLeastSquares_Normal(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
-    return (A.transpose() * A).ldlt().solve(A.transpose() * b);
-}
-
-LeastSquaresSolverFunction getLeastSquaresSolver(LeastSquaresSolver solverType) {
-    switch (solverType) {
-        case LeastSquaresSolver::SVD: return solveLeastSquares_SVD;
-        case LeastSquaresSolver::QR: return solveLeastSquares_QR;
-        case LeastSquaresSolver::Normal: return solveLeastSquares_Normal;
-        default: assert(false); return NULL;
-    }
-}
-
 std::pair<std::vector<glm::vec3>, std::vector<float>>
 getPointsAndWeightsToConsider(
         glm::vec3 point, KDTreeVec3_2D *kdTree, RadiusSelectionInfo radiusSelectionInfo)
 {
     if (radiusSelectionInfo.mode == RadiusSelectionMode::Radius){
         auto pointsToConsider = kdTree->collectInRadius(point, radiusSelectionInfo.radius);
-        auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, radiusSelectionInfo.radius);
+        auto weights = calcWeights(pointsToConsider, point, wendland, radiusSelectionInfo.radius);
         return std::make_pair(pointsToConsider, weights);
     } else {
         auto pointsToConsider = kdTree->collectKNearest(point, radiusSelectionInfo.k);
@@ -113,7 +83,7 @@ getPointsAndWeightsToConsider(
                 maxDistance = distance;
             }
         }
-        auto weights = calcWeights(pointsToConsider, point, weightFunction_Wendland, maxDistance);
+        auto weights = calcWeights(pointsToConsider, point, wendland, maxDistance);
         return std::make_pair(pointsToConsider, weights);
     }
 }

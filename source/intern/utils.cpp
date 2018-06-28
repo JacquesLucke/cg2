@@ -22,3 +22,29 @@ float getMaxDistance(glm::vec3 origin, std::vector<glm::vec3> points) {
 
     return maxDistance;
 }
+
+float wendland(float d) {
+    if (d > 1) return 0.0f;
+    return pow(1 - d, 4) * (4 * d + 1);
+}
+
+Eigen::VectorXf solveLeastSquares_SVD(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+}
+
+Eigen::VectorXf solveLeastSquares_QR(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return A.colPivHouseholderQr().solve(b);
+}
+
+Eigen::VectorXf solveLeastSquares_Normal(Eigen::MatrixXf &A, Eigen::VectorXf &b) {
+    return (A.transpose() * A).ldlt().solve(A.transpose() * b);
+}
+
+LeastSquaresSolverFunction getLeastSquaresSolver(LeastSquaresSolver solverType) {
+    switch (solverType) {
+        case LeastSquaresSolver::SVD: return solveLeastSquares_SVD;
+        case LeastSquaresSolver::QR: return solveLeastSquares_QR;
+        case LeastSquaresSolver::Normal: return solveLeastSquares_Normal;
+        default: assert(false); return NULL;
+    }
+}

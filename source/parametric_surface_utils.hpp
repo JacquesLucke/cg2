@@ -1,6 +1,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include "kdtree.hpp"
+#include "utils.hpp"
 
 inline float distanceSquaredFunction(glm::vec3 &a, glm::vec3 &b) {
     float xDiff = a.x - b.x;
@@ -13,10 +14,6 @@ inline float distanceFunction(glm::vec3 &a, glm::vec3 &b) {
 }
 
 using KDTreeVec3_2D = KDTree<glm::vec3, 2, distanceFunction>;
-
-enum LeastSquaresSolver {
-    SVD, QR, Normal
-};
 
 enum RadiusSelectionMode {
     Radius,

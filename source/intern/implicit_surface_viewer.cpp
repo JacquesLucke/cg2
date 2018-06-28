@@ -2,7 +2,6 @@
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <Eigen/Dense>
 
 #include "../implicit_surface_viewer.hpp"
 #include "../mesh_utils.hpp"
@@ -119,12 +118,7 @@ public:
 /* Implicit Surfaces based on Points and Normals
 *****************************************************/
 
-float wendland(float d) {
-    if (d > 1) return 0.0f;
-    return pow(1 - d, 4) * (4 * d + 1);
-}
-
-class ImplicitSurfaceFromPoints : public ImplicitSurface {
+class ImplicitSurfaceFromLocalDistanceFunctions : public ImplicitSurface {
 
     struct KDTreeEntry {
         glm::vec3 position;
@@ -150,7 +144,7 @@ class ImplicitSurfaceFromPoints : public ImplicitSurface {
     float minRadius;
 
 public:
-    ImplicitSurfaceFromPoints(
+    ImplicitSurfaceFromLocalDistanceFunctions(
             std::vector<glm::vec3> &positions,
             std::vector<glm::vec3> &normals,
             int minPointAmount = 10, float minRadius = 0.0f)
@@ -166,7 +160,7 @@ public:
         kdTree->balance();
     }
 
-    ~ImplicitSurfaceFromPoints() {
+    ~ImplicitSurfaceFromLocalDistanceFunctions() {
         delete kdTree;
     }
 
@@ -213,7 +207,7 @@ private:
     }
 };
 
-class ImplicitSurfaceFromPoints2 : public ImplicitSurface {
+class ImplicitSurfaceFromPoints : public ImplicitSurface {
     struct KDTreeEntry {
         glm::vec3 position;
         float value;
@@ -239,7 +233,7 @@ class ImplicitSurfaceFromPoints2 : public ImplicitSurface {
     float radius;
 
 public:
-    ImplicitSurfaceFromPoints2(
+    ImplicitSurfaceFromPoints(
             std::vector<glm::vec3> &positions,
             std::vector<glm::vec3> &normals,
             float radius)
@@ -265,7 +259,7 @@ public:
         epsilonKDTree->balance();
     }
 
-    ~ImplicitSurfaceFromPoints2() {
+    ~ImplicitSurfaceFromPoints() {
         delete epsilonKDTree;
         delete zeroKDTree;
     }
@@ -280,21 +274,37 @@ public:
 
     float evaluate(glm::vec3 &position) {
         KDTreeEntry _position(position);
-        auto entries = epsilonKDTree->collectInRadius(_position, radius);
+        auto epsilonEntries = epsilonKDTree->collectInRadius(_position, radius);
+        auto zeroEntries = zeroKDTree->collectInRadius(position, radius);
+        int entryAmount = (int)(epsilonEntries.size() + zeroEntries.size());
 
-        if (entries.size() < 4) {
+        if (epsilonEntries.size() == 0) {
             return epsilonKDTree->getClosestPoint(_position).value;
         }
 
-        Eigen::MatrixXf A(entries.size(), 10);
-        Eigen::VectorXf b = Eigen::VectorXf(entries.size());
+        return evaluate_Constant(position, entryAmount, epsilonEntries);
+    }
 
-        for (unsigned int i = 0; i < entries.size(); i++) {
-            float x = entries[i].position.x;
-            float y = entries[i].position.y;
-            float z = entries[i].position.z;
-            float value = entries[i].value;
-            float weight = wendland(1 - glm::distance(position, entries[i].position) / radius);
+    float evaluate_Quadratic(
+            glm::vec3 position, int entryAmount,
+            std::vector<glm::vec3> &zeroEntries,
+            std::vector<KDTreeEntry> &epsilonEntries)
+    {
+        Eigen::MatrixXf A(entryAmount, 10);
+        Eigen::VectorXf b = Eigen::VectorXf(entryAmount);
+
+        for (int i = 0; i < entryAmount; i++) {
+            glm::vec3 pos;
+            float value;
+            if (i < (int)epsilonEntries.size()){
+                pos = epsilonEntries[i].position;
+                value = epsilonEntries[i].value;
+            } else {
+                pos = zeroEntries[i - epsilonEntries.size()];
+                value = 0;
+            }
+            float x = pos.x; float y = pos.y; float z = pos.z;
+            float weight = wendland(1 - glm::distance(position, pos) / radius);
 
             A(i, 0) = 1 * weight;
             A(i, 1) = x * weight;
@@ -310,7 +320,7 @@ public:
             b[i] = value * weight;
         }
 
-        Eigen::VectorXf coeffs = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b);
+        Eigen::VectorXf coeffs = solveLeastSquares_SVD(A, b);
 
         float _x = position.x;
         float _y = position.y;
@@ -320,6 +330,59 @@ public:
                 coeffs[1] * _x      + coeffs[2] * _y      + coeffs[3] * _z,
                 coeffs[4] * _x * _y + coeffs[5] * _x * _z + coeffs[6] * _y * _z,
                 coeffs[7] * _x * _x + coeffs[8] * _y * _y + coeffs[9] * _z * _z);
+    }
+
+    float evaluate_Linear(
+            glm::vec3 position, int entryAmount,
+            std::vector<glm::vec3> &zeroEntries,
+            std::vector<KDTreeEntry> &epsilonEntries)
+    {
+        Eigen::MatrixXf A(entryAmount, 4);
+        Eigen::VectorXf b = Eigen::VectorXf(entryAmount);
+
+        for (int i = 0; i < entryAmount; i++) {
+            glm::vec3 pos;
+            float value;
+            if (i < (int)epsilonEntries.size()){
+                pos = epsilonEntries[i].position;
+                value = epsilonEntries[i].value;
+            } else {
+                pos = zeroEntries[i - epsilonEntries.size()];
+                value = 0;
+            }
+            float x = pos.x; float y = pos.y; float z = pos.z;
+            float weight = wendland(1 - glm::distance(position, pos) / radius);
+
+            A(i, 0) = 1 * weight;
+            A(i, 1) = x * weight;
+            A(i, 2) = y * weight;
+            A(i, 3) = z * weight;
+
+            b[i] = value * weight;
+        }
+
+        Eigen::VectorXf coeffs = solveLeastSquares_SVD(A, b);
+
+        float _x = position.x;
+        float _y = position.y;
+        float _z = position.z;
+
+        return (coeffs[0] +
+                coeffs[1] * _x      + coeffs[2] * _y      + coeffs[3] * _z);
+    }
+
+    float evaluate_Constant(
+            glm::vec3 position, int entryAmount,
+            std::vector<KDTreeEntry> &epsilonEntries)
+    {
+        float sum = 0.0f;
+
+        for (auto entry : epsilonEntries) {
+            float weight = wendland(1 - glm::distance(position, entry.position) / radius);
+            sum += weight * entry.value;
+        }
+
+        return sum / entryAmount;
     }
 };
 
@@ -522,8 +585,10 @@ ImplicitSurface *ImplicitSurfaceViewer::getImplicitSurface() {
         return unionSurface;
     } else if (surfaceSource == SurfaceSource::Points) {
         return new ImplicitSurfaceFromPoints(
-            sourcePositions, sourceNormals,
-            pointsData.minPointAmount, pointsData.minRelativeRadius * boundingBox.size(0));
+            sourcePositions, sourceNormals, boundingBox.size(0) / 50.0f);
+        // return new ImplicitSurfaceFromLocalDistanceFunctions(
+        //     sourcePositions, sourceNormals,
+        //     pointsData.minPointAmount, pointsData.minRelativeRadius * boundingBox.size(0));
     }
 
     assert(false);
