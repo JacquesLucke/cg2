@@ -409,7 +409,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     shadelessColorShader = new ShadelessColorShader();
     phongShader = new BlinnPhongShader();
 
-    NOffFileData *offData = loadRelNOffResource("cat.off");
+    NOffFileData *offData = loadRelNOffResource("horse.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
