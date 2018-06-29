@@ -64,7 +64,7 @@ public:
     std::vector<Point> collectInRadius(Point origin, float radius) {
         InRadiusCollector collector(origin, radius);
         collectInRadius(0, length - 1, 0, collector);
-        return collector.getPoints();;
+        return collector.getPoints();
     }
 
     std::vector<Point> collectKNearest(Point origin, int k) {
