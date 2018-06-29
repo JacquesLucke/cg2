@@ -238,7 +238,7 @@ public:
             std::vector<glm::vec3> &positions,
             std::vector<glm::vec3> &normals,
             PointsToSurfaceMethod method,
-            float radius, float epsilon)
+            float radius, float startEpsilon)
             : method(method), radius(radius), zeroPositions(positions)
     {
         assert(positions.size() == normals.size());
@@ -250,10 +250,10 @@ public:
             glm::vec3 position = positions[i];
             glm::vec3 offset = glm::normalize(normals[i]);
 
-            float epsilon1 = findEpsilon(position, offset, 0.01f);
+            float epsilon1 = findEpsilon(position, offset, startEpsilon);
             data.push_back(KDTreeEntry(position + epsilon1 * offset, epsilon1));
 
-            float epsilon2 = findEpsilon(position, offset, -0.01f);
+            float epsilon2 = findEpsilon(position, offset, -startEpsilon);
             data.push_back(KDTreeEntry(position + epsilon2 * offset, epsilon2));
         }
 
@@ -409,7 +409,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     shadelessColorShader = new ShadelessColorShader();
     phongShader = new BlinnPhongShader();
 
-    NOffFileData *offData = loadRelNOffResource("horse.off");
+    NOffFileData *offData = loadRelNOffResource("cat.off");
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
