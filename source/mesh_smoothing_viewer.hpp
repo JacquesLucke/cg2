@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "gpu_mesh.hpp"
+#include "mesh.hpp"
 #include "camera.hpp"
 #include "shaders.hpp"
 #include "bounding_box.hpp"
@@ -28,6 +29,7 @@ private:
     void drawSourceMesh();
 
     CameraController* camera = nullptr;
-    TriangleGPUMesh<VertexPN>* sourceMesh = nullptr;
+    TriangleGPUMesh<VertexPN>* sourceGPUMesh = nullptr;
     NormalShader* normalShader = nullptr;
+    Mesh* sourceMesh = nullptr;
 };

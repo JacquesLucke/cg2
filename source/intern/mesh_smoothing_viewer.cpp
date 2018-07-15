@@ -17,7 +17,8 @@ bool MeshSmoothingViewer::onSetup() {
     std::vector<glm::vec3> normals = calculateVertexNormals(data->positions, data->indices);
 
     auto vertices = createVertexPNVector(data->positions, normals);
-    sourceMesh = new TriangleGPUMesh<VertexPN>(vertices, data->indices);
+    sourceGPUMesh = new TriangleGPUMesh<VertexPN>(vertices, data->indices);
+    sourceMesh = HalfEdgeMesh::fromTriangles(data->positions, data->indices);
 
     normalShader = new NormalShader();
 
@@ -57,8 +58,8 @@ void MeshSmoothingViewer::drawSourceMesh() {
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
-    sourceMesh->bindBuffers(normalShader);
-    sourceMesh->draw();
+    sourceGPUMesh->bindBuffers(normalShader);
+    sourceGPUMesh->draw();
 }
 
 void MeshSmoothingViewer::onRenderUI() {
