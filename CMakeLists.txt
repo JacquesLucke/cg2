@@ -25,6 +25,7 @@ include_directories(
     extern/glm/
     extern/imgui/
     extern/Eigen/
+    extern/sparsepp/
     source/
 )
 
