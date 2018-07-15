@@ -17,7 +17,7 @@ bool MeshSmoothingViewer::onSetup() {
     std::vector<glm::vec3> normals = calculateVertexNormals(data->positions, data->indices);
 
     auto vertices = createVertexPNVector(data->positions, normals);
-    sourceMesh = new TriangleMesh<VertexPN>(vertices, data->indices);
+    sourceMesh = new TriangleGPUMesh<VertexPN>(vertices, data->indices);
 
     normalShader = new NormalShader();
 

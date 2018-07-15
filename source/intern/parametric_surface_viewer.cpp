@@ -20,12 +20,12 @@ glm::vec4 colorFromZ(float z, BoundingBox<3> &box) {
     return c1 * (1-t) + c2 * t;
 }
 
-PointCloudMesh<VertexPC> *coloredPointCloud(std::vector<glm::vec3> &positions, BoundingBox<3> &box) {
+PointCloudGPUMesh<VertexPC> *coloredPointCloud(std::vector<glm::vec3> &positions, BoundingBox<3> &box) {
     std::vector<VertexPC> vertices;
     for (unsigned int i = 0; i < positions.size(); i++) {
         vertices.push_back(VertexPC(positions[i], colorFromZ(positions[i].z, box)));
     }
-    return new PointCloudMesh<VertexPC>(vertices);
+    return new PointCloudGPUMesh<VertexPC>(vertices);
 }
 
 bool ParametricSurfaceViewer::onSetup() {
@@ -154,7 +154,7 @@ void ParametricSurfaceViewer::onRenderUI() {
     bool recalc = false;
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
-    ImGui::Checkbox("Display Generated Mesh", &displaySurface);
+    ImGui::Checkbox("Display Generated GPUMesh", &displaySurface);
     ImGui::Checkbox("Display Normals", &displayNormals);
 
     if (displaySurface | displayNormals) {
@@ -248,7 +248,7 @@ void ParametricSurfaceViewer::createGrid() {
     gridLinesMesh = generateXYGridLinesMesh(uDivisions, vDivisions, boundingBox);
 }
 
-LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
+LinesGPUMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
     assert(starts.size() == offsets.size());
 
     std::vector<glm::vec3> linePoints;
@@ -256,7 +256,7 @@ LinesMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::v
         linePoints.push_back(starts[i]);
         linePoints.push_back(starts[i] + offsets[i] * scale);
     }
-    return new LinesMesh<VertexP>(createVertexPVector(linePoints));
+    return new LinesGPUMesh<VertexP>(createVertexPVector(linePoints));
 }
 
 int subdivideToDivisions(int divisions, int subdivisionLevel) {
@@ -274,9 +274,9 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_MLS() {
         radiusSelectionInfo, leastSquaresSolver, parallelSurfaceGeneration);
 
     if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
-        resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(points), calcGridEdges(xDiv, yDiv));
+        resultingSurfaceWireframe = new WireframeGPUMesh<VertexP>(createVertexPVector(points), calcGridEdges(xDiv, yDiv));
     else
-        resultingSurfaceTriangle = new TriangleMesh<VertexPN>(createVertexPNVector(points, normals), calcGridTriangleIndices(xDiv, yDiv));
+        resultingSurfaceTriangle = new TriangleGPUMesh<VertexPN>(createVertexPNVector(points, normals), calcGridTriangleIndices(xDiv, yDiv));
 
     surfaceNormalLines = createLineSegmentsMesh(points, normals, normalsLength);
 }
@@ -348,12 +348,12 @@ void ParametricSurfaceViewer::createSurfaceAndNormals_Bezier() {
     auto surfaceData = calcBezierSurface(basePoints, yBaseDiv, xDiv, yDiv);
 
     if(SurfaceRenderMode::WIREFRAME == surfaceRenderMode)
-        resultingSurfaceWireframe = new WireframeMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridEdges(xDiv, yDiv));
+        resultingSurfaceWireframe = new WireframeGPUMesh<VertexP>(createVertexPVector(surfaceData.positions), calcGridEdges(xDiv, yDiv));
     else
-        resultingSurfaceTriangle = new TriangleMesh<VertexPN>(createVertexPNVector(surfaceData.positions, surfaceData.normals), calcGridTriangleIndices(xDiv, yDiv));
+        resultingSurfaceTriangle = new TriangleGPUMesh<VertexPN>(createVertexPNVector(surfaceData.positions, surfaceData.normals), calcGridTriangleIndices(xDiv, yDiv));
 
     surfaceNormalLines = createLineSegmentsMesh(surfaceData.positions, surfaceData.normals, normalsLength);
 
     auto baseSurfaceEdges = calcGridEdges(xBaseDiv, yBaseDiv);
-    bezierBaseSurface = new WireframeMesh<VertexP>(createVertexPVector(basePoints), baseSurfaceEdges);
+    bezierBaseSurface = new WireframeGPUMesh<VertexP>(createVertexPVector(basePoints), baseSurfaceEdges);
 }

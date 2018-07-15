@@ -413,7 +413,7 @@ bool ImplicitSurfaceViewer::onSetup() {
     sourcePositions = offData->positions;
     sourceNormals = offData->normals;
 
-    sourcePositionsMesh = new PointCloudMesh<VertexPN>(createVertexPNVector(sourcePositions, sourceNormals));
+    sourcePositionsMesh = new PointCloudGPUMesh<VertexPN>(createVertexPNVector(sourcePositions, sourceNormals));
 
     updateGeneratedData();
     return true;
@@ -505,7 +505,7 @@ void ImplicitSurfaceViewer::onRenderUI() {
     bool recalc = false;
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Visualization Points", &displayVisualizationPoints);
-    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
+    ImGui::Checkbox("Display Generated GPUMesh", &displayGeneratedMesh);
     if (displayGeneratedMesh) {
         ImGui::Checkbox("Display as Wireframe", &displayAsWireframe);
     }
@@ -583,7 +583,7 @@ void ImplicitSurfaceViewer::createImplicitSurfaceMesh(std::vector<float> &evalua
         evaluatedValues, boundingBox, resolution, resolution, resolution);
 
     std::vector<glm::vec3> normals = calculateTriangleVertexNormals(positions);
-    surface = new TriangleArrayMesh<VertexPN>(createVertexPNVector(positions, normals));
+    surface = new TriangleArrayGPUMesh<VertexPN>(createVertexPNVector(positions, normals));
 }
 
 void ImplicitSurfaceViewer::createImplicitSurfaceVisualization(std::vector<float> &evaluatedValues) {

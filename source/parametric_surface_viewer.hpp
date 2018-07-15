@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "camera.hpp"
 #include "shaders.hpp"
 #include "bounding_box.hpp"
@@ -88,10 +88,10 @@ private:
     FinalSurfaceType finalSurfaceType = FinalSurfaceType::MLS;
 
     /* Meshes */
-    LinesMesh<VertexP>* gridLinesMesh = nullptr;
-    PointCloudMesh<VertexPC>* sourcePointsCloud = nullptr;
-    WireframeMesh<VertexP>* resultingSurfaceWireframe = nullptr;
-    TriangleMesh<VertexPN>* resultingSurfaceTriangle = nullptr;
-    LinesMesh<VertexP>* surfaceNormalLines = nullptr;
-    WireframeMesh<VertexP>* bezierBaseSurface = nullptr;
+    LinesGPUMesh<VertexP>* gridLinesMesh = nullptr;
+    PointCloudGPUMesh<VertexPC>* sourcePointsCloud = nullptr;
+    WireframeGPUMesh<VertexP>* resultingSurfaceWireframe = nullptr;
+    TriangleGPUMesh<VertexPN>* resultingSurfaceTriangle = nullptr;
+    LinesGPUMesh<VertexP>* surfaceNormalLines = nullptr;
+    WireframeGPUMesh<VertexP>* bezierBaseSurface = nullptr;
 };

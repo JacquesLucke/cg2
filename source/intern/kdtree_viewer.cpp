@@ -87,7 +87,7 @@ void KDTreeViewer::drawMesh() {
 void KDTreeViewer::drawQueryPoint() {
     std::vector<VertexP> vertices;
     vertices.push_back(VertexP(queryCenter));
-    PointCloudMesh<VertexP> cloud(vertices);
+    PointCloudGPUMesh<VertexP> cloud(vertices);
 
     glPointSize(10);
     flatShader->bind();
@@ -101,7 +101,7 @@ void KDTreeViewer::drawPreSelectionPoint() {
 
     std::vector<VertexP> vertices;
     vertices.push_back(VertexP(point));
-    PointCloudMesh<VertexP> cloud(vertices);
+    PointCloudGPUMesh<VertexP> cloud(vertices);
 
     glPointSize(5);
     flatShader->bind();
@@ -113,7 +113,7 @@ void KDTreeViewer::drawPreSelectionPoint() {
 void KDTreeViewer::drawCollectedPoints() {
     if (collectedPoints == nullptr) {
         std::vector<glm::vec3> points = getCollectedPoints();
-        collectedPoints = new PointCloudMesh<VertexP>(createVertexPVector(points));
+        collectedPoints = new PointCloudGPUMesh<VertexP>(createVertexPVector(points));
     }
 
     glPointSize(5);
@@ -136,7 +136,7 @@ void KDTreeViewer::drawConsideredBoxes() {
     consideredBoxesMesh->draw();
 }
 
-TriangleMesh<VertexP> *KDTreeViewer::getConsideredBoxesMesh() {
+TriangleGPUMesh<VertexP> *KDTreeViewer::getConsideredBoxesMesh() {
     auto boxes = getConsideredBoxes();
 
     std::vector<VertexP> vertices;
@@ -148,7 +148,7 @@ TriangleMesh<VertexP> *KDTreeViewer::getConsideredBoxesMesh() {
         }
     }
 
-    return new TriangleMesh<VertexP>(vertices, indices);
+    return new TriangleGPUMesh<VertexP>(vertices, indices);
 }
 
 std::vector<KDTreeVec3::BoundingBoxWithDepth> KDTreeViewer::getConsideredBoxes() {
@@ -198,7 +198,7 @@ void KDTreeViewer::onRenderUI() {
     ImGui::Text("Press F to start fly mode.");
     queryChanged |= ImGui::SliderFloat3("Query Center", (float*)&queryCenter, -10.0f, 10.0f);
 
-    ImGui::SliderFloat("Mesh Brightness", &meshBrightness, 0.0, 1.0);
+    ImGui::SliderFloat("GPUMesh Brightness", &meshBrightness, 0.0, 1.0);
     ImGui::RadioButton("Points", &meshDrawMode, GL_POINT); ImGui::SameLine();
     ImGui::RadioButton("Lines", &meshDrawMode, GL_LINE); ImGui::SameLine();
     ImGui::RadioButton("Fill", &meshDrawMode, GL_FILL);

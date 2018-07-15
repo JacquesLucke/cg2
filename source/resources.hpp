@@ -7,7 +7,7 @@
 
 #include "shader.hpp"
 #include "utils.hpp"
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 
 struct OffFileData {
     std::vector<glm::vec3> positions;

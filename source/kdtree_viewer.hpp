@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "window_controller.hpp"
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
 #include "kdtree.hpp"
@@ -37,7 +37,7 @@ private:
     glm::vec3 getPreSelectedPoint();
     std::vector<glm::vec3> getCollectedPoints();
 
-    TriangleMesh<VertexP> *getConsideredBoxesMesh();
+    TriangleGPUMesh<VertexP> *getConsideredBoxesMesh();
     std::vector<KDTreeVec3::BoundingBoxWithDepth> getConsideredBoxes();
     void resetQueryResults();
 
@@ -47,7 +47,7 @@ private:
         RADIUS, KNEAREST
     };
 
-    Mesh<VertexPN>* mesh = nullptr;
+    GPUMesh<VertexPN>* mesh = nullptr;
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;
     CameraController* camera = nullptr;
@@ -67,6 +67,6 @@ private:
     bool shouldDrawBoxes = false;
     float meshBrightness = 0.5f;
 
-    TriangleMesh<VertexP> *consideredBoxesMesh = nullptr;
-    PointCloudMesh<VertexP> *collectedPoints = nullptr;
+    TriangleGPUMesh<VertexP> *consideredBoxesMesh = nullptr;
+    PointCloudGPUMesh<VertexP> *collectedPoints = nullptr;
 };

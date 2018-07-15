@@ -429,7 +429,7 @@ std::vector<float> evaluateImplicitSurface(
     return values;
 }
 
-PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
+PointCloudGPUMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
         std::vector<float> &evaluatedValues, BoundingBox<3> box,
         int resolutionX, int resolutionY, int resolutionZ,
         glm::vec4 innerColor, glm::vec4 outerColor)
@@ -466,7 +466,7 @@ PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
         }
     }
 
-    return new PointCloudMesh<VertexPC>(vertices);
+    return new PointCloudGPUMesh<VertexPC>(vertices);
 }
 
 std::vector<float> calculateValuesInXPlane(

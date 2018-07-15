@@ -90,19 +90,19 @@ std::vector<VertexP> extractPVerticesFromOffData(OffFileData *offData) {
     return createVertexPVector(offData->positions);
 }
 
-TriangleMesh<VertexP> *offDataToTriangleMesh_VertexP(OffFileData *offData) {
+TriangleGPUMesh<VertexP> *offDataToTriangleMesh_VertexP(OffFileData *offData) {
     std::vector<VertexP> vertices = extractPVerticesFromOffData(offData);
-    return new TriangleMesh<VertexP>(vertices, offData->indices);
+    return new TriangleGPUMesh<VertexP>(vertices, offData->indices);
 }
 
-TriangleMesh<VertexPN> *offDataToTriangleMesh_VertexPN(OffFileData *offData) {
+TriangleGPUMesh<VertexPN> *offDataToTriangleMesh_VertexPN(OffFileData *offData) {
     std::vector<VertexPN> vertices = extractPNVerticesFromOffData(offData);
-    return new TriangleMesh<VertexPN>(vertices, offData->indices);
+    return new TriangleGPUMesh<VertexPN>(vertices, offData->indices);
 }
 
-PointCloudMesh<VertexP> *offDataToPointCloud(OffFileData *offData) {
+PointCloudGPUMesh<VertexP> *offDataToPointCloud(OffFileData *offData) {
     std::vector<VertexP> vertices = extractPVerticesFromOffData(offData);
-    return new PointCloudMesh<VertexP>(vertices);
+    return new PointCloudGPUMesh<VertexP>(vertices);
 }
 
 void appendBoxTriangles(std::vector<VertexP> &vertices, std::vector<unsigned int> &indices, BoundingBox<3> &box) {
@@ -189,7 +189,7 @@ std::vector<unsigned int> calcGridTriangleIndices(int div1, int div2) {
     return indices;
 }
 
-LinesMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box) {
+LinesGPUMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box) {
     std::vector<VertexP> vertices;
     for (float i = 0; i < xDiv; i++) {
         float offset = box.mapToBox(i / (xDiv - 1), 0);
@@ -201,5 +201,5 @@ LinesMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> b
         vertices.push_back(VertexP(glm::vec3(box.min[0], offset, 0)));
         vertices.push_back(VertexP(glm::vec3(box.max[0], offset, 0)));
     }
-    return new LinesMesh<VertexP>(vertices);
+    return new LinesGPUMesh<VertexP>(vertices);
 }

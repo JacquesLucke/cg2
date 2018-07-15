@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "bounding_box.hpp"
 
 class ImplicitSurface {
@@ -32,7 +32,7 @@ std::vector<glm::vec3> trianglesFromEvaluatedImplicitSurface(
     std::vector<float> &evaluatedValues, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ);
 
-PointCloudMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
+PointCloudGPUMesh<VertexPC> *coloredPointsFromEvaluatedImplicitSurface(
     std::vector<float> &evaluatedValues, BoundingBox<3> box,
     int resolutionX, int resolutionY, int resolutionZ,
     glm::vec4 innerColor, glm::vec4 outerColor);

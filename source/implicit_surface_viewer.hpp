@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "camera.hpp"
 #include "shaders.hpp"
 #include "bounding_box.hpp"
@@ -47,9 +47,9 @@ private:
 
     CameraController* camera = nullptr;
 
-    TriangleArrayMesh<VertexPN>* surface = nullptr;
-    PointCloudMesh<VertexPN>* sourcePositionsMesh = nullptr;
-    PointCloudMesh<VertexPC>* implicitSurfacePoints = nullptr;
+    TriangleArrayGPUMesh<VertexPN>* surface = nullptr;
+    PointCloudGPUMesh<VertexPN>* sourcePositionsMesh = nullptr;
+    PointCloudGPUMesh<VertexPC>* implicitSurfacePoints = nullptr;
 
     FlatShader* flatShader = nullptr;
     NormalShader* normalShader = nullptr;

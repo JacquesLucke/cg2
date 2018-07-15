@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "camera.hpp"
 #include "shaders.hpp"
 #include "bounding_box.hpp"
@@ -28,6 +28,6 @@ private:
     void drawSourceMesh();
 
     CameraController* camera = nullptr;
-    TriangleMesh<VertexPN>* sourceMesh = nullptr;
+    TriangleGPUMesh<VertexPN>* sourceMesh = nullptr;
     NormalShader* normalShader = nullptr;
 };

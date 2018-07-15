@@ -44,7 +44,7 @@ static char edgeTable[6][2] = {
     {1, 3}
 };
 
-LinesMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> box, int resolution) {
+LinesGPUMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> box, int resolution) {
     std::vector<glm::vec3> positions;
     float fResolution = (float)resolution;
 
@@ -90,5 +90,5 @@ LinesMesh<VertexP> *linesFromImplicitCurve(ImplicitCurve &curve, BoundingBox<2> 
         }
     }
 
-    return new LinesMesh<VertexP>(createVertexPVector(positions));
+    return new LinesGPUMesh<VertexP>(createVertexPVector(positions));
 }

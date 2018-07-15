@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 #include "bounding_box.hpp"
 
 class ImplicitCurve {
@@ -19,5 +19,5 @@ public:
     }
 };
 
-LinesMesh<VertexP> *linesFromImplicitCurve(
+LinesGPUMesh<VertexP> *linesFromImplicitCurve(
     ImplicitCurve &curve, BoundingBox<2> box, int resolution);

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <glm/glm.hpp>
-#include "mesh.hpp"
+#include "gpu_mesh.hpp"
 
 struct PositionAndTangent {
     glm::vec3 position;
