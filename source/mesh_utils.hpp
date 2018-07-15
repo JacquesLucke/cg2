@@ -13,6 +13,10 @@ std::vector<glm::vec3> calculateVertexNormals(
     const std::vector<unsigned int> &indices,
     const std::vector<glm::vec3> &faceNormals);
 
+std::vector<glm::vec3> calculateVertexNormals(
+    const std::vector<glm::vec3> &points,
+    const std::vector<unsigned int> &indices);
+
 std::vector<glm::vec3> calculateTriangleVertexNormals(
     const std::vector<glm::vec3> &points);
 

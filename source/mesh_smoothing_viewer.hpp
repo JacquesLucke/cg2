@@ -25,6 +25,9 @@ protected:
 private:
     void prepareDrawDimensions();
     void setViewProjMatrixInShaders();
+    void drawSourceMesh();
 
     CameraController* camera = nullptr;
+    TriangleMesh<VertexPN>* sourceMesh = nullptr;
+    NormalShader* normalShader = nullptr;
 };

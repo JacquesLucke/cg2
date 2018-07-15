@@ -40,6 +40,14 @@ std::vector<glm::vec3> calculateVertexNormals(
     return normals;
 }
 
+std::vector<glm::vec3> calculateVertexNormals(
+        const std::vector<glm::vec3> &points,
+        const std::vector<unsigned int> &indices)
+{
+    std::vector<glm::vec3> faceNormals = calculateFaceNormals(points, indices);
+    return calculateVertexNormals(points, indices, faceNormals);
+}
+
 std::vector<glm::vec3> calculateTriangleVertexNormals(
         const std::vector<glm::vec3> &points)
 {
