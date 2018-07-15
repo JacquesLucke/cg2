@@ -27,9 +27,11 @@ private:
     void prepareDrawDimensions();
     void setViewProjMatrixInShaders();
     void drawSourceMesh();
+    void updateGPUData();
 
     CameraController* camera = nullptr;
-    TriangleGPUMesh<VertexPN>* sourceGPUMesh = nullptr;
+    TriangleGPUMesh<VertexPN>* gpuMesh = nullptr;
     NormalShader* normalShader = nullptr;
     Mesh* sourceMesh = nullptr;
+    Mesh* manipulatedMesh = nullptr;
 };

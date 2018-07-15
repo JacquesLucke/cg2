@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../mesh_smoothing_viewer.hpp"
+#include "../mesh_smoothing_utils.hpp"
 #include "../mesh_utils.hpp"
 #include "../timer.hpp"
 #include "../utils.hpp"
@@ -14,13 +15,11 @@
 
 bool MeshSmoothingViewer::onSetup() {
     OffFileData* data = loadRelOffResource("suzanne_noisy.off");
-    std::vector<glm::vec3> normals = calculateVertexNormals(data->positions, data->indices);
-
-    auto vertices = createVertexPNVector(data->positions, normals);
-    sourceGPUMesh = new TriangleGPUMesh<VertexPN>(vertices, data->indices);
     sourceMesh = HalfEdgeMesh::fromTriangles(data->positions, data->indices);
+    manipulatedMesh = sourceMesh->copy();
 
     normalShader = new NormalShader();
+    updateGPUData();
 
     return true;
 }
@@ -58,11 +57,51 @@ void MeshSmoothingViewer::drawSourceMesh() {
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
-    sourceGPUMesh->bindBuffers(normalShader);
-    sourceGPUMesh->draw();
+    gpuMesh->bindBuffers(normalShader);
+    gpuMesh->draw();
 }
 
 void MeshSmoothingViewer::onRenderUI() {
     ImGui::Begin("CG2");
+
+    bool recalc = false;
+
+    if (ImGui::Button("Smooth Step")) {
+        smooth_UniformLaplacian_OneStep(*manipulatedMesh, 0.6f);
+        recalc |= true;
+    }
+
+    if (ImGui::Button("Reset")) {
+        manipulatedMesh = sourceMesh->copy();
+        recalc |= true;
+    }
+
+    if (recalc) {
+        updateGPUData();
+    }
+
     ImGui::End();
+}
+
+void MeshSmoothingViewer::updateGPUData() {
+    delete gpuMesh;
+
+    std::vector<glm::vec3> positions;
+    for (int i = 0; i < manipulatedMesh->getVertexAmount(); i++) {
+        positions.push_back(manipulatedMesh->getVertexPosition(i));
+    }
+
+    std::vector<unsigned int> indices;
+    for (int i = 0; i < manipulatedMesh->getFaceAmount(); i++) {
+        auto faceIndices = manipulatedMesh->neighbours_Face_VertexIndices(i);
+        assert(faceIndices.size() == 3);
+        for (int j = 0; j < 3; j++) {
+            indices.push_back(faceIndices[j]);
+        }
+    }
+
+    auto normals = calculateVertexNormals(positions, indices);
+    auto vertices = createVertexPNVector(positions, normals);
+
+    gpuMesh = new TriangleGPUMesh<VertexPN>(vertices, indices);
 }
