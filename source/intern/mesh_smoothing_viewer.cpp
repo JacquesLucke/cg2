@@ -15,7 +15,8 @@
 
 bool MeshSmoothingViewer::onSetup() {
     OffFileData* data = loadRelOffResource("suzanne_noisy.off");
-    sourceMesh = HalfEdgeMesh::fromTriangles(data->positions, data->indices);
+    sourceMesh = HalfedgeMesh::fromTriangles(data->positions, data->indices);
+    sourceConnectivity = data->indices;
     manipulatedMesh = sourceMesh->copy();
 
     normalShader = new NormalShader();
@@ -54,6 +55,7 @@ void MeshSmoothingViewer::setViewProjMatrixInShaders() {
 }
 
 void MeshSmoothingViewer::drawSourceMesh() {
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
@@ -66,14 +68,29 @@ void MeshSmoothingViewer::onRenderUI() {
 
     bool recalc = false;
 
-    if (ImGui::Button("Smooth Step")) {
-        smooth_UniformLaplacian_OneStep(*manipulatedMesh, 0.6f);
-        recalc |= true;
-    }
+    ImGui::Text("Interaction Mode");
+    recalc |= ImGui::RadioButton("Step", (int*)&mode, InteractionMode::Step); ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Realtime", (int*)&mode, InteractionMode::Realtime);
 
-    if (ImGui::Button("Reset")) {
-        manipulatedMesh = sourceMesh->copy();
-        recalc |= true;
+    if (mode == InteractionMode::Step) {
+        if (ImGui::Button("Smooth Step")) {
+            smooth_UniformLaplacian(*manipulatedMesh, stepSettings.factor, stepSettings.steps); ImGui::SameLine();
+            recalc |= true;
+        }
+        if (ImGui::Button("Reset")) {
+            resetManipulatedMesh();
+            recalc |= true;
+        }
+        ImGui::SliderFloat("Factor", &stepSettings.factor, 0, 1);
+        ImGui::SliderInt("Steps", &stepSettings.steps, 1, 200);
+    } else if (mode == InteractionMode::Realtime) {
+        recalc |= ImGui::SliderFloat("Factor", &realtimeSettings.factor, 0.0, 1.0);
+        recalc |= ImGui::SliderInt("Steps", &realtimeSettings.steps, 0, 20);
+
+        if (recalc) {
+            resetManipulatedMesh();
+            smooth_UniformLaplacian(*manipulatedMesh, realtimeSettings.factor, realtimeSettings.steps);
+        }
     }
 
     if (recalc) {
@@ -83,25 +100,16 @@ void MeshSmoothingViewer::onRenderUI() {
     ImGui::End();
 }
 
+void MeshSmoothingViewer::resetManipulatedMesh() {
+    manipulatedMesh = sourceMesh->copy();
+}
+
 void MeshSmoothingViewer::updateGPUData() {
+    TIMEIT("update gpu data");
     delete gpuMesh;
 
-    std::vector<glm::vec3> positions;
-    for (int i = 0; i < manipulatedMesh->getVertexAmount(); i++) {
-        positions.push_back(manipulatedMesh->getVertexPosition(i));
-    }
-
-    std::vector<unsigned int> indices;
-    for (int i = 0; i < manipulatedMesh->getFaceAmount(); i++) {
-        auto faceIndices = manipulatedMesh->neighbours_Face_VertexIndices(i);
-        assert(faceIndices.size() == 3);
-        for (int j = 0; j < 3; j++) {
-            indices.push_back(faceIndices[j]);
-        }
-    }
-
-    auto normals = calculateVertexNormals(positions, indices);
+    auto positions = manipulatedMesh->getVertexPositions();
+    auto normals = calculateVertexNormals(positions, sourceConnectivity);
     auto vertices = createVertexPNVector(positions, normals);
-
-    gpuMesh = new TriangleGPUMesh<VertexPN>(vertices, indices);
+    gpuMesh = new TriangleGPUMesh<VertexPN>(vertices, sourceConnectivity);
 }
