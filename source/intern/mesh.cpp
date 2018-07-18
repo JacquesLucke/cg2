@@ -13,18 +13,38 @@ std::vector<glm::vec3> Mesh::neighbours_Vertex_VertexPositions(int vertexIndex) 
     return positions;
 }
 
+std::vector<glm::vec3> Mesh::getVertexPositions() {
+    std::vector<glm::vec3> positions;
+    for (int i = 0; i < getVertexAmount(); i++) {
+        positions.push_back(getVertexPosition(i));
+    }
+    return positions;
+}
+
+std::vector<unsigned int> Mesh::getTriangleIndices() {
+    std::vector<unsigned int> indices;
+    for (int i = 0; i < getFaceAmount(); i++) {
+        auto faceIndices = neighbours_Face_VertexIndices(i);
+        assert(faceIndices.size() == 3);
+        for (int j = 0; j < 3; j++) {
+            indices.push_back(faceIndices[j]);
+        }
+    }
+    return indices;
+}
+
 uint64_t packInts(uint32_t a, uint32_t b) {
     return (uint64_t)a | ((uint64_t)b << 32);
 }
 
-HalfEdgeMesh *HalfEdgeMesh::fromTriangles(
+HalfedgeMesh *HalfedgeMesh::fromTriangles(
         std::vector<glm::vec3> &positions,
         std::vector<unsigned int> &triangleIndices)
 {
-    TIMEIT("HalfEdgeMesh from triangles");
+    TIMEIT("HalfedgeMesh from triangles");
     assert(triangleIndices.size() % 3 == 0);
 
-    HalfEdgeMesh* mesh = new HalfEdgeMesh();
+    HalfedgeMesh* mesh = new HalfedgeMesh();
     int faceAmount = (int)triangleIndices.size() / 3;
 
     mesh->faces.resize(faceAmount);
@@ -78,7 +98,15 @@ HalfEdgeMesh *HalfEdgeMesh::fromTriangles(
     return mesh;
 }
 
-std::vector<int> HalfEdgeMesh::neighbours_Vertex_VertexIndices(int vertexIndex) {
+std::vector<glm::vec3> HalfedgeMesh::getVertexPositions() {
+    std::vector<glm::vec3> positions;
+    for (auto vertex : vertices) {
+        positions.push_back(vertex.position);
+    }
+    return positions;
+}
+
+std::vector<int> HalfedgeMesh::neighbours_Vertex_VertexIndices(int vertexIndex) {
     std::vector<int> indices;
     int halfedge = vOutgoingHalfedge(vertexIndex);
     int stop = halfedge;
@@ -89,7 +117,7 @@ std::vector<int> HalfEdgeMesh::neighbours_Vertex_VertexIndices(int vertexIndex) 
     return indices;
 }
 
-std::vector<int> HalfEdgeMesh::neighbours_Face_VertexIndices(int faceIndex) {
+std::vector<int> HalfedgeMesh::neighbours_Face_VertexIndices(int faceIndex) {
     std::vector<int> indices;
     int halfedge = fHalfEdge(faceIndex);
     int stop = halfedge;
@@ -100,26 +128,41 @@ std::vector<int> HalfEdgeMesh::neighbours_Face_VertexIndices(int faceIndex) {
     return indices;
 }
 
-int HalfEdgeMesh::hNext(int halfedge) {
+int HalfedgeMesh::getVertexDegree(int vertexIndex) {
+    int degree = 0;
+    int halfedge = vOutgoingHalfedge(vertexIndex);
+    int stop = halfedge;
+    do {
+        degree++;
+        halfedge = hNext(hOpposite(halfedge));
+    } while (halfedge != stop);
+    return degree;
+}
+
+int HalfedgeMesh::hNext(int halfedge) {
     return halfedges[halfedge].next;
 }
 
-int HalfEdgeMesh::hPrev(int halfedge) {
+int HalfedgeMesh::hPrev(int halfedge) {
     return halfedges[halfedge].prev;
 }
 
-int HalfEdgeMesh::hOpposite(int halfedge) {
+int HalfedgeMesh::hOpposite(int halfedge) {
     return halfedges[halfedge].opposite;
 }
 
-int HalfEdgeMesh::hEndVertex(int halfedge) {
+int HalfedgeMesh::hEndVertex(int halfedge) {
     return halfedges[halfedge].endVertex;
 }
 
-int HalfEdgeMesh::vOutgoingHalfedge(int vertex) {
+int HalfedgeMesh::vOutgoingHalfedge(int vertex) {
     return vertices[vertex].outgoingHalfedge;
 }
 
-int HalfEdgeMesh::fHalfEdge(int face) {
+glm::vec3 HalfedgeMesh::vPosition(int vertex) {
+    return vertices[vertex].position;
+}
+
+int HalfedgeMesh::fHalfEdge(int face) {
     return faces[face].halfedge;
 }

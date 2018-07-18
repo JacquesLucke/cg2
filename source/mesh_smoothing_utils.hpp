@@ -2,4 +2,8 @@
 
 #include "mesh.hpp"
 
-void smooth_UniformLaplacian_OneStep(Mesh &mesh, float factor = 0.1f);
+template<typename MeshType>
+void smooth_UniformLaplacian(MeshType &mesh, float factor, int steps);
+
+template<typename MeshType>
+void smooth_UniformLaplacian_OneStep(MeshType &mesh, float factor);

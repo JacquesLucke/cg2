@@ -13,29 +13,33 @@ public:
     virtual void setVertexPosition(int vertexIndex, glm::vec3 position) = 0;
     virtual int getVertexAmount() = 0;
     virtual int getFaceAmount() = 0;
+    virtual int getVertexDegree(int vertexIndex) = 0;
     virtual Mesh *copy() = 0;
+    virtual std::vector<unsigned int> getTriangleIndices();
+    virtual std::vector<glm::vec3> getVertexPositions();
 
-    std::vector<glm::vec3> neighbours_Vertex_VertexPositions(int vertexIndex);
+    virtual std::vector<glm::vec3> neighbours_Vertex_VertexPositions(int vertexIndex);
 };
 
-class HalfEdgeMesh : public Mesh {
+class HalfedgeMesh : public Mesh {
 public:
-    HalfEdgeMesh() {}
+    HalfedgeMesh() {}
 
-    HalfEdgeMesh(HalfEdgeMesh* source)
+    HalfedgeMesh(HalfedgeMesh* source)
         : vertices(source->vertices),
           halfedges(source->halfedges),
           faces(source->faces) {}
 
-    static HalfEdgeMesh *fromTriangles(
+    static HalfedgeMesh *fromTriangles(
         std::vector<glm::vec3> &positions,
         std::vector<unsigned int> &triangleIndices);
 
     std::vector<int> neighbours_Vertex_VertexIndices(int vertexIndex);
     std::vector<int> neighbours_Face_VertexIndices(int faceIndex);
+    std::vector<glm::vec3> getVertexPositions();
 
-    HalfEdgeMesh *copy() {
-        return new HalfEdgeMesh(this);
+    HalfedgeMesh *copy() {
+        return new HalfedgeMesh(this);
     }
 
     glm::vec3 getVertexPosition(int vertexIndex) {
@@ -54,7 +58,8 @@ public:
         return (int)faces.size();
     }
 
-private:
+    int getVertexDegree(int vertexIndex);
+
     struct Halfedge {
         int endVertex;
         int face;
@@ -81,5 +86,6 @@ private:
     int hOpposite(int halfedge);
     int hEndVertex(int halfedge);
     int vOutgoingHalfedge(int vertex);
+    glm::vec3 vPosition(int vertex);
     int fHalfEdge(int face);
 };

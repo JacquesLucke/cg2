@@ -28,10 +28,29 @@ private:
     void setViewProjMatrixInShaders();
     void drawSourceMesh();
     void updateGPUData();
+    void resetManipulatedMesh();
 
     CameraController* camera = nullptr;
     TriangleGPUMesh<VertexPN>* gpuMesh = nullptr;
     NormalShader* normalShader = nullptr;
-    Mesh* sourceMesh = nullptr;
-    Mesh* manipulatedMesh = nullptr;
+    HalfedgeMesh* sourceMesh = nullptr;
+    HalfedgeMesh* manipulatedMesh = nullptr;
+    std::vector<unsigned int> sourceConnectivity;
+
+    enum InteractionMode {
+        Step,
+        Realtime
+    };
+
+    InteractionMode mode = InteractionMode::Step;
+
+    struct {
+        float factor = 0.5;
+        int steps = 1;
+    } stepSettings;
+
+    struct {
+        float factor = 0.5;
+        int steps = 1;
+    } realtimeSettings;
 };
