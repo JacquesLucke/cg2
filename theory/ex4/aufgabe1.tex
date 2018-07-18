@@ -1,1 +1,19 @@
 \section*{Aufgabe 1: }
+\begin{comment}
+\begin{itemize}
+\item Interpolation der anliegenden Oberflächennormalen
+  \begin{itemize}
+  \item[+] Leicht zu berechnen, keine Anforderungen an das Mesh
+  \item[-] von Beschaffenheit des Meshes abhängig, bei Meshes mit starker Krümmung schlecht anzuwenden
+  \item[-] bei Meshes mit niedriger Auflösung, die aus Funktionen generiert werden (also z.B. parametrische und implizite Oberflächen), tendentiell ungenau
+  \end{itemize}
+\item Approximierung der Oberfläche in der Nähe des Vertex (z.B. durch Parametrisierung) und Normale dieser Oberfläche bestimmen
+  \begin{itemize}
+  \item[+] Bei gegebener Oberflächenapproximierung optimale Lösung
+  \item[-] Ansonsten Funktion im allgemeinen schwer zu bestimmen
+  \end{itemize}
+\end{itemize}
+\end{comment}
+
+Im Allgemeinen gibt es zwei Möglichkeiten, die Vertexnormalen eines triangulierten Meshes zu bestimmen. Zum einen kann man die Oberflächennormalen der an dem Vertex anliegenden Flächen interpolieren. Zum anderen kann man die Oberfläche in der Nähe des Vertex durch eine Funktion approximieren und an der Position des Vertexes den Gradienten dieser berechnen.\\
+Die zweite Methode ist, vor allem, wenn das Mesh aus einer parametrischen oder impliziten Funktion genieriert wurde, oftmals genauer. Diese Methode bietet sich vor allem an, wenn die benötigte Funktion schon gegeben ist. Da die Bestimmung einer solchen Funktion für ein gegebenes Mesh im Allgemeinen jedoch kompliziert ist, bietet sich in diesem Fall die erste Methode an, deren Berechnung sehr leicht ist. Der Nachteil dieser Methode ist jedoch, dass sie abhängig von der Beschaffenheit des Meshes ist. Vor allem bei Meshes mit niedriger Auflösung und starken Krümmungen treten mit der ersten Methode relativ starke Ungenauigkeiten auf, die durch die zweite Methode zu verhindern wären.
