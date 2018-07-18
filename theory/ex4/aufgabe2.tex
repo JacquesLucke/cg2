@@ -1,1 +1,14 @@
 \section*{Aufgabe 2: }
+Im folgenden werden zwei Operationen für Kanten eines Meshes beschrieben. Sei das Mesh o.B.d.A trianguliert und bezeichne $e = \{a, b\}$ diese Kante. Dann grenzen an diese Kante maximal zwei Dreiecke, die beide $a$ und $b$ als Eckpunkte haben. Bezeichne $p_1$ respektive $p_2$ den dritten Eckpunkt dieser Dreicke. Bezeichne weiter $\mathcal{N}(v)$ alle  zu $v$ adjazenten Vertices.
+\subsection*{(a) Trennen einer Kante}
+\begin{enumerate}
+\item Neuen Vertex $v$ auf Kante einfügen
+\item Einfügen der neuen Kanten $\{v, a\}$, $\{v, b\}$, $\{v, p_1\}$, $\{v, p_2\}$
+\item Löschen der originalen Kante
+\end{enumerate}
+\subsection*{(b) Entfernen einer Kante}
+\begin{enumerate}
+\item Löschen der originalen Kante
+\item Füge eine neue Kante $\{v, a\}$ für alle $v \in \mathcal{N}(b)\setminus\{a, p_1, p_2\}$ ein
+\item Lösche den Vertex $b$ (und damit auch alle inzidenten Kanten von $b$)
+\end{enumerate}
