@@ -248,17 +248,6 @@ void ParametricSurfaceViewer::createGrid() {
     gridLinesMesh = generateXYGridLinesMesh(uDivisions, vDivisions, boundingBox);
 }
 
-LinesGPUMesh<VertexP> *createLineSegmentsMesh(std::vector<glm::vec3> starts, std::vector<glm::vec3> offsets, float scale) {
-    assert(starts.size() == offsets.size());
-
-    std::vector<glm::vec3> linePoints;
-    for (unsigned int i = 0; i < starts.size(); i++) {
-        linePoints.push_back(starts[i]);
-        linePoints.push_back(starts[i] + offsets[i] * scale);
-    }
-    return new LinesGPUMesh<VertexP>(createVertexPVector(linePoints));
-}
-
 int subdivideToDivisions(int divisions, int subdivisionLevel) {
     return divisions + (divisions - 1) * (int)pow(2, subdivisionLevel - 1);
 }

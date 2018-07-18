@@ -27,12 +27,15 @@ private:
     void prepareDrawDimensions();
     void setViewProjMatrixInShaders();
     void drawSourceMesh();
+    void drawNormalLines();
     void updateGPUData();
     void resetManipulatedMesh();
 
     CameraController* camera = nullptr;
     TriangleGPUMesh<VertexPN>* gpuMesh = nullptr;
+    LinesGPUMesh<VertexP>* normalLines = nullptr;
     NormalShader* normalShader = nullptr;
+    FlatShader* flatShader = nullptr;
     HalfedgeMesh* sourceMesh = nullptr;
     HalfedgeMesh* manipulatedMesh = nullptr;
     std::vector<unsigned int> sourceConnectivity;
@@ -66,5 +69,7 @@ private:
         int steps = 1;
     } realtimeSettings;
 
-    bool drawWireframe = false;
+    bool displayAsWireframe = false;
+    bool displayNormals = false;
+    float normalsLength = 0.1f;
 };

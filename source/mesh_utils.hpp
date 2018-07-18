@@ -33,3 +33,8 @@ std::vector<glm::vec3> calcXYGridPoints(int xDiv, int yDiv, BoundingBox<3> box);
 std::vector<EdgeIndices> calcGridEdges(int div1, int div2);
 std::vector<unsigned int> calcGridTriangleIndices(int div1, int div2);
 LinesGPUMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3> box);
+
+LinesGPUMesh<VertexP> *createLineSegmentsMesh(
+    std::vector<glm::vec3> starts,
+    std::vector<glm::vec3> offsets,
+    float scale);

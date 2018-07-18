@@ -20,6 +20,7 @@ bool MeshSmoothingViewer::onSetup() {
     manipulatedMesh = sourceMesh->copy();
 
     normalShader = new NormalShader();
+    flatShader = new FlatShader();
     updateGPUData();
 
     return true;
@@ -40,6 +41,7 @@ void MeshSmoothingViewer::onRender() {
 
     glEnable(GL_DEPTH_TEST);
     drawSourceMesh();
+    if (displayNormals) drawNormalLines();
     glDisable(GL_DEPTH_TEST);
 }
 
@@ -52,16 +54,26 @@ void MeshSmoothingViewer::setViewProjMatrixInShaders() {
     auto matrix = camera->camera->getViewProjectionMatrix();
     normalShader->bind();
     normalShader->setViewProj(matrix);
+    flatShader->bind();
+    flatShader->setViewProj(matrix);
 }
 
 void MeshSmoothingViewer::drawSourceMesh() {
-    if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (displayAsWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     gpuMesh->bindBuffers(normalShader);
     gpuMesh->draw();
-    if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (displayAsWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void MeshSmoothingViewer::drawNormalLines() {
+    flatShader->bind();
+    flatShader->setColor(0.5f, 0.5f, 0.5f);
+    flatShader->resetModelMatrix();
+    normalLines->bindBuffers(flatShader);
+    normalLines->draw();
 }
 
 void MeshSmoothingViewer::onRenderUI() {
@@ -111,7 +123,11 @@ void MeshSmoothingViewer::onRenderUI() {
     }
 
     ImGui::Separator();
-    ImGui::Checkbox("Draw Wireframe", &drawWireframe);
+    ImGui::Checkbox("Draw Wireframe", &displayAsWireframe);
+    ImGui::Checkbox("Draw Normals", &displayNormals);
+    if (displayNormals) {
+        recalc |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.5f);
+    }
 
     if (recalc) {
         updateGPUData();
@@ -127,9 +143,11 @@ void MeshSmoothingViewer::resetManipulatedMesh() {
 void MeshSmoothingViewer::updateGPUData() {
     TIMEIT("update gpu data");
     delete gpuMesh;
+    delete normalLines;
 
     auto positions = manipulatedMesh->getVertexPositions();
     auto normals = calculateVertexNormals(positions, sourceConnectivity);
     auto vertices = createVertexPNVector(positions, normals);
     gpuMesh = new TriangleGPUMesh<VertexPN>(vertices, sourceConnectivity);
+    normalLines = createLineSegmentsMesh(positions, normals, normalsLength);
 }

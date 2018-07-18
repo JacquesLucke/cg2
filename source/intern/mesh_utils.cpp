@@ -203,3 +203,18 @@ LinesGPUMesh<VertexP> *generateXYGridLinesMesh(int xDiv, int yDiv, BoundingBox<3
     }
     return new LinesGPUMesh<VertexP>(vertices);
 }
+
+LinesGPUMesh<VertexP> *createLineSegmentsMesh(
+        std::vector<glm::vec3> starts,
+        std::vector<glm::vec3> offsets,
+        float scale)
+{
+    assert(starts.size() == offsets.size());
+
+    std::vector<glm::vec3> linePoints;
+    for (unsigned int i = 0; i < starts.size(); i++) {
+        linePoints.push_back(starts[i]);
+        linePoints.push_back(starts[i] + offsets[i] * scale);
+    }
+    return new LinesGPUMesh<VertexP>(createVertexPVector(linePoints));
+}
