@@ -54,6 +54,7 @@ HalfedgeMesh *HalfedgeMesh::fromTriangles(
     for (unsigned int i = 0; i < positions.size(); i++) {
         mesh->vertices[i].position = positions[i];
         mesh->vertices[i].outgoingHalfedge = -1;
+        mesh->vertices[i].degree = 0;
     }
 
 
@@ -76,6 +77,7 @@ HalfedgeMesh *HalfedgeMesh::fromTriangles(
             mesh->halfedges[currentHalfEdge].next = nextHalfEdge;
             mesh->halfedges[currentHalfEdge].prev = prevHalfEdge;
 
+            mesh->vertices[startVertex].degree += 1;
             mesh->vertices[startVertex].outgoingHalfedge = currentHalfEdge;
             halfEdgeIndexOf[packInts(startVertex, endVertex)] = currentHalfEdge;
         }
@@ -126,43 +128,4 @@ std::vector<int> HalfedgeMesh::neighbours_Face_VertexIndices(int faceIndex) {
         halfedge = hNext(halfedge);
     } while (halfedge != stop);
     return indices;
-}
-
-int HalfedgeMesh::getVertexDegree(int vertexIndex) {
-    int degree = 0;
-    int halfedge = vOutgoingHalfedge(vertexIndex);
-    int stop = halfedge;
-    do {
-        degree++;
-        halfedge = hNext(hOpposite(halfedge));
-    } while (halfedge != stop);
-    return degree;
-}
-
-int HalfedgeMesh::hNext(int halfedge) {
-    return halfedges[halfedge].next;
-}
-
-int HalfedgeMesh::hPrev(int halfedge) {
-    return halfedges[halfedge].prev;
-}
-
-int HalfedgeMesh::hOpposite(int halfedge) {
-    return halfedges[halfedge].opposite;
-}
-
-int HalfedgeMesh::hEndVertex(int halfedge) {
-    return halfedges[halfedge].endVertex;
-}
-
-int HalfedgeMesh::vOutgoingHalfedge(int vertex) {
-    return vertices[vertex].outgoingHalfedge;
-}
-
-glm::vec3 HalfedgeMesh::vPosition(int vertex) {
-    return vertices[vertex].position;
-}
-
-int HalfedgeMesh::fHalfEdge(int face) {
-    return faces[face].halfedge;
 }

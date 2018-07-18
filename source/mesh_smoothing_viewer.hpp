@@ -42,7 +42,19 @@ private:
         Realtime
     };
 
+    enum LaplacianType {
+        Uniform,
+        Cotan
+    };
+
+    enum LaplacianStepType {
+        Explicit,
+        Implicit
+    };
+
     InteractionMode mode = InteractionMode::Step;
+    LaplacianType laplacianType = LaplacianType::Uniform;
+    LaplacianStepType laplacianStepType = LaplacianStepType::Explicit;
 
     struct {
         float factor = 0.5;
@@ -53,4 +65,6 @@ private:
         float factor = 0.5;
         int steps = 1;
     } realtimeSettings;
+
+    bool drawWireframe = false;
 };

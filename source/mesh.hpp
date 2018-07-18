@@ -58,7 +58,9 @@ public:
         return (int)faces.size();
     }
 
-    int getVertexDegree(int vertexIndex);
+    int getVertexDegree(int vertexIndex) {
+        return vDegree(vertexIndex);
+    }
 
     struct Halfedge {
         int endVertex;
@@ -71,6 +73,7 @@ public:
     struct Vertex {
         glm::vec3 position;
         int outgoingHalfedge;
+        int degree;
     };
 
     struct Face {
@@ -81,11 +84,14 @@ public:
     std::vector<Halfedge> halfedges;
     std::vector<Face> faces;
 
-    int hNext(int halfedge);
-    int hPrev(int halfedge);
-    int hOpposite(int halfedge);
-    int hEndVertex(int halfedge);
-    int vOutgoingHalfedge(int vertex);
-    glm::vec3 vPosition(int vertex);
-    int fHalfEdge(int face);
+    int hNext(int halfedge) { return halfedges[halfedge].next; }
+    int hPrev(int halfedge) { return halfedges[halfedge].prev; }
+    int hOpposite(int halfedge) { return halfedges[halfedge].opposite; }
+    int hEndVertex(int halfedge) { return halfedges[halfedge].endVertex; }
+
+    int vDegree(int vertex) { return vertices[vertex].degree; }
+    glm::vec3 vPosition(int vertex) { return vertices[vertex].position; }
+    int vOutgoingHalfedge(int vertex) { return vertices[vertex].outgoingHalfedge; }
+
+    int fHalfEdge(int face) { return faces[face].halfedge; }
 };

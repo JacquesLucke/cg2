@@ -55,12 +55,13 @@ void MeshSmoothingViewer::setViewProjMatrixInShaders() {
 }
 
 void MeshSmoothingViewer::drawSourceMesh() {
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     normalShader->bind();
     normalShader->resetModelMatrix();
     normalShader->setBrightness(1);
     gpuMesh->bindBuffers(normalShader);
     gpuMesh->draw();
+    if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void MeshSmoothingViewer::onRenderUI() {
@@ -72,9 +73,25 @@ void MeshSmoothingViewer::onRenderUI() {
     recalc |= ImGui::RadioButton("Step", (int*)&mode, InteractionMode::Step); ImGui::SameLine();
     recalc |= ImGui::RadioButton("Realtime", (int*)&mode, InteractionMode::Realtime);
 
+    ImGui::Separator();
+
     if (mode == InteractionMode::Step) {
+
+        ImGui::RadioButton("Uniform", (int*)&laplacianType, LaplacianType::Uniform); ImGui::SameLine();
+        ImGui::RadioButton("Cotan", (int*)&laplacianType, LaplacianType::Cotan);
+
+        if (laplacianType == LaplacianType::Cotan) {
+            ImGui::RadioButton("Explicit", (int*)&laplacianStepType, LaplacianStepType::Explicit); ImGui::SameLine();
+            ImGui::RadioButton("Implicit", (int*)&laplacianStepType, LaplacianStepType::Implicit);
+        }
+
         if (ImGui::Button("Smooth Step")) {
-            smooth_UniformLaplacian(*manipulatedMesh, stepSettings.factor, stepSettings.steps); ImGui::SameLine();
+            if (laplacianType == LaplacianType::Uniform) {
+                smooth_UniformLaplacian(*manipulatedMesh, stepSettings.factor, stepSettings.steps);
+            } else {
+                bool doImplicitStep = laplacianStepType == LaplacianStepType::Implicit;
+                smooth_CotanLaplacian(*manipulatedMesh, stepSettings.factor, stepSettings.steps, doImplicitStep);
+            }
             recalc |= true;
         }
         if (ImGui::Button("Reset")) {
@@ -92,6 +109,9 @@ void MeshSmoothingViewer::onRenderUI() {
             smooth_UniformLaplacian(*manipulatedMesh, realtimeSettings.factor, realtimeSettings.steps);
         }
     }
+
+    ImGui::Separator();
+    ImGui::Checkbox("Draw Wireframe", &drawWireframe);
 
     if (recalc) {
         updateGPUData();
