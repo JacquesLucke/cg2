@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
+#include <Eigen/Dense>
 
 #include "gpu_mesh.hpp"
 #include "mesh.hpp"
@@ -43,7 +44,8 @@ private:
 
     enum InteractionMode {
         Step,
-        Realtime
+        Realtime,
+        Spectral
     };
 
     enum LaplacianType {
@@ -69,6 +71,11 @@ private:
         float factor = 0.5;
         int steps = 1;
     } realtimeSettings;
+
+    struct {
+        std::vector<Eigen::VectorXf> eigenvectors;
+        int k = 100;
+    } spectrumSettings;
 
     bool displayAsWireframe = false;
     bool displayNormals = false;

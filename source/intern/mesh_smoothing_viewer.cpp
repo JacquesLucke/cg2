@@ -93,8 +93,8 @@ void MeshSmoothingViewer::onRenderUI() {
 
     ImGui::Text("Interaction Mode");
     recalc |= ImGui::RadioButton("Step", (int*)&mode, InteractionMode::Step); ImGui::SameLine();
-    recalc |= ImGui::RadioButton("Realtime", (int*)&mode, InteractionMode::Realtime);
-
+    recalc |= ImGui::RadioButton("Realtime", (int*)&mode, InteractionMode::Realtime); ImGui::SameLine();
+    recalc |= ImGui::RadioButton("Spectral", (int*)&mode, InteractionMode::Spectral);
     ImGui::Separator();
 
     if (mode == InteractionMode::Step) {
@@ -129,6 +129,18 @@ void MeshSmoothingViewer::onRenderUI() {
         if (recalc) {
             resetManipulatedMesh();
             smooth_UniformLaplacian(*manipulatedMesh, realtimeSettings.factor, realtimeSettings.steps);
+        }
+    } else if (mode == InteractionMode::Spectral) {
+        if (ImGui::Button("Calculate Eigenvectors")) {
+            spectrumSettings.eigenvectors = calcCotanLaplacianEigenVectors(*manipulatedMesh);
+            recalc |= true;
+        }
+        if (spectrumSettings.eigenvectors.size() == manipulatedMesh->getVertexAmount()) {
+            recalc |= ImGui::SliderInt("Amount", &spectrumSettings.k, 0, manipulatedMesh->getVertexAmount());
+            if (recalc) {
+                resetManipulatedMesh();
+                smooth_Spectral(*manipulatedMesh, spectrumSettings.eigenvectors, spectrumSettings.k);
+            }
         }
     }
 

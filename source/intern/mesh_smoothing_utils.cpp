@@ -70,7 +70,7 @@ void smooth_UniformLaplacian_OneStep(HalfedgeMesh &mesh, float factor) {
 typedef Eigen::Triplet<float> Triplet;
 typedef Eigen::SparseMatrix<float> SparseMatrix;
 
-SparseMatrix generateCotanLaplaceMatrix(Mesh &mesh) {
+SparseMatrix generateCotanLaplaceMatrix(Mesh &mesh, bool useArea = true) {
     int vertexAmount = mesh.getVertexAmount();
     std::vector<Triplet> tripletsM;
     std::vector<Triplet> tripletsD;
@@ -113,7 +113,9 @@ SparseMatrix generateCotanLaplaceMatrix(Mesh &mesh) {
     SparseMatrix D(vertexAmount, vertexAmount);
     M.setFromTriplets(tripletsM.begin(), tripletsM.end());
     D.setFromTriplets(tripletsD.begin(), tripletsD.end());
-    return D * M;
+
+    if (useArea) return D * M;
+    return M;
 }
 
 template<typename MeshType>
@@ -162,3 +164,79 @@ void smooth_CotanLaplacian_OneStep(MeshType &mesh, float factor, bool doImplicit
         ));
     }
 }
+
+template<typename MeshType>
+std::vector<Eigen::VectorXf> calcCotanLaplacianEigenVectors(MeshType &mesh) {
+    TIMEIT("calc eigenvectors");
+    SparseMatrix sparseL = generateCotanLaplaceMatrix(mesh, false);
+    Eigen::MatrixXf L(sparseL);
+
+    Eigen::EigenSolver<Eigen::MatrixXf> solver(L);
+
+    std::vector<Eigen::VectorXf> eigenvectors;
+    std::vector<float> eigenvalues;
+
+    for (int i = 0; i < mesh.getVertexAmount(); i++) {
+        Eigen::VectorXcf eigenvector(solver.eigenvectors().col(i));
+        Eigen::VectorXf ei = eigenvector.real();
+        eigenvectors.push_back(ei);
+        eigenvalues.push_back(solver.eigenvalues()[i].real());
+    }
+
+    std::vector<int> idx;
+    for (unsigned int i = 0; i < eigenvalues.size(); i++) idx.push_back(i);
+
+    std::sort(idx.begin(), idx.end(),
+        [&eigenvalues](int i1, int i2) {
+            return eigenvalues[i2] < eigenvalues[i1];
+        });
+
+    std::vector<Eigen::VectorXf> sortedEigenvectors;
+    for (int i : idx) {
+        sortedEigenvectors.push_back(eigenvectors[i]);
+    }
+
+    return sortedEigenvectors;
+}
+
+template<typename MeshType>
+void smooth_Spectral(MeshType &mesh, std::vector<Eigen::VectorXf> &eigenvectors, int k) {
+    TIMEIT("smooth spectral");
+
+    int vertexAmount = mesh.getVertexAmount();
+    Eigen::VectorXf coordsX(vertexAmount);
+    Eigen::VectorXf coordsY(vertexAmount);
+    Eigen::VectorXf coordsZ(vertexAmount);
+
+    for (int i = 0; i < vertexAmount; i++) {
+        glm::vec3 pos = mesh.getVertexPosition(i);
+        coordsX[i] = pos[0];
+        coordsY[i] = pos[1];
+        coordsZ[i] = pos[2];
+    }
+
+    Eigen::VectorXf newCoordsX(vertexAmount);
+    Eigen::VectorXf newCoordsY(vertexAmount);
+    Eigen::VectorXf newCoordsZ(vertexAmount);
+    newCoordsX.fill(0);
+    newCoordsY.fill(0);
+    newCoordsZ.fill(0);
+
+    for (int i = 0; i < k; i++) {
+        auto ei = eigenvectors[i];
+        newCoordsX += (coordsX.transpose() * ei) * ei;
+        newCoordsY += (coordsY.transpose() * ei) * ei;
+        newCoordsZ += (coordsZ.transpose() * ei) * ei;
+    }
+
+    for (int i = 0; i < vertexAmount; i++) {
+        mesh.setVertexPosition(i, glm::vec3(
+            newCoordsX[i], newCoordsY[i], newCoordsZ[i]
+        ));
+    }
+}
+
+template std::vector<Eigen::VectorXf> calcCotanLaplacianEigenVectors(Mesh&);
+template std::vector<Eigen::VectorXf> calcCotanLaplacianEigenVectors(HalfedgeMesh&);
+template void smooth_Spectral(Mesh&, std::vector<Eigen::VectorXf>&, int);
+template void smooth_Spectral(HalfedgeMesh&, std::vector<Eigen::VectorXf>&, int);
