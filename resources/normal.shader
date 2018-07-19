@@ -6,7 +6,7 @@ uniform mat4 u_ViewProjection;
 in vec3 position;
 in vec3 normal;
 out vec3 v_Position;
-smooth out vec3 v_Normal;
+flat out vec3 v_Normal;
 
 void main() {
     gl_Position = u_ViewProjection * u_Model * vec4(position, 1.0);
@@ -21,7 +21,7 @@ void main() {
 
 uniform float u_Brightness;
 in vec3 v_Position;
-smooth in vec3 v_Normal;
+flat in vec3 v_Normal;
 layout(location = 0) out vec4 color;
 
 void main() {

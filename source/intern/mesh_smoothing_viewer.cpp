@@ -14,16 +14,26 @@
 ********************************************/
 
 bool MeshSmoothingViewer::onSetup() {
-    OffFileData* data = loadRelOffResource("suzanne_noisy.off");
-    sourceMesh = HalfedgeMesh::fromTriangles(data->positions, data->indices);
-    sourceConnectivity = data->indices;
-    manipulatedMesh = sourceMesh->copy();
+    loadSourceMesh("cube_sculpt.off");
 
     normalShader = new NormalShader();
     flatShader = new FlatShader();
     updateGPUData();
 
     return true;
+}
+
+void MeshSmoothingViewer::loadSourceMesh(std::string name) {
+    delete sourceMesh;
+    delete manipulatedMesh;
+
+    OffFileData* data = loadRelOffResource(name);
+
+    sourceMesh = HalfedgeMesh::fromTriangles(data->positions, data->indices);
+    manipulatedMesh = sourceMesh->copy();
+    sourceConnectivity = data->indices;
+
+    delete data;
 }
 
 void MeshSmoothingViewer::onUpdate() {
@@ -127,6 +137,19 @@ void MeshSmoothingViewer::onRenderUI() {
     ImGui::Checkbox("Draw Normals", &displayNormals);
     if (displayNormals) {
         recalc |= ImGui::SliderFloat("Normals Length", &normalsLength, 0.0f, 0.5f);
+    }
+
+    ImGui::Separator();
+
+    ImGui::Text("Load: "); ImGui::SameLine();
+    if (ImGui::Button("Suzanne")) {
+        loadSourceMesh("suzanne_noisy.off");
+        recalc |= true;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cube Sculpt")) {
+        loadSourceMesh("cube_sculpt.off");
+        recalc |= true;
     }
 
     if (recalc) {

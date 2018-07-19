@@ -30,6 +30,7 @@ private:
     void drawNormalLines();
     void updateGPUData();
     void resetManipulatedMesh();
+    void loadSourceMesh(std::string name);
 
     CameraController* camera = nullptr;
     TriangleGPUMesh<VertexPN>* gpuMesh = nullptr;
