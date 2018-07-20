@@ -47,8 +47,10 @@ void KDTreeViewer::runKDTreePerformanceTest() {
 }
 
 void KDTreeViewer::onUpdate() {
-    camera->update(getElapsedMilliseconds());
-    performSelection();
+    if (!ImGui::GetIO().WantCaptureMouse) {
+        camera->update(getElapsedMilliseconds());
+        performSelection();
+    }
 }
 
 void KDTreeViewer::onRender() {
@@ -195,10 +197,7 @@ void KDTreeViewer::onRenderUI() {
 
     ImGui::Separator();
 
-    ImGui::Text("Press F to start fly mode.");
-    queryChanged |= ImGui::SliderFloat3("Query Center", (float*)&queryCenter, -10.0f, 10.0f);
-
-    ImGui::SliderFloat("GPUMesh Brightness", &meshBrightness, 0.0, 1.0);
+    ImGui::SliderFloat("Mesh Brightness", &meshBrightness, 0.0, 1.0);
     ImGui::RadioButton("Points", &meshDrawMode, GL_POINT); ImGui::SameLine();
     ImGui::RadioButton("Lines", &meshDrawMode, GL_LINE); ImGui::SameLine();
     ImGui::RadioButton("Fill", &meshDrawMode, GL_FILL);
