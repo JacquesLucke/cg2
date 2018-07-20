@@ -11,8 +11,9 @@
 7. Go into the `build` folder
 8. Open the `x64 Native Tools Command Prompt for VS 2017` (a terminal with some stuff set up already)
 9. Run `cmake ..\cg2\` to create a Visual Studio project
-10. Run `devenv cg2.sln /build` or to compile the project
-11. Run `Debug\cg2.exe` to start the program
+10. Run `devenv cg2.sln /build Release` or to compile the project
+11. Copy the `recourses` folder into the `Release` folder (this step is not automatic yet)
+12. Run `Release\cg2.exe` to start the program
 
 ## Linux
 
@@ -22,6 +23,6 @@
 4. Clone the repository (there will be a `cg2` folder inside of the `cg2-git` folder)
 5. Create a `build` folder in the `cg2-git` folder
 6. Go into the `build` folder
-7. Run `cmake ../cg2/`
+7. Run `cmake ../cg2/ -DCMAKE_BUILD_TYPE=Release`
 8. Run `make`
 9. Run `./cg2`
