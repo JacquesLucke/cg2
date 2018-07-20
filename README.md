@@ -13,7 +13,7 @@
 9. Run `cmake ..\cg2\` to create a Visual Studio project
 10. Run `devenv cg2.sln /build Release` or to compile the project
 11. Copy the `recourses` folder into the `Release` folder (this step is not automatic yet)
-12. Run `Release\cg2.exe` to start the program
+12. Run `Release\exerciseX.exe` to start the program (`X` is a number between 1 and 4)
 
 ## Linux
 
@@ -25,4 +25,4 @@
 6. Go into the `build` folder
 7. Run `cmake ../cg2/ -DCMAKE_BUILD_TYPE=Release`
 8. Run `make`
-9. Run `./cg2`
+9. Run `./exerciseX` (`X` is a number between 1 and 4)
