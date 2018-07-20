@@ -505,7 +505,7 @@ void ImplicitSurfaceViewer::onRenderUI() {
     bool recalc = false;
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
     ImGui::Checkbox("Display Visualization Points", &displayVisualizationPoints);
-    ImGui::Checkbox("Display Generated GPUMesh", &displayGeneratedMesh);
+    ImGui::Checkbox("Display Generated Mesh", &displayGeneratedMesh);
     if (displayGeneratedMesh) {
         ImGui::Checkbox("Display as Wireframe", &displayAsWireframe);
     }

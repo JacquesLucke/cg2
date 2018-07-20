@@ -154,7 +154,7 @@ void ParametricSurfaceViewer::onRenderUI() {
     bool recalc = false;
     ImGui::Checkbox("Display Grid", &displayGrid);
     ImGui::Checkbox("Display Source Points", &displaySourcePoints);
-    ImGui::Checkbox("Display Generated GPUMesh", &displaySurface);
+    ImGui::Checkbox("Display Generated Mesh", &displaySurface);
     ImGui::Checkbox("Display Normals", &displayNormals);
 
     if (displaySurface | displayNormals) {
